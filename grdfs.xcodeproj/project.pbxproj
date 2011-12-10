@@ -1,0 +1,209 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		94AA95E7149387E600C5932B /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94AA95E6149387E600C5932B /* main.cpp */; };
+		94AA95E9149387E600C5932B /* grdfs.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 94AA95E8149387E600C5932B /* grdfs.1 */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		94AA95E0149387E600C5932B /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+				94AA95E9149387E600C5932B /* grdfs.1 in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		94AA95E2149387E600C5932B /* grdfs */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = grdfs; sourceTree = BUILT_PRODUCTS_DIR; };
+		94AA95E6149387E600C5932B /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		94AA95E8149387E600C5932B /* grdfs.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = grdfs.1; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		94AA95DF149387E600C5932B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		94AA95D7149387E500C5932B = {
+			isa = PBXGroup;
+			children = (
+				94AA95E5149387E600C5932B /* grdfs */,
+				94AA95E3149387E600C5932B /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		94AA95E3149387E600C5932B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				94AA95E2149387E600C5932B /* grdfs */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		94AA95E5149387E600C5932B /* grdfs */ = {
+			isa = PBXGroup;
+			children = (
+				94AA95E6149387E600C5932B /* main.cpp */,
+				94AA95E8149387E600C5932B /* grdfs.1 */,
+			);
+			path = grdfs;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		94AA95E1149387E600C5932B /* grdfs */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 94AA95EC149387E600C5932B /* Build configuration list for PBXNativeTarget "grdfs" */;
+			buildPhases = (
+				94AA95DE149387E600C5932B /* Sources */,
+				94AA95DF149387E600C5932B /* Frameworks */,
+				94AA95E0149387E600C5932B /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = grdfs;
+			productName = grdfs;
+			productReference = 94AA95E2149387E600C5932B /* grdfs */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		94AA95D9149387E500C5932B /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0420;
+				ORGANIZATIONNAME = "Norman Heino";
+			};
+			buildConfigurationList = 94AA95DC149387E500C5932B /* Build configuration list for PBXProject "grdfs" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 94AA95D7149387E500C5932B;
+			productRefGroup = 94AA95E3149387E600C5932B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				94AA95E1149387E600C5932B /* grdfs */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		94AA95DE149387E600C5932B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				94AA95E7149387E600C5932B /* main.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		94AA95EA149387E600C5932B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		94AA95EB149387E600C5932B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		94AA95ED149387E600C5932B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		94AA95EE149387E600C5932B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		94AA95DC149387E500C5932B /* Build configuration list for PBXProject "grdfs" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				94AA95EA149387E600C5932B /* Debug */,
+				94AA95EB149387E600C5932B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		94AA95EC149387E600C5932B /* Build configuration list for PBXNativeTarget "grdfs" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				94AA95ED149387E600C5932B /* Debug */,
+				94AA95EE149387E600C5932B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 94AA95D9149387E500C5932B /* Project object */;
+}
