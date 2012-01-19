@@ -91,6 +91,9 @@ void OpenCLReasoner::computeClosure() {
         }
       }
     }
+    
+    delete [] inputClosure;
+    delete [] indexedTerms;
   }
   
   Reasoner::computeClosure();
