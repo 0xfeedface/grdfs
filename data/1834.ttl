@@ -1,0 +1,2333 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix conferences: <http://3ba.se/conferences/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix swrc: <http://swrc.ontoware.org/ontology#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix doap: <http://usefulinc.com/ns/doap#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix wgs84_pos: <http://www.w3.org/2003/01/geo/wgs84_pos#> .
+
+<http://3ba.se/conferences/>
+    a owl:Ontology ;
+    rdfs:comment "Demo Model about Conferences and Semantic Web People" ;
+    rdfs:label "Conference Model" .
+
+conferences:AIMSA2006
+    conferences:URL "http://aimsa2006.inrialpes.fr/"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:acceptanceNotification "2006-06-10"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:camera-readySubmission "2006-06-30"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:end "2006-09-15"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:place "Varna, Bulgaria"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:price 300 ;
+    conferences:start "2006-09-13"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:submissionsDue "2006-04-15"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:title "12th International Conference on Artificial Intelligence: Methodology, Systems, Applications"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "AIMSA2006" ;
+    wgs84_pos:lat "43.206667"@de ;
+    wgs84_pos:long "27.918889"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:AKSW
+    swrc:carriesOut conferences:OntoWiki, conferences:Powl, conferences:SoftWiki ;
+    swrc:head conferences:SrenAuer ;
+    swrc:member conferences:JensLehmann, conferences:MuhammadAhtishamAslam, conferences:NormanHeino, conferences:PhilippFrischmuth, conferences:SebastianDietzold, conferences:SrenAuer, conferences:ThomasRiechert ;
+    a swrc:ResearchGroup ;
+    rdfs:label "Agile Knowledge Engineering and Semantic Web" .
+
+conferences:AMCIS2006
+    conferences:URL "http://amcis2006.aisnet.org"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:end "2006-08-06"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:logo "http://amcis2006.aisnet.org/MEMO%20LOGO%20C%20red.jpg"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:place "Acapulco, México"@en ;
+    conferences:start "2006-08-04"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:title "12th Americas Conference on Information Systems"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "AMCIS2006" ;
+    wgs84_pos:lat "16.85"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "-99.92"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:AbrahamBernstein
+    conferences:affiliation "University of Zurich" ;
+    conferences:country "Switzerland" ;
+    a swrc:Person ;
+    rdfs:label "Abraham Bernstein" .
+
+conferences:AchilleVarzi
+    conferences:affiliation "Department of Philosophy, Columbia University" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Achille Varzi" .
+
+conferences:AlainLeger
+    conferences:affiliation "France  Telecom"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:country "France" ;
+    a swrc:Person ;
+    rdfs:label "Alain Leger" .
+
+conferences:AldoGangemi
+    conferences:affiliation "CNR"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:country "Italy" ;
+    a swrc:Person ;
+    rdfs:label "Aldo Gangemi" .
+
+conferences:AleksanderPivk
+    conferences:affiliation "J. Stefan Institute" ;
+    conferences:country "Slovenia" ;
+    a swrc:Person ;
+    rdfs:label "Aleksander Pivk" .
+
+conferences:AlessandroLenci
+    conferences:affiliation "University of Pisa" ;
+    conferences:country "Italy" ;
+    a swrc:Person ;
+    rdfs:label "Alessandro Lenci" .
+
+conferences:AlexBorgida
+    conferences:affiliation "Rutgers University" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Alex Borgida" .
+
+conferences:AlexanderLoeser
+    conferences:affiliation "TU Berlin" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Alexander Loeser" .
+
+conferences:AmitSheth
+    conferences:affiliation "University of Georgia and Semagix" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Amit Sheth" .
+
+conferences:AndreasAbecker
+    conferences:affiliation "FZI Karlsruhe" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Andreas Abecker" .
+
+conferences:AndreasEberhart
+    conferences:affiliation "Hewlett Packard" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Andreas Eberhart" .
+
+conferences:AndreasHotho
+    conferences:affiliation "University of Kassel" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Andreas Hotho" .
+
+conferences:AnnaVZhdanova
+    rdfs:label "AnnaVZhdanova" .
+
+conferences:AntonyGalton
+    conferences:affiliation "School of Engineering and Computer Science, University of Exeter" ;
+    conferences:country "United Kingdom" ;
+    a swrc:Person ;
+    rdfs:label "Antony Galton" .
+
+conferences:AnupriyaAnkolekar
+    conferences:affiliation "University of Karlsruhe" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Anupriya Ankolekar" .
+
+conferences:ArantzaIllarramendi
+    conferences:affiliation "Basque Country University" ;
+    conferences:country "Spain" ;
+    a swrc:Person ;
+    rdfs:label "Arantza Illarramendi" .
+
+conferences:ArtificialIntelligence
+    a swrc:Topic ;
+    rdfs:label "ArtificialIntelligence"^^<http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:AsunGomezPerez
+    conferences:affiliation "Universidad Politecnica de Madrid" ;
+    conferences:country "Spain" ;
+    a swrc:Person ;
+    rdfs:label "Asun Gomez-Perez" .
+
+conferences:AtanasKiryakov
+    conferences:affiliation "Sirma AI" ;
+    conferences:country "Bulgaria" ;
+    a swrc:Person ;
+    rdfs:label "Atanas Kiryakov" .
+
+conferences:AxelHahn
+    conferences:affiliation "University of Oldenburg" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Axel Hahn" .
+
+conferences:BPM2006
+    conferences:URL "http://bpm2006.tuwien.ac.at/"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:acceptanceNotification "2006-05-12"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:camera-readySubmission "2006-05-27"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:place "Vienna, Austria"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2006-09-05"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:submissionsDue "2006-03-17"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:title "4th International Conference on Business Process Management"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "BPM2006" ;
+    wgs84_pos:lat "48.208333"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "16.373056"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:BarbaraPartee
+    conferences:affiliation "University of Massachusetts" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Barbara Partee" .
+
+conferences:BarrySmith
+    conferences:affiliation "National Center for Ontological Research and Department of Philosophy, University at Buffalo, USA; Institute for Formal Ontology and Medical Information Science, Saarbrücken" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Barry Smith" .
+
+conferences:BillAndersen
+    conferences:affiliation "OntoWorks" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Bill Andersen" .
+
+conferences:BoiFaltings
+    conferences:affiliation "EPFL Lausanne" ;
+    conferences:country "Switzerland" ;
+    a swrc:Person ;
+    rdfs:label "Boi Faltings" .
+
+conferences:BorisMotik
+    conferences:affiliation "FZI Karlsruhe" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Boris Motik" .
+
+conferences:BrandonBennett
+    conferences:affiliation "School of Computing, University of Leeds" ;
+    conferences:country "United Kingdom" ;
+    a swrc:Person ;
+    rdfs:label "Brandon Bennett" .
+
+conferences:BrianMcBride
+    conferences:affiliation "Hewlett Packard" ;
+    conferences:country "United Kingdom" ;
+    a swrc:Person ;
+    rdfs:label "Brian McBride" .
+
+conferences:CKC2007
+    conferences:URL "https://km.aifb.uni-karlsruhe.de/ws/ckc2007"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:conferenceChair conferences:HarithAlani, conferences:NatashaNoy ;
+    conferences:inConjunctionWith conferences:WWW2007 ;
+    conferences:place "Banff, Canada"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2007-05-08"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:title "Workshop on Social and Collaborative Construction of Structured Knowledge" ;
+    swrc:year "2007" ;
+    a swrc:Workshop ;
+    rdfs:label "CKC2007" ;
+    wgs84_pos:lat "50.729502"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "-110.67627"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:COLINGACL2006
+    conferences:URL "http://www.acl2006.mq.edu.au/"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:end "2006-07-21"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:place "Sydney, Australia"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2006-07-17"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:title "Conference of the International Committee on Computational Linguistics and the Association for Computational Linguistics"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "COLING-ACL2006" ;
+    wgs84_pos:lat "-33.866667"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "151.2"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:COMPSAC2006
+    conferences:URL "http://conferences.computer.org/compsac/2006/"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:inConjunctionWith conferences:CoSTEP2006 ;
+    swrc:title "IEEE Computer Society Signature Conference on Software Technology and Applications"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "COMPSAC2006" .
+
+conferences:CSSW2007
+    conferences:URL "http://aksw.org/SocialSemanticWebConference"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:conferenceChair conferences:AnnaVZhdanova, conferences:ChrisBizer, conferences:ClaudiaMueller, conferences:SrenAuer ;
+    conferences:end "2007-09-28"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:place "Leipzig, Germany"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2007-09-26"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:submissionsDue "2006-06-01"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:title "SABRE Conference on Social Semantic Web"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    swrc:year "2007" ;
+    a swrc:Conference ;
+    rdfs:label "CSSW2007" ;
+    wgs84_pos:lat "51.340264"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "12.371292"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:CarolaEschenbach
+    conferences:affiliation "Department for Informatics, University of Hamburg" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Carola Eschenbach" .
+
+conferences:CaroleGoble
+    conferences:affiliation "University of Manchester" ;
+    conferences:country "United Kingdom" ;
+    a swrc:Person ;
+    rdfs:label "Carole Goble" .
+
+conferences:ChrisBizer
+    rdfs:label "Chris Bizer" .
+
+conferences:ChrisMenzel
+    conferences:affiliation "Department of Philosophy, Texas A&M University" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Chris Menzel" .
+
+conferences:ChrisPreist
+    conferences:affiliation "HP Labs" ;
+    conferences:country "United Kingdom" ;
+    a swrc:Person ;
+    rdfs:label "Chris Preist" .
+
+conferences:ChrisWelty
+    conferences:affiliation "IBM" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Chris Welty" .
+
+conferences:ChristianeFellbaum
+    conferences:affiliation "Cognitive Science Laboratory, Princeton University, USA and Berlin Brandenburg Academy of Sciences and Humanities, Berlin" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Christiane Fellbaum" .
+
+conferences:ChristineGolbreich
+    conferences:affiliation "University of Rennes" ;
+    conferences:country "France" ;
+    a swrc:Person ;
+    rdfs:label "Christine Golbreich" .
+
+conferences:ChristophBussler
+    conferences:affiliation "Cisco Systems, Inc." ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Christoph Bussler" .
+
+conferences:ClaudiaMueller
+    rdfs:label "Claudia Müller" .
+
+conferences:ClaudioMasolo
+    conferences:affiliation "Laboratory for Applied Ontology, ISTC-CNR, Trento" ;
+    conferences:country "Italy" ;
+    a swrc:Person ;
+    rdfs:label "Claudio Masolo" .
+
+conferences:CoSTEP2006
+    conferences:URL "http://conferences.computer.org/CoSTEP/"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:end "2006-09-23"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:place "Chicago, USA"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2006-09-17"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:title "The Congress on Software Technology  and Engineering Practice"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "CoSTEP2006" ;
+    wgs84_pos:lat "41.9"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "-87.65"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:DBpedia
+    swrc:carriedOutBy conferences:AKSW ;
+    doap:description "DBpedia.org is a community effort to extract structured information from Wikipedia and to make this information available on the Web. dbpedia allows you to ask sophisticated queries against Wikipedia and to link other datasets on the Web to Wikipedia data." ;
+    doap:developer conferences:JensLehmann, conferences:SrenAuer ;
+    doap:homepage <http://dbpedia.org> ;
+    doap:maintainer conferences:SrenAuer ;
+    doap:name "DBpedia.org" ;
+    doap:programming-language "JavaScript", "PHP" ;
+    a swrc:SoftwareProject ;
+    rdfs:label "DBpedia.org" ;
+    foaf:depiction <http://aksw.org/images/wikipedia-query.png> .
+
+conferences:DEXA2006
+    conferences:URL "http://www.dexa.org/"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:abstractsDue "2006-02-28"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:acceptanceNotification "2006-05-10"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:camera-readySubmission "2006-06-10"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:end "2006-09-08"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:logo "http://www.dexa.org/themes/dexa/images/logo_2006.gif"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:place "Krakow, Poland"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2006-09-04"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:submissionsDue "2006-03-07"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:isAbout conferences:DataMining, conferences:Databases, conferences:XML ;
+    swrc:title "17th International Conference on Database and Expert Systems Applications"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:comment "The aim of DEXA 2006 is to present both research contributions in the area of data base and intelligent systems and a large spectrum of already implemented or just being developed applications. DEXA will offer the opportunity to extensively discuss requirements, problems, and solutions in the field. The workshop and conference should inspire a fruitful dialogue between developers in practice, users of database and expert systems, and scientists working in the field." ;
+    rdfs:label "DEXA 2006" ;
+    wgs84_pos:lat "50.061667"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "19.937222"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:DMIN2006
+    conferences:URL "http://www.dmin-2006.com/"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:acceptanceNotification "2006-04-09"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:camera-readySubmission "2006-04-20"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:end "2006-05-29"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:inConjunctionWith conferences:WORLDCOMP06 ;
+    conferences:place "Monte Carlo Resort, Las Vegas, Nevada, USA"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:preRegistration "2006-04-20"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:start "2006-05-26"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:submissionsDue "2006-03-06"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:isAbout conferences:DataMining, conferences:DataVisualization ;
+    swrc:title "2006 International Conference on Data Mining"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "DMIN2006" ;
+    wgs84_pos:lat "36.183333"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "-115.216667"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:DanielOlmedilla
+    conferences:affiliation "L3S Hannover" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Daniel Olmedilla" .
+
+conferences:DanielSchwabe
+    conferences:affiliation "PUC-Rio" ;
+    conferences:country "Brazil" ;
+    a swrc:Person ;
+    rdfs:label "Daniel Schwabe" .
+
+conferences:DataMining
+    a swrc:Topic ;
+    rdfs:label "DataMining"^^<http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:DataModeling
+    a swrc:Topic ;
+    rdfs:label "DataModeling"^^<http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:DataVisualization
+    a swrc:Topic ;
+    rdfs:label "DataVisualization"^^<http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:Databases
+    a swrc:Topic .
+
+conferences:DavidMark
+    conferences:affiliation "Department of Geography, State University of New York, Buffalo" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "David Mark" .
+
+conferences:DavidRandell
+    conferences:affiliation "Imperial College London" ;
+    conferences:country "United Kingdom" ;
+    a swrc:Person ;
+    rdfs:label "David Randell" .
+
+conferences:DavidToman
+    conferences:affiliation "University of Waterloo" ;
+    conferences:country "Canada" ;
+    a swrc:Person ;
+    rdfs:label "David Toman" .
+
+conferences:DeanAllemang
+    conferences:affiliation "TopQuadrant Inc." ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Dean Allemang" .
+
+conferences:DerekSleeman
+    conferences:affiliation "University of Aberdeen" ;
+    conferences:country "United Kingdom" ;
+    a swrc:Person ;
+    rdfs:label "Derek Sleeman" .
+
+conferences:DianaMaynard
+    conferences:affiliation "University Sheffield" ;
+    conferences:country "United Kingdom" ;
+    a swrc:Person ;
+    rdfs:label "Diana Maynard" .
+
+conferences:DieterFensel
+    conferences:affiliation "University of Innsbruck and DERI" ;
+    conferences:country "Austria" ;
+    a swrc:Person ;
+    rdfs:label "Dieter Fensel" .
+
+conferences:DimitrisPlexousakis
+    conferences:affiliation "University of Crete" ;
+    conferences:country "Greece" ;
+    a swrc:Person ;
+    rdfs:label "Dimitris Plexousakis" .
+
+conferences:DunjaMladenic
+    conferences:affiliation "J. Stefan Institute" ;
+    conferences:country "Slovenia" ;
+    a swrc:Person ;
+    rdfs:label "Dunja Mladenic" .
+
+conferences:E-Collaboration
+    a swrc:Topic ;
+    rdfs:label "E-Collaboration"^^<http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:E-Commerce
+    a swrc:Topic ;
+    rdfs:label "E-Commerce"^^<http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:E-Government
+    a swrc:Topic ;
+    rdfs:label "E-Government"^^<http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:E-Learning
+    a swrc:Topic .
+
+conferences:EC-TEL2006
+    conferences:URL "http://www.ectel06.org"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:acceptanceNotification "2006-06-01"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:camera-readySubmission "2006-06-30"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:place "Crete, Greece"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2006-10-01"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:submissionsDue "2006-03-30"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:title "First European Conference on Technology Enhanced Learning" ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "EC-TEL2006" ;
+    wgs84_pos:lat "35"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "24"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:EDBT2006
+    conferences:URL "http://www.edbt2006.de"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:end "2006-03-31"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:logo "http://www.edbt2006.de/Images/Logo1.jpg"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:place "Munich, Germany"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2006-03-26"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:title "10. International Conference on Extending Database Technology"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "EDBT2006" ;
+    wgs84_pos:lat "48.133333"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "11.566667"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:EISTA06
+    conferences:URL "http://www.conf-info.org/eista06/"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:acceptanceNotification "2006-04-03"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:end "2006-07-23"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:place "Orlando, Florida, USA"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2006-07-20"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:comment "4th International Conference on Education and Information Systems, Technologies and Applications" ;
+    rdfs:label "EISTA06" ;
+    wgs84_pos:lat "28.533611"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "-81.368533"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:ER2006
+    conferences:URL "http://adrg.eller.arizona.edu/ER2006/"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:abstractsDue "2006-04-03"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:acceptanceNotification "2006-06-14"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:camera-readySubmission "2006-07-12"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:end "2006-11-09"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:place "Tucson, Arizona, USA"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2006-11-06"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:submissionsDue "2006-04-10"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:isAbout conferences:DataModeling, conferences:Databases, conferences:ProcessModeling ;
+    swrc:title "25th International Conference on Conceptual Modeling"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "ER2006" ;
+    wgs84_pos:lat "32.214444"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "-110.918056"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:ESWC06
+    conferences:URL "http://www.eswc2006.org/"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:camera-readySubmission "2006-03-31"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:end "2006-06-14"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:pcMember conferences:AbrahamBernstein, conferences:AlainLeger, conferences:AldoGangemi, conferences:AleksanderPivk, conferences:AlexanderLoeser, conferences:AmitSheth, conferences:AndreasAbecker, conferences:AndreasEberhart, conferences:AndreasHotho, conferences:AnupriyaAnkolekar, conferences:AsunGomezPerez, conferences:AtanasKiryakov, conferences:AxelHahn, conferences:BoiFaltings, conferences:BorisMotik, conferences:BrianMcBride, conferences:CaroleGoble, conferences:ChrisPreist, conferences:ChristineGolbreich, conferences:ChristophBussler, conferences:DanielOlmedilla, conferences:DanielSchwabe, conferences:DeanAllemang, conferences:DerekSleeman, conferences:DianaMaynard, conferences:DieterFensel, conferences:DimitrisPlexousakis, conferences:DunjaMladenic, conferences:EeroHyvnen, conferences:ElenaPaslaruBontas, conferences:EnricoFranconi, conferences:EnricoMotta, conferences:FabienGandon, conferences:FaustoGiunchiglia, conferences:FrancoisBry, conferences:FrankvanHarmelen, conferences:GerdStumme, conferences:GritDenker, conferences:GuusSchreiber, conferences:HamishCunningham, conferences:HeinerStuckenschmidt, conferences:HermanterHorst, conferences:HideakiTakeda, conferences:HolgerWache, conferences:IanHorrocks, conferences:IsabelCruz, conferences:JaneHunter, conferences:JeenBroekstra, conferences:JeffHeflin, conferences:JeffZPan, conferences:JeremyJCarroll, conferences:JeromeEuzenat, conferences:JinghaiRao, conferences:JoergDiedrich, conferences:JohnDavies, conferences:JohnMylopoulos, conferences:JosdeBruijn, conferences:JrgenAngele, conferences:KalinaBontcheva, conferences:KatiaSycara, conferences:KavithaSrinivas, conferences:KrzysztofWecel, conferences:LeoObrst, conferences:LilianaCabral, conferences:LjiljanaStojanovic, conferences:ManolisKoubarakis, conferences:MarcoPistore, conferences:MariGeorges, conferences:MarieChristineRousset, conferences:MarkoGrobelnik, conferences:MarkoTadic, conferences:MartinDzbor, conferences:MartinHepp, conferences:MasahiroHori, conferences:MatthiasKlusch, conferences:MaurizioLenzerini, conferences:MichaelSintek, conferences:MichaelStollberg, conferences:MichaelWooldridge, conferences:MihhailMatskin, conferences:NicolaGuarino, conferences:NicolaHenze, conferences:NigelCollier, conferences:OscarCorcho, conferences:PaoloBouquet, conferences:PaoloTraverso, conferences:PascalHitzler, conferences:PaulBuitelaar, conferences:PaulodaPinheiro, conferences:RalfMoeller, conferences:RaphaelTroncy, conferences:RichardBenjamins, conferences:RiichiroMizoguchi, conferences:RobertTolksdorf, conferences:RubenLara, conferences:RudiStuder, conferences:SeanBechhofer, conferences:SergioTessaris, conferences:SiegfriedHandschuh, conferences:SofiaPinto, conferences:StefanSchlobach, conferences:SteffenStaab, conferences:SteveWillmott, conferences:TerryPayne, conferences:UbboVisser, conferences:UlrichReimer, conferences:ValentinaTamma, conferences:VangelisKarkaletsis, conferences:VibhuMittal, conferences:VipulKashyap, conferences:VojtechSvatek, conferences:VolkerHaarslev, conferences:WalterBinder, conferences:WolfgangNejdl, conferences:YingDing ;
+    conferences:place "Budva, Montenegro"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2006-06-11"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:isAbout conferences:SemanticWeb ;
+    swrc:title "3rd Annual European Semantic Web Conference"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "ESWC06" ;
+    wgs84_pos:lat "42.285278"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "18.843611"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:EduardHovy
+    conferences:affiliation "University of Southern California" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Eduard Hovy" .
+
+conferences:EeroHyvnen
+    conferences:affiliation "University of Helsinki" ;
+    conferences:country "Finland" ;
+    a swrc:Person ;
+    rdfs:label "Eero Hyvönen" .
+
+conferences:ElenaPaslaruBontas
+    conferences:affiliation "FU Berlin" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Elena Paslaru Bontas" .
+
+conferences:EnricoFranconi
+    conferences:affiliation "Free University of Bozen-Bolzano" ;
+    conferences:country "Italy" ;
+    a swrc:Person ;
+    rdfs:label "Enrico Franconi" .
+
+conferences:EnricoMotta
+    conferences:affiliation "The Open University" ;
+    conferences:country "United Kingdom" ;
+    a swrc:Person ;
+    rdfs:label "Enrico Motta" .
+
+conferences:ErnestDavis
+    conferences:affiliation "Department of Computer Science, New York University" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Ernest Davis" .
+
+conferences:FMILeipzig
+    swrc:hasParts conferences:IfILeipzig ;
+    a swrc:Department ;
+    rdfs:label "Faculty of Mathematics and Computer Science" ;
+    foaf:homepage <http://www.fmi.uni-leipzig.de/> .
+
+conferences:FOIS2006
+    conferences:URL "http://www.formalontology.org/"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:abstractsDue "2006-05-01"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:acceptanceNotification "2006-05-05"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:camera-readySubmission "2006-06-28"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:conferenceChair conferences:NicolaGuarino ;
+    conferences:end "2006-11-11"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:localChair conferences:BillAndersen ;
+    conferences:pcMember conferences:AchilleVarzi, conferences:AldoGangemi, conferences:AlessandroLenci, conferences:AntonyGalton, conferences:BarbaraPartee, conferences:BarrySmith, conferences:BillAndersen, conferences:BrandonBennett, conferences:CarolaEschenbach, conferences:ChrisMenzel, conferences:ChrisWelty, conferences:ChristianeFellbaum, conferences:ClaudioMasolo, conferences:DavidMark, conferences:DavidRandell, conferences:EduardHovy, conferences:ErnestDavis, conferences:IanPrattHartmann, conferences:IngvarJohansson, conferences:JamesPustejovsky, conferences:JerryHobbs, conferences:JohnBateman, conferences:JohnMylopoulos, conferences:JohnSowa, conferences:JoostBreuker, conferences:LaureVieu, conferences:LeoObrst, conferences:LeonardoLesmo, conferences:MartinDrr, conferences:MassimoPoesio, conferences:MatteoCristani, conferences:MichaelGruninger, conferences:MikeUschold, conferences:NathalieAussenacGilles, conferences:NicholasAsher, conferences:NicolaGuarino, conferences:PhilippeMuller, conferences:PierdanieleGiaretta, conferences:RichmondThomason, conferences:RobertRynasiewicz, conferences:RobertoCasati, conferences:SimonMilton, conferences:StefanoBorgo, conferences:TonyCohn, conferences:UdoHahn, conferences:VedaStorey, conferences:WernerCeusters, conferences:WernerKuhn ;
+    conferences:place "Baltimore, Maryland (USA)"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:programChair """Brandon Bennett (University of Leeds, UK) brandon@comp.leeds.ac.uk
+Christiane Fellbaum (Princeton University, USA and Berlin Brandenburg Academy of Sciences and Humanities, Germany) fellbaum@clarity.princeton.edu""" ;
+    conferences:programmeCommittee """*  Bill Andersen (OntologyWorks, USA)
+    * Nicholas Asher (Department of Philosophy, University of Texas at Austin, USA)
+    * Nathalie Aussenac-Gilles (Research Institute for Computer Science, CNRS, Toulouse, France)
+    * John Bateman (Department of Applied English Linguistics, University of Bremen, Germany)
+    * Brandon Bennett (School of Computing, University of Leeds, UK)
+    * Stefano Borgo (Laboratory for Applied Ontology, ISTC-CNR, Italy)
+    * Joost Breuker (Leibniz Center for Law, University of Amsterdam, The Netherlands)
+    * Roberto Casati (Jean Nicod Institute, CNRS, Paris, France)
+    * Werner Ceusters (European Centre for Ontological Research, Saarbrücken)
+    * Tony Cohn (School of Computing, University of Leeds, UK)
+    * Matteo Cristani (University of Verona, Italy)
+    * Ernest Davis (Department of Computer Science, New York University, USA)
+    * Martin Dörr (Institute of Computer Science, FORTH, Heraklion, Greece)
+    * Carola Eschenbach (Department for Informatics, University of Hamburg, Germany)
+    * Christiane Fellbaum (Cognitive Science Laboratory, Princeton University, USA and Berlin Brandenburg Academy of Sciences and Humanities, Berlin, Germany)
+    * Antony Galton (School of Engineering and Computer Science, University of Exeter, UK)
+    * Aldo Gangemi (Laboratory for Applied Ontology, ISTC-CNR, Roma, Italy)
+    * Pierdaniele Giaretta (Department of Philosophy, University of Verona, Italy)
+    * Michael Gruninger (University of Toronto, Canada)
+    * Nicola Guarino (Laboratory for Applied Ontology, ISTC-CNR, Trento, Italy)
+    * Udo Hahn (Jena University, Germany)
+    * Jerry Hobbs (University of Southern California, USA)
+    * Eduard Hovy (University of Southern California, USA)
+    * Ingvar Johansson (Institute for Formal Ontology and Medical Information Science, University of Saarbrücken, Germany)
+    * Werner Kuhn (IFGI, Muenster)
+    * Fritz Lehmann (USA)
+    * Alessandro Lenci (University of Pisa, Italy)
+    * Leonardo Lesmo (Department of Computer Science, University of Torino, Italy)
+    * David Mark (Department of Geography, State University of New York, Buffalo, USA)
+    * Claudio Masolo (Laboratory for Applied Ontology, ISTC-CNR, Trento, Italy)
+    * Chris Menzel (Department of Philosophy, Texas A&M University, USA)
+    * Simon Milton (Department of Information Systems, University of Melbourne, Australia)
+    * Philippe Muller (Research Institute for Computer Science, University of Toulouse III, France)
+    * John Mylopoulos (Department of Computer Science, University of Toronto, Canada)
+    * Leo Obrst (The MITRE Corporation, USA)
+    * Barbara Partee (University of Massachusetts, USA)
+    * Massimo Poesio (Department of Computer Science, University of Essex, UK)
+    * Ian Pratt-Hartmann (Department of Computer Science, University of Manchester, UK)
+    * James Pustejovsky (Department of Computer Science, Brandeis University, USA)
+    * David Randell (Imperial College London, UK)
+    * Robert Rynasiewicz (Johns Hopkins University, USA)
+    * Barry Smith (National Center for Ontological Research and Department of Philosophy, University at Buffalo, USA; Institute for Formal Ontology and Medical Information Science, Saarbrücken, Germany)
+    * John Sowa (Vivomind Intelligence Inc., USA)
+    * Veda Storey (Department of Computer Information Systems, Georgia State University, USA)
+    * Richmond Thomason (University of Michigan, USA)
+    * Mike Uschold (The Boeing Company, USA)
+    * Achille Varzi (Department of Philosophy, Columbia University, USA)
+    * Laure Vieu (Research Institute for Computer Science, CNRS, Toulouse, France)
+    * Chris Welty (IBM Watson Research Center, USA)""" ;
+    conferences:publicityChair "Leo Obrst (MITRE, USA) lobrst@mitre.org" ;
+    conferences:start "2006-11-09"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:submissionsDue "2006-05-05"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:isAbout conferences:KnowledgeEngineering, conferences:Ontologies, conferences:SemanticWeb ;
+    swrc:title "International Conference on Formal Ontology in Information Systems" ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:comment """Since ancient times, ontology, the analysis and categorisation of what exists, has been fundamental to philosophical enquiry. But, until recently, ontology has been seen as an abstract, purely theoretical discipline, far removed from the practical applications of science. However, with the increasing use of sophisticated computerised information systems, solving problems of an ontological nature is now key to the effective use of technologies supporting a wide range of human activities. The ship of Theseus and the tail of Tibbles the cat are no longer merely amusing puzzles. We employ databases and software applications to deal with everything from ships and ship building to anatomy and amputations. When we design a computer to take stock of a ship yard or check that all goes well at the veterinary hospital, we need to ensure that our system operates in a consistent and reliable way even when manipulating information that involves subtle issues of semantics and identity. So, whereas ontologists may once have shied away from practical problems, now the practicalities of achieving cohesion in an information-based society demand that attention must be paid to ontology.
+
+Researchers in such areas as artificial intelligence, formal and computational linguistics, biomedical informatics, conceptual modeling, knowledge engineering and information retrieval have come to realise that a solid foundation for their research calls for serious work in ontology, understood as a general theory of the types of entities and relations that make up their respective domains of inquiry. In all these areas, attention is now being focused on the content of information rather than on just the formats and languages used to represent information. The clearest example of this development is provided by the many initiatives growing up around the project of the Semantic Web. And, as the need for integrating research in these different fields arises, so does the realisation that strong principles for building well-founded ontologies might provide significant advantages over ad hoc, case-based solutions. The tools of formal ontology address precisely these needs, but a real effort is required in order to apply such philosophical tools to the domain of information systems. Reciprocally, research in the information sciences raises specific ontological questions which call for further philosophical investigations.
+
+The purpose of FOIS is to provide a forum for genuine interdisciplinary exchange in the spirit of a unified effort towards solving the problems of ontology, with an eye to both theoretical issues and concrete applications.""" ;
+    rdfs:label "FOIS-2006" ;
+    wgs84_pos:lat "39.2865"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "-76.6149"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:FabienGandon
+    conferences:affiliation "INRIA Sophia-Antipolis" ;
+    conferences:country "France" ;
+    a swrc:Person ;
+    rdfs:label "Fabien Gandon" .
+
+conferences:FaustoGiunchiglia
+    conferences:affiliation "University of Trento" ;
+    conferences:country "Italy" ;
+    a swrc:Person ;
+    rdfs:label "Fausto Giunchiglia" .
+
+conferences:FrancoisBry
+    conferences:affiliation "University of Munich" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Francois Bry" .
+
+conferences:FrankvanHarmelen
+    conferences:affiliation "Vrije Universiteit Amsterdam" ;
+    conferences:country "Netherlands" ;
+    a swrc:Person ;
+    rdfs:label "Frank van Harmelen" .
+
+conferences:FranzBaader
+    conferences:affiliation "University of Dresden" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Franz Baader" .
+
+conferences:GeorgLausen
+    conferences:affiliation "University of Freiburg" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Georg Lausen" .
+
+conferences:GerdStumme
+    conferences:affiliation "University of Kassel" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Gerd Stumme" .
+
+conferences:GiuseppeDeGiacomo
+    conferences:affiliation "University of Roma Sapienza" ;
+    conferences:country "Italy" ;
+    a swrc:Person ;
+    rdfs:label "Giuseppe De Giacomo" .
+
+conferences:GritDenker
+    conferences:affiliation "SRI" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Grit Denker" .
+
+conferences:GuidoVetere
+    conferences:affiliation "IBM" ;
+    conferences:country "Italy" ;
+    a swrc:Person ;
+    rdfs:label "Guido Vetere" .
+
+conferences:GuusSchreiber
+    conferences:affiliation "Vrije Universiteit Amsterdam" ;
+    conferences:country "Netherlands" ;
+    a swrc:Person ;
+    rdfs:label "Guus Schreiber" .
+
+conferences:HamishCunningham
+    conferences:affiliation "University Sheffield" ;
+    conferences:country "United Kingdom" ;
+    a swrc:Person ;
+    rdfs:label "Hamish Cunningham" .
+
+conferences:HarithAlani
+    rdfs:label "Harith Alani" .
+
+conferences:HeikoSchuldt
+    conferences:affiliation "University Basel" ;
+    conferences:country "Switzerland" ;
+    a swrc:Person ;
+    rdfs:label "Heiko Schuldt" .
+
+conferences:HeinerStuckenschmidt
+    conferences:affiliation "University of Mannheim" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Heiner Stuckenschmidt" .
+
+conferences:HermanterHorst
+    conferences:affiliation "Philips Research" ;
+    conferences:country "Netherlands" ;
+    a swrc:Person ;
+    rdfs:label "Herman ter Horst" .
+
+conferences:HideakiTakeda
+    conferences:affiliation "National Institute of Informatics" ;
+    conferences:country "Japan" ;
+    a swrc:Person ;
+    rdfs:label "Hideaki Takeda" .
+
+conferences:HolgerWache
+    conferences:affiliation "Vrije Universiteit Amsterdam" ;
+    conferences:country "Netherlands" ;
+    a swrc:Person ;
+    rdfs:label "Holger Wache" .
+
+conferences:ICDM06
+    conferences:URL "http://www.comp.hkbu.edu.hk/iwi06/icdm"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:acceptanceNotification "2006-09-04"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:camera-readySubmission "2006-10-04"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:end "2006-12-22"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:place "Hong Kong Convention and Exhibition Centre, Hong Kong, China"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2006-12-18"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:submissionsDue "2006-07-05"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:isAbout conferences:DataMining ;
+    swrc:title "IEEE International Conference on Data Mining" ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "ICDM06" ;
+    wgs84_pos:lat "22.285278"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "114.147778"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:ICEC06
+    conferences:URL "http://www.icec06.net/"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:acceptanceNotification "2006-04-15"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:camera-readySubmission "2006-05-31"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:end "2006-08-16"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:place "Fredericton, New Brunswick, Canada"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2006-08-14"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:submissionsDue "2006-03-06"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:isAbout conferences:E-Commerce, conferences:E-Government, conferences:MultiagentSystems, conferences:SemanticWeb ;
+    swrc:title "The Eighth International Conference on Electronic Commerce" ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "ICEC06" ;
+    wgs84_pos:lat "45.95"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "-66.666667"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:ICL2006
+    conferences:URL "http://www.icl-conference.org/"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:abstractsDue "2006-05-19"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:acceptanceNotification "2006-06-19"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:camera-readySubmission "2006-09-11"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:end "2006-09-29"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:logo "http://www.icl-conference.org/images/logo_big.gif"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:place "Carinthia Tech Institute, Villach, Austria"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2006-09-27"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:isAbout conferences:E-Learning ;
+    swrc:title "Interactive Computer Aided Learning Conference" ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "ICL2006" ;
+    wgs84_pos:lat "46.625"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "13.834167"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:ICWE2006
+    conferences:URL "http://www-conf.slac.stanford.edu/icwe06/"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:acceptanceNotification "2006-04-01"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:camera-readySubmission "2006-04-19"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:end "2006-04-14"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:logo "http://www-conf.slac.stanford.edu/icwe06/images/ICWE_logo1.gif"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:start "2006-07-11"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:isAbout conferences:E-Learning, conferences:P2P, conferences:WebApplications, conferences:WebServices ;
+    swrc:title "Sixth International Conference on Web Engineering" ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "ICWE2006" ;
+    wgs84_pos:lat "37.429167"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "-122.138056"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:ICWS2006
+    conferences:URL "http://www.icws.org/"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:inConjunctionWith conferences:CoSTEP2006 ;
+    swrc:title "IEEE International Conference on Web Services"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    a swrc:Conference ;
+    rdfs:label "ICWS2006" .
+
+conferences:IMCL06
+    conferences:URL "http://www.imcl-conference.org"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:end "2006-04-21"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:logo "http://www.imcl-conference.org/images/imcl_logo_gross.gif"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:place "Princess Sumaya University for Technology, Amman, Jordan"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2006-04-19"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:isAbout conferences:E-Learning, conferences:MobileComputing ;
+    swrc:title "First International Conference on Interactive Mobile and Computer Aided Learning" ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "IMCL06" ;
+    wgs84_pos:lat "31.95"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "35.933333"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:ISWC2006
+    conferences:URL "http://iswc2006.semanticweb.org/"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:acceptanceNotification "2006-07-26"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:camera-readySubmission "2006-08-25"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:end "2006-11-09"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:logo "http://www.informatik.uni-leipzig.de/~auer/iswc.png"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:place "Athens, Georgia, USA"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2006-11-05"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:submissionsDue "2006-05-15"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:isAbout conferences:SemanticWeb ;
+    swrc:title "Fifth International Semantic Web Conference"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:comment """The dream of the Web was to create a human communication and collaboration
+platform for sharing knowledge and enabling a universal space for
+information and services. We all are now much more connected, and in turn
+face new resulting problems: service and information overload caused by
+insufficient support for information selection, organization and
+collaboration. The Semantic Web, by providing standards for formulating and
+distributing metadata and ontologies, enables means for information
+organization and selective access. However, the Semantic Web requires new
+infrastructure on all levels - e.g., human-computer interaction, expressive
+representation and query languages, reasoning engines, data representation
+and integration, interoperability middleware, and distributed computing.
+
+To foster the exchange of ideas and collaboration, the International
+Semantic Web Conference brings together researchers in relevant disciplines
+such as artificial intelligence, databases, distributed computing, web
+engineering, information systems, and human-computer interaction.
+
+The Fifth International Semantic Web Conference (ISWC2006) follows on the
+success of previous conferences and workshops in Galway, Ireland (2005),
+Hiroshima, Japan (2004), Sanibel Island, USA (2003), Sardinia, Italy (2002),
+and Stanford, USA (2001).
+
+The organizing committee is soliciting paper submissions for the Research
+papers track and the Semantic Web In-Use papers track.""" ;
+    rdfs:label "ISWC 2006" .
+
+conferences:IanHorrocks
+    conferences:affiliation "University of Manchester" ;
+    conferences:country "United Kingdom" ;
+    a swrc:Person ;
+    rdfs:label "Ian Horrocks" .
+
+conferences:IanPrattHartmann
+    conferences:affiliation "Department of Computer Science, University of Manchester" ;
+    conferences:country "United Kingdom" ;
+    a swrc:Person ;
+    rdfs:label "Ian Pratt-Hartmann" .
+
+conferences:IfILeipzig
+    swrc:hasParts conferences:AKSW ;
+    a swrc:Institute ;
+    rdfs:label "Department of Computer Science" ;
+    foaf:homepage <http://www.informatik.uni-leipzig.de/> .
+
+conferences:IngvarJohansson
+    conferences:affiliation "Institute for Formal Ontology and Medical Information Science, University of Saarbrücken" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Ingvar Johansson" .
+
+conferences:IntelligentSystems
+    a swrc:Topic ;
+    rdfs:label "IntelligentSystems"^^<http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:IsabelCruz
+    conferences:affiliation "University Illinois at Chicago" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Isabel Cruz" .
+
+conferences:JamesPustejovsky
+    conferences:affiliation "Department of Computer Science, Brandeis University" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "James Pustejovsky" .
+
+conferences:JaneHunter
+    conferences:affiliation "University of Queensland" ;
+    conferences:country "Austria" ;
+    a swrc:Person ;
+    rdfs:label "Jane Hunter" .
+
+conferences:JeenBroekstra
+    conferences:affiliation "Technical University Eindhoven and Aduna" ;
+    conferences:country "Netherlands" ;
+    a swrc:Person ;
+    rdfs:label "Jeen Broekstra" .
+
+conferences:JeffHeflin
+    conferences:affiliation "Lehigh University" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Jeff Heflin" .
+
+conferences:JeffZPan
+    conferences:affiliation "University of Aberdeen" ;
+    conferences:country "United Kingdom" ;
+    a swrc:Person ;
+    rdfs:label "Jeff Z. Pan" .
+
+conferences:JensLehmann
+    conferences:country "Germany" ;
+    swrc:address "Johannisgasse 26, 04103 Leipzig, Germany" ;
+    swrc:affiliation conferences:UniversityOfLeipzig ;
+    swrc:email "lehmann@informatik.uni-leipzig.de" ;
+    swrc:fax "+49 341 9732329" ;
+    swrc:firstName "Jens" ;
+    swrc:lastName "Lehmann" ;
+    swrc:phone "+49 341 9732260" ;
+    a swrc:AcademicStaff, swrc:Person, swrc:PhDStudent ;
+    rdfs:label "Jens Lehmann" ;
+    foaf:depiction "http://aksw.org/images/jpegPhoto.php?name=cn&value=Jens+Lehmann" ;
+    foaf:workInfoHomepage "http://jens-lehmann.org/" .
+
+conferences:JeremyJCarroll
+    conferences:affiliation "HP Labs" ;
+    conferences:country "United Kingdom" ;
+    a swrc:Person ;
+    rdfs:label "Jeremy J. Carroll" .
+
+conferences:JeromeEuzenat
+    conferences:affiliation "INRIA Rhone-Alpes" ;
+    conferences:country "France" ;
+    a swrc:Person ;
+    rdfs:label "Jerome Euzenat" .
+
+conferences:JerryHobbs
+    conferences:affiliation "University of Southern California" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Jerry Hobbs" .
+
+conferences:JimHendler
+    conferences:affiliation "University of Maryland" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Jim Hendler" .
+
+conferences:JinghaiRao
+    conferences:affiliation "Carnegie Mellon University" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Jinghai Rao" .
+
+conferences:JoergDiedrich
+    conferences:affiliation "L3S Hannover" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Joerg Diedrich" .
+
+conferences:JohannEder
+    conferences:affiliation "University of Vienna" ;
+    conferences:country "Austria" ;
+    a swrc:Person ;
+    rdfs:label "Johann Eder" .
+
+conferences:JohnBateman
+    conferences:affiliation "Department of Applied English Linguistics, University of Bremen" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "John Bateman" .
+
+conferences:JohnDavies
+    conferences:affiliation "BT" ;
+    conferences:country "United Kingdom" ;
+    a swrc:Person ;
+    rdfs:label "John Davies" .
+
+conferences:JohnMylopoulos
+    conferences:affiliation "University of Toronto" ;
+    conferences:country "Canada" ;
+    a swrc:Person ;
+    rdfs:label "John Mylopoulos" .
+
+conferences:JohnSowa
+    conferences:affiliation "Vivomind Intelligence Inc." ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "John Sowa" .
+
+conferences:JoostBreuker
+    conferences:affiliation "Leibniz Center for Law, University of Amsterdam" ;
+    conferences:country "Netherlands" ;
+    a swrc:Person ;
+    rdfs:label "Joost Breuker" .
+
+conferences:JosdeBruijn
+    conferences:affiliation "DERI Innsbruck" ;
+    conferences:country "Austria" ;
+    a swrc:Person ;
+    rdfs:label "Jos de Bruijn" .
+
+conferences:JournalofWebSemantics
+    conferences:URL "http://authors.elsevier.com/JournalDetail.html?PubID=671322"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:interval "quarterly" ;
+    conferences:issn "1570-8268" ;
+    a swrc:Journal ;
+    rdfs:label "Journal of Web Semantics" .
+
+conferences:JrgenAngele
+    conferences:affiliation "Ontoprise" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Jürgen Angele" .
+
+conferences:JuergenAngele
+    conferences:affiliation "Ontoprise GmbH" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Juergen Angele" .
+
+conferences:KES2006
+    conferences:URL "http://kes2006.kesinternational.org"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:place "Bournemouth International Conference Centre"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2006-10-09"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:submissionsDue "2006-10-11"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:isAbout conferences:IntelligentSystems, conferences:KnowledgeEngineering ;
+    swrc:title "10th International Conference on Knowledge-Based & Intelligent Information & Engineering Systems" ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "KES2006" ;
+    wgs84_pos:lat "50.72"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "-1.88"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:KalinaBontcheva
+    conferences:affiliation "University Sheffield" ;
+    conferences:country "United Kingdom" ;
+    a swrc:Person ;
+    rdfs:label "Kalina Bontcheva" .
+
+conferences:KatiaSycara
+    conferences:affiliation "Carnegie Mellon University" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Katia Sycara" .
+
+conferences:KavithaSrinivas
+    conferences:affiliation "IBM T. J. Watson Research Center" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Kavitha Srinivas" .
+
+conferences:KnowledgeEngineering
+    a swrc:Topic ;
+    rdfs:label "KnowledgeEngineering"^^<http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:KrzysztofWecel
+    conferences:affiliation "Poznan University of Economics" ;
+    conferences:country "Poland" ;
+    a swrc:Person ;
+    rdfs:label "Krzysztof Wecel" .
+
+conferences:LarryKerschberg
+    conferences:affiliation "George Mason University" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Larry Kerschberg" .
+
+conferences:LaureVieu
+    conferences:affiliation "Research Institute for Computer Science, CNRS, Toulouse" ;
+    conferences:country "France" ;
+    a swrc:Person ;
+    rdfs:label "Laure Vieu" .
+
+conferences:LeoObrst
+    conferences:affiliation "MITRE" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Leo Obrst" .
+
+conferences:LeonardoLesmo
+    conferences:affiliation "Department of Computer Science, University of Torino" ;
+    conferences:country "Italy" ;
+    a swrc:Person ;
+    rdfs:label "Leonardo Lesmo" .
+
+conferences:LilianaCabral
+    conferences:affiliation "Open University" ;
+    conferences:country "United Kingdom" ;
+    a swrc:Person ;
+    rdfs:label "Liliana Cabral" .
+
+conferences:LjiljanaStojanovic
+    conferences:affiliation "FZI Karlsruhe" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Ljiljana Stojanovic" .
+
+conferences:ManolisKoubarakis
+    conferences:affiliation "Technical University of Crete" ;
+    conferences:country "Greece" ;
+    a swrc:Person ;
+    rdfs:label "Manolis Koubarakis" .
+
+conferences:MarcoAntonioCasanova
+    conferences:affiliation "PUC-Rio" ;
+    conferences:country "Brazil" ;
+    a swrc:Person ;
+    rdfs:label "Marco Antonio Casanova" .
+
+conferences:MarcoPistore
+    conferences:affiliation "University of Trento" ;
+    conferences:country "Italy" ;
+    a swrc:Person ;
+    rdfs:label "Marco Pistore" .
+
+conferences:MariGeorges
+    conferences:affiliation "ILOG" ;
+    conferences:country "France" ;
+    a swrc:Person ;
+    rdfs:label "Mari Georges" .
+
+conferences:MarieChristineRousset
+    conferences:affiliation "University Orsay" ;
+    conferences:country "France" ;
+    a swrc:Person ;
+    rdfs:label "Marie-Christine Rousset" .
+
+conferences:MaristellaAgosti
+    conferences:affiliation "University of Padova" ;
+    conferences:country "Italy" ;
+    a swrc:Person ;
+    rdfs:label "Maristella Agosti" .
+
+conferences:MarkoGrobelnik
+    conferences:affiliation "J. Stefan Institute" ;
+    conferences:country "Slovenia" ;
+    a swrc:Person ;
+    rdfs:label "Marko Grobelnik" .
+
+conferences:MarkoTadic
+    conferences:affiliation "University of Zagreb" ;
+    conferences:country "Croatia" ;
+    a swrc:Person ;
+    rdfs:label "Marko Tadic" .
+
+conferences:MartinDrr
+    conferences:affiliation "Institute of Computer Science, FORTH, Heraklion" ;
+    conferences:country "Greece" ;
+    a swrc:Person ;
+    rdfs:label "Martin Dörr" .
+
+conferences:MartinDzbor
+    conferences:affiliation "Open University" ;
+    conferences:country "United Kingdom" ;
+    a swrc:Person ;
+    rdfs:label "Martin Dzbor" .
+
+conferences:MartinHepp
+    conferences:affiliation "University of Innsbruck and DERI" ;
+    conferences:country "Austria" ;
+    a swrc:Person ;
+    rdfs:label "Martin Hepp" .
+
+conferences:MasahiroHori
+    conferences:affiliation "Kansai University" ;
+    conferences:country "Japan" ;
+    a swrc:Person ;
+    rdfs:label "Masahiro Hori" .
+
+conferences:MassimoPoesio
+    conferences:affiliation "Department of Computer Science, University of Essex" ;
+    conferences:country "United Kingdom" ;
+    a swrc:Person ;
+    rdfs:label "Massimo Poesio" .
+
+conferences:MatteoCristani
+    conferences:affiliation "University of Verona" ;
+    conferences:country "Italy" ;
+    a swrc:Person ;
+    rdfs:label "Matteo Cristani" .
+
+conferences:MatthiasKlusch
+    conferences:affiliation "DFKI Saarbruecken" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Matthias Klusch" .
+
+conferences:MaurizioLenzerini
+    conferences:affiliation "Universita di Roma Sapienza" ;
+    conferences:country "Italy" ;
+    a swrc:Person ;
+    rdfs:label "Maurizio Lenzerini" .
+
+conferences:MichaelGruninger
+    conferences:affiliation "University of Toronto" ;
+    conferences:country "Canada" ;
+    a swrc:Person ;
+    rdfs:label "Michael Gruninger" .
+
+conferences:MichaelMartin
+    conferences:country "Germany" ;
+    swrc:address "Johannisgasse 26, 04103 Leipzig, Germany" ;
+    swrc:affiliation conferences:UniversityOfLeipzig ;
+    swrc:email "martin@informatik.uni-leipzig.de" ;
+    swrc:fax "+49 341 9732329" ;
+    swrc:firstName "Michael" ;
+    swrc:lastName "Martin" ;
+    swrc:phone "+49 341 9732273" ;
+    a swrc:AcademicStaff, swrc:Person, swrc:PhDStudent ;
+    rdfs:label "Michael Martin" ;
+    rdfs:seeAlso <http://michael-martin.info/rdf/foaf.rdf> ;
+    foaf:depiction "http://aksw.org/images/jpegPhoto.php?name=sn&value=Martin" ;
+    foaf:workInfoHomepage "http://bis.informatik.uni-leipzig.de/MichaelMartin" .
+
+conferences:MichaelSintek
+    conferences:affiliation "DFKI Kaiserslautern" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Michael Sintek" .
+
+conferences:MichaelStollberg
+    conferences:affiliation "DERI Innsbruck" ;
+    conferences:country "Austria" ;
+    a swrc:Person ;
+    rdfs:label "Michael Stollberg" .
+
+conferences:MichaelWooldridge
+    conferences:affiliation "University of Liverpool" ;
+    conferences:country "United Kingdom" ;
+    a swrc:Person ;
+    rdfs:label "Michael Wooldridge" .
+
+conferences:MicheleMissikoff
+    conferences:affiliation "CNR" ;
+    conferences:country "Italy" ;
+    a swrc:Person ;
+    rdfs:label "Michele Missikoff" .
+
+conferences:MihhailMatskin
+    conferences:affiliation "KTH Stockholm" ;
+    conferences:country "Sweden" ;
+    a swrc:Person ;
+    rdfs:label "Mihhail Matskin" .
+
+conferences:MikeUschold
+    conferences:affiliation "The Boeing Company" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Mike Uschold" .
+
+conferences:MobileComputing
+    a swrc:Topic ;
+    rdfs:label "MobileComputing"^^<http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:MohandSaidHacid
+    conferences:affiliation "Universite Claude Bernard Lyon" ;
+    conferences:country "France" ;
+    a swrc:Person ;
+    rdfs:label "Mohand Said Hacid" .
+
+conferences:MuhammadAhtishamAslam
+    conferences:country "Germany" ;
+    swrc:address "Johannisgasse 26, 04103 Leipzig, Germany" ;
+    swrc:affiliation conferences:UniversityOfLeipzig ;
+    swrc:email "ahtisham_a@hotmail.com" ;
+    swrc:fax "+49 341 9732329" ;
+    swrc:firstName "Muhammad Ahtisham" ;
+    swrc:lastName "Aslam" ;
+    a swrc:AcademicStaff, swrc:Person, swrc:PhDStudent ;
+    rdfs:label "Muhammad Ahtisham Aslam" ;
+    foaf:depiction "http://aksw.org/images/jpegPhoto.php?name=sn&value=Aslam" .
+
+conferences:Multiagent-Systems
+    a swrc:Topic ;
+    rdfs:label "Multiagent-Systems"^^<http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:MultiagentSystems
+    a swrc:Topic ;
+    rdfs:label "MultiagentSystems"^^<http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:NETObjectDays2006
+    conferences:URL "http://www.netobjectdays.org"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:end "2006-09-21"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:place "Erfurt, Germany"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2006-09-18"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:title "Net.ObjectDays 2006"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "NET.ObjectDays2006" ;
+    wgs84_pos:lat "50.983333"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "11.033333"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:NatashaNoy
+    rdfs:label "Natasha Noy" .
+
+conferences:NathalieAussenacGilles
+    conferences:affiliation "Research Institute for Computer Science, CNRS, Toulouse" ;
+    conferences:country "France" ;
+    a swrc:Person ;
+    rdfs:label "Nathalie Aussenac-Gilles" .
+
+conferences:NicholasAsher
+    conferences:affiliation "Department of Philosophy, University of Texas at Austin" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Nicholas Asher" .
+
+conferences:NicolaGuarino
+    conferences:affiliation "CNR" ;
+    conferences:country "Italy" ;
+    a swrc:Person ;
+    rdfs:label "Nicola Guarino" .
+
+conferences:NicolaHenze
+    conferences:affiliation "University of Hannover" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Nicola Henze" .
+
+conferences:NigelCollier
+    conferences:affiliation "National Institute of Informatics" ;
+    conferences:country "Japan" ;
+    a swrc:Person ;
+    rdfs:label "Nigel Collier" .
+
+conferences:NormanHeino
+    conferences:country "Germany" ;
+    swrc:email "norman.heino@gmail.com" ;
+    swrc:firstName "Norman" ;
+    swrc:lastName "Heino" ;
+    swrc:studiesAt conferences:UniversityOfLeipzig ;
+    a swrc:Person, swrc:Student ;
+    rdfs:label "Norman Heino" ;
+    foaf:depiction "http://www.feedface.de/stuff/depiction2.jpg" .
+
+conferences:ODBASE2006
+    conferences:URL "http://www.cs.rmit.edu.au/fedconf/"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:abstractsDue "2006-05-30"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:acceptanceNotification "2006-08-05"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:camera-readySubmission "2006-08-20"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:end "2006-11-03"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:logo "http://www.cs.rmit.edu.au/fedconf/img/odbase2006cfp.gif"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:pcMember conferences:AlexBorgida, conferences:ArantzaIllarramendi, conferences:BillAndersen, conferences:ChrisWelty, conferences:ChristophBussler, conferences:DavidToman, conferences:FranzBaader, conferences:GeorgLausen, conferences:GiuseppeDeGiacomo, conferences:GuidoVetere, conferences:HeikoSchuldt, conferences:JeffHeflin, conferences:JimHendler, conferences:JohannEder, conferences:JohnMylopoulos, conferences:JuergenAngele, conferences:LarryKerschberg, conferences:MarcoAntonioCasanova, conferences:MaristellaAgosti, conferences:MicheleMissikoff, conferences:MohandSaidHacid, conferences:NicolaGuarino, conferences:PeterSchwarz, conferences:PeterSpyns, conferences:RainerEckstein, conferences:RogerBuzzKing, conferences:RossKing, conferences:SergioTessaris, conferences:SibelAdali, conferences:SilvanaCastano, conferences:SoniaBergamaschi, conferences:StefanDecker, conferences:ThomasRisse, conferences:TizianaCatarci, conferences:VipulKashyap, conferences:WolfgangNeijdl, conferences:YorkSure ;
+    conferences:place "Montpellier, France"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:programmeCommittee """* Sibel Adali (Rensselaer Polytechnic Univ., USA)
+    * Maristella Agosti (University of Padova, Italy)
+    * Bill Andersen (OntoWorks, USA)
+    * Juergen Angele (Ontoprise GmbH, Germany)
+    * Franz Baader (University of Dresden, Germany)
+    * Sonia Bergamaschi (Università di Modena e Reggio Emilia, Italy)
+    * Alex Borgida (Rutgers University, USA)
+    * Christoph Bussler (Cisco Systems, USA)
+    * Marco Antonio Casanova (PUC-Rio, Brazil)
+    * Silvana Castano (University of Milan, Italy)
+    * Tiziana Catarci (Universita' degli Studi di Roma \"La Sapienza\", Italy)
+    * Giuseppe De Giacomo (University of Roma \"La Sapienza\", Italy)
+    * Stefan Decker (DERI Galway, Ireland)
+    * Rainer Eckstein (Humboldt-Universitaet zu Berlin, Germany)
+    * Johann Eder (University of Vienna, Austria)
+    * Nicola Guarino (CNR, Trento, Italy)
+    * Mohand Said Hacid (Universite Claude Bernard Lyon, France)
+    * Jeff Heflin (Lehigh University, USA)
+    * Jim Hendler (University of Maryland, College Park)
+    * Edward Hung (Hong Kong Polytechnic University)
+    * Arantza Illarramendi (Basque Country University, Spain)
+    * Vipul Kashyap (Partners HealthCare Systems, USA)
+    * Larry Kerschberg (George Mason University, USA)
+    * Ross King (Research Studios Austria - DME, Austria)
+    * Roger (Buzz) King (University of Colorado, USA)
+    * Harumi Kuno (HP Labs)
+    * Georg Lausen (University of Freiburg, Germany)
+    * Michele Missikoff (CNR, Italy)
+    * John Mylopoulos (University of Toronto, Canada)
+    * Wolfgang Neijdl (L3C, Germany)
+    * Christine Parent (Universite de Lausanne Switzerland)
+    * Thomas Risse (Fraunhofer IPSI, Germany)
+    * Heiko Schuldt (University Basel, Switzerland)
+    * Peter Schwarz (IBM, USA)
+    * Peter Spyns (Vrije Universiteit Brussels, Belgium)
+    * York Sure (University Karlsruhe, Germany)
+    * Sergio Tessaris (Free University of Bozen-Bolzano, Italy)
+    * David Toman (University of Waterloo, Canada)
+    * Guido Vetere (IBM, Italy)
+    * Chris Welty (IBM, USA)"""^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2006-10-29"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:submissionsDue "2006-06-10"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:isAbout conferences:Databases, conferences:Ontologies ;
+    swrc:title "5th International Conference on Ontologies, DataBases, and Applications of Semantics" ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:comment """As in previous years, the 2006 conference on Ontologies, DataBases, and Applications of
+Semantics (ODBASE'06) provides a forum for exchanging the latest research results on ontologies,
+data semantics, and other areas of computing involved in developing the Semantic Web.
+
+ODBASE'06 intends to draw a highly diverse body of researchers and practitioners by being part
+of the Federated Symposium Event \"On the Move to Meaningful Internet Systems 2006\" that co-locates
+four conferences: ODBASE'06, DOA'06 (International Symposium on Distributed Objects and Applications),
+CoopIS'06 (International Conference on Cooperative Information Systems), and GADA'06 (International
+Symposium on Grid computing, high-performAnce and Distributed Applications).
+
+Of particular relevance to ODBASE'06 are papers that bridge traditional boundaries
+between disciplines such as databases, artificial intelligence, networking, computational
+linguistics, and mobile computing. ODBASE'06 also encourages the submission of research and
+practical experience papers concerning scalability issues in ontology management, information
+integration, and data mining, as well as papers that examine the information needs of various
+applications, including electronic commerce, electronic government, mobile systems,
+and bioinformatics.
+
+ODBASE'06 will consider two categories of papers: research and experience. Research papers must
+contain novel, unpublished results. Experience papers must describe existing, realistically
+large systems. Preference will be given to papers that describe software products or systems
+that are in wide experimental use.""" ;
+    rdfs:label "ODBASE 2006" ;
+    wgs84_pos:lat "43.611944"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "3.877222"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:OntoWiki
+    swrc:carriedOutBy conferences:AKSW ;
+    doap:bug-database <http://sourceforge.net/tracker/?group_id=99425&atid=624170> ;
+    doap:description "OntoWiki is a tool providing support for agile, distributed knowledge engineering scenarios. OntoWiki facilitates the visual presentation of a knowledge base as an information map, with different views on instance data. It enables intuitive authoring of semantic content, with an inline editing mode for editing RDF content, smiliar to WYSIWIG for text documents. It fosters social collaboration aspects by keeping track of changes, allowing to comment and discuss every single part of a knowledge base, enabling to rate and measure the popularity of content and honoring the activity of users." ;
+    doap:developer conferences:NormanHeino ;
+    doap:download-page <http://sourceforge.net/project/showfiles.php?group_id=99425> ;
+    doap:homepage <http://aksw.org/Projects/OntoWiki> ;
+    doap:license <http://usefulinc.com/doap/licenses/gpl> ;
+    doap:maintainer conferences:SebastianDietzold ;
+    doap:name "OntoWiki" ;
+    doap:programming-language "JavaScript", "PHP" ;
+    doap:shortdesc "A Tool for Social, Semantic Collaboration" ;
+    a swrc:SoftwareProject ;
+    rdfs:label "OntoWiki" ;
+    foaf:depiction <http://aksw.org/images/ontowiki-map-view.jpg> .
+
+conferences:Ontologies
+    a swrc:Topic .
+
+conferences:OscarCorcho
+    conferences:affiliation "University of Manchester" ;
+    conferences:country "United Kingdom" ;
+    a swrc:Person ;
+    rdfs:label "Oscar Corcho" .
+
+conferences:P2P
+    a swrc:Topic .
+
+conferences:PSI2006
+    conferences:URL "http://www.iis.nsk.su/PSI06/"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:end "2006-06-30"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:place "Novosibirsk, Akademgorodok, Russia"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2006-06-27"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:isAbout conferences:ArtificialIntelligence, conferences:Databases, conferences:SoftwareEngineering ;
+    swrc:title "Sixth International Andrei Ershov Memorial Conference" ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "PSI2006" ;
+    wgs84_pos:lat "54.988889"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "82.904167"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:PaoloBouquet
+    conferences:affiliation "University of Trento" ;
+    conferences:country "Italy" ;
+    a swrc:Person ;
+    rdfs:label "Paolo Bouquet" .
+
+conferences:PaoloTraverso
+    conferences:affiliation "Automated Reasoning Systems Division at ITC/IRST" ;
+    conferences:country "Italy" ;
+    a swrc:Person ;
+    rdfs:label "Paolo Traverso" .
+
+conferences:PascalHitzler
+    conferences:affiliation "University of Karlsruhe" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Pascal Hitzler" .
+
+conferences:PaulBuitelaar
+    conferences:affiliation "DFKI Saarbruecken" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Paul Buitelaar" .
+
+conferences:PaulodaPinheiro
+    conferences:affiliation "Stanford University" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Paulo da Pinheiro" .
+
+conferences:PeterSchwarz
+    conferences:affiliation "IBM" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Peter Schwarz" .
+
+conferences:PeterSpyns
+    conferences:affiliation "Vrije Universiteit Brussels"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:country "Belgium"@en ;
+    a swrc:Person ;
+    rdfs:label "Peter Spyns" .
+
+conferences:PhilippFrischmuth
+    conferences:country "Germany" ;
+    swrc:studiesAt conferences:UniversityOfLeipzig ;
+    a swrc:Person, swrc:Student ;
+    rdfs:label "Philipp Frischmuth" ;
+    foaf:depiction "http://s3.amazonaws.com/twitter_production/profile_images/56973628/depiction.jpg" .
+
+conferences:PhilippeMuller
+    conferences:affiliation "Research Institute for Computer Science, University of Toulouse III" ;
+    conferences:country "France" ;
+    a swrc:Person ;
+    rdfs:label "Philippe Muller" .
+
+conferences:PierdanieleGiaretta
+    conferences:affiliation "Department of Philosophy, University of Verona" ;
+    conferences:country "Italy" ;
+    a swrc:Person ;
+    rdfs:label "Pierdaniele Giaretta" .
+
+conferences:Powl
+    swrc:carriedOutBy conferences:AKSW ;
+    doap:bug-database <http://sourceforge.net/tracker/?group_id=99425&atid=624170> ;
+    doap:description "Powl is a Semantic Web application development framework featuring a comprehensive API for handling RDF, RDFS and OWL, a library of semantic widgets and a web based user interface. Powl is implemented for the most widely deployed web application environment: PHP and MySQL. Powl was downloaded over 3.000 times and has an active developer and user community." ;
+    doap:developer conferences:PhilippFrischmuth ;
+    doap:download-page <http://sourceforge.net/project/showfiles.php?group_id=99425> ;
+    doap:homepage <http://aksw.org/Projects/Powl> ;
+    doap:license <http://usefulinc.com/doap/licenses/gpl> ;
+    doap:maintainer conferences:SrenAuer ;
+    doap:name "Powl" ;
+    doap:programming-language "JavaScript", "PHP" ;
+    doap:shortdesc "Semantic Web Development Plattform" ;
+    a swrc:SoftwareProject ;
+    rdfs:label "Powl" ;
+    foaf:depiction <http://powl.sourceforge.net/images/powl-screenshot.png> .
+
+conferences:ProcessModeling
+    a swrc:Topic ;
+    rdfs:label "ProcessModeling"^^<http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:RainerEckstein
+    conferences:affiliation "Humboldt-Universitaet zu Berlin" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Rainer Eckstein" .
+
+conferences:RalfMoeller
+    conferences:affiliation "Hamburg University of Technology" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Ralf Moeller" .
+
+conferences:RaphaelTroncy
+    conferences:affiliation "CWI Amsterdam" ;
+    conferences:country "Netherlands" ;
+    a swrc:Person ;
+    rdfs:label "Raphael Troncy" .
+
+conferences:RichardBenjamins
+    conferences:affiliation "iSOCO" ;
+    conferences:country "Spain" ;
+    a swrc:Person ;
+    rdfs:label "Richard Benjamins" .
+
+conferences:RichmondThomason
+    conferences:affiliation "University of Michigan" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Richmond Thomason" .
+
+conferences:RiichiroMizoguchi
+    conferences:affiliation "Osaka University" ;
+    conferences:country "Japan" ;
+    a swrc:Person ;
+    rdfs:label "Riichiro Mizoguchi" .
+
+conferences:RobertRynasiewicz
+    conferences:affiliation "Johns Hopkins University" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Robert Rynasiewicz" .
+
+conferences:RobertTolksdorf
+    conferences:affiliation "Free University Berlin" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Robert Tolksdorf" .
+
+conferences:RobertoCasati
+    conferences:affiliation "Jean Nicod Institute, CNRS, Paris" ;
+    conferences:country "France" ;
+    a swrc:Person ;
+    rdfs:label "Roberto Casati" .
+
+conferences:RogerBuzzKing
+    conferences:affiliation "University of Colorado" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Roger (Buzz) King" .
+
+conferences:RossKing
+    conferences:affiliation "Research Studios Austria - DME" ;
+    conferences:country "Austria" ;
+    a swrc:Person ;
+    rdfs:label "Ross King" .
+
+conferences:RubenLara
+    conferences:affiliation "Tecnologia, Informacion y Finanzas" ;
+    conferences:country "Spain" ;
+    a swrc:Person ;
+    rdfs:label "Ruben Lara" .
+
+conferences:RudiStuder
+    conferences:affiliation "University of Karlsruhe" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Rudi Studer" .
+
+conferences:SCC2006
+    conferences:URL "http://conferences.computer.org/scc"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:inConjunctionWith conferences:CoSTEP2006 ;
+    swrc:title "IEEE International Conference on Services Computing"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "SCC2006" .
+
+conferences:SIGMOD2006
+    conferences:URL "http://tangra.si.umich.edu/clair/sigmod-pods06"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:end "2006-06-29"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:place "Chicago, USA"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2006-06-26"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:isAbout conferences:Databases, conferences:P2P ;
+    swrc:title "ACM SIGMOD International Conference on Management of Data"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "SIGMOD2006" ;
+    wgs84_pos:lat "41.9"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "-87.65"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:SeanBechhofer
+    conferences:affiliation "University of Manchester" ;
+    conferences:country "United Kingdom" ;
+    a swrc:Person ;
+    rdfs:label "Sean Bechhofer" .
+
+conferences:SebastianDietzold
+    conferences:country "Germany" ;
+    swrc:address "Johannisgasse 26, 04103 Leipzig, Germany" ;
+    swrc:affiliation conferences:UniversityOfLeipzig ;
+    swrc:email "dietzold@informatik.uni-leipzig.de" ;
+    swrc:fax "+49 341 9732329" ;
+    swrc:firstName "Sebastian" ;
+    swrc:lastName "Dietzold" ;
+    swrc:phone "+49 341 9732366" ;
+    a swrc:AcademicStaff, swrc:Person, swrc:PhDStudent ;
+    rdfs:label "Sebastian Dietzold" ;
+    rdfs:seeAlso <http://sebastian.dietzold.de/rdf/foaf.rdf> ;
+    foaf:depiction "http://aksw.org/images/jpegPhoto.php?name=sn&value=Dietzold" ;
+    foaf:homepage <http://sebastian.dietzold.de> ;
+    foaf:mbox_sha1sum "16ef723e22f2b7c6fc04f151cc7bd400918330b3" ;
+    foaf:workInfoHomepage "http://bis.informatik.uni-leipzig.de/SebastianDietzold" .
+
+conferences:SemTech2006
+    conferences:URL "http://www.semantic-conference.com/"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:audience "Academia"^^<http://www.w3.org/2001/XMLSchema#string>, "Business", "Investors" ;
+    conferences:end "2006-03-09"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:place "San Jose, California, USA"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2006-03-06"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:title "2006 Semantic Technology Conference" ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "SemTech 2006" ;
+    wgs84_pos:lat "37.304167"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "-121.872778"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:SemanticWeb
+    a swrc:Topic .
+
+conferences:SergioTessaris
+    conferences:affiliation "Free University Bozen" ;
+    conferences:country "Italy" ;
+    a swrc:Person ;
+    rdfs:label "Sergio Tessaris" .
+
+conferences:SibelAdali
+    conferences:affiliation "Rensselaer Polytechnic Univ." ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Sibel Adali" .
+
+conferences:SiegfriedHandschuh
+    conferences:affiliation "FZI Karlsruhe" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Siegfried Handschuh" .
+
+conferences:SilvanaCastano
+    conferences:affiliation "University of Milan" ;
+    conferences:country "Italy" ;
+    a swrc:Person ;
+    rdfs:label "Silvana Castano" .
+
+conferences:SimonMilton
+    conferences:affiliation "Department of Information Systems, University of Melbourne" ;
+    conferences:country "Australia" ;
+    a swrc:Person ;
+    rdfs:label "Simon Milton" .
+
+conferences:SofiaPinto
+    conferences:affiliation "Technical University of Lisbon" ;
+    conferences:country "Portugal" ;
+    a swrc:Person ;
+    rdfs:label "Sofia Pinto" .
+
+conferences:SoftWiki
+    swrc:carriedOutBy conferences:AKSW ;
+    doap:description "The aim of the cooperative research project SoftWiki is to support the collaboration of all stakeholders in software development processes in particular with respect to software requirements. Potentially very large and spatially distributed user groups shall be enabled to collect, semantically enrich, classify and aggregate software requirements. The solution will be founded on the Semantic Web standards for terminological knowledge representation. The implementation will base on generic means of semantic collaboration using next generation Web user interfaces (in the spirit of Social Software and the Web 2.0) thus fostering completely new means of Requirements Engineering with very large user groups." ;
+    doap:homepage <http://softwiki.de> ;
+    doap:name "OntoWiki" ;
+    doap:shortdesc "Distributed, End-user Centered Requirements Engineering for Evolutionary Software Development" ;
+    a swrc:ResearchProject ;
+    rdfs:label "SoftWiki" .
+
+conferences:SoftwareEngineering
+    a swrc:Topic ;
+    rdfs:label "SoftwareEngineering"^^<http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:SoniaBergamaschi
+    conferences:affiliation "Università di Modena e Reggio Emilia" ;
+    conferences:country "Italy" ;
+    a swrc:Person ;
+    rdfs:label "Sonia Bergamaschi" .
+
+conferences:SrenAuer
+    conferences:country "Germany" ;
+    swrc:address "Johannisgasse 26, 04103 Leipzig, Germany" ;
+    swrc:affiliation conferences:UniversityOfLeipzig ;
+    swrc:email "auer@informatik.uni-leipzig.de" ;
+    swrc:fax "+49 341 9732329" ;
+    swrc:firstName "Sören" ;
+    swrc:lastName "Auer" ;
+    swrc:phone "+49 341 9732367" ;
+    a swrc:AcademicStaff, swrc:Person ;
+    rdfs:label "Sören Auer" ;
+    foaf:depiction "http://aksw.org/images/jpegPhoto.php?name=sn&value=Auer" ;
+    foaf:workInfoHomepage "http://www.informatik.uni-leipzig.de/~auer" .
+
+conferences:StefanDecker
+    conferences:affiliation "DERI Galway" ;
+    conferences:country "Ireland" ;
+    a swrc:Person ;
+    rdfs:label "Stefan Decker" .
+
+conferences:StefanSchlobach
+    conferences:affiliation "Vrije Universiteit Amsterdam" ;
+    conferences:country "Netherlands" ;
+    a swrc:Person ;
+    rdfs:label "Stefan Schlobach" .
+
+conferences:StefanoBorgo
+    conferences:affiliation "Laboratory for Applied Ontology, ISTC-CNR" ;
+    conferences:country "Italy" ;
+    a swrc:Person ;
+    rdfs:label "Stefano Borgo" .
+
+conferences:SteffenStaab
+    conferences:affiliation "University of Koblenz" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Steffen Staab" .
+
+conferences:SteveWillmott
+    conferences:affiliation "Universidad Politecnica de Cataluna" ;
+    conferences:country "Spain" ;
+    a swrc:Person ;
+    rdfs:label "Steve Willmott" .
+
+conferences:TMRA2006
+    conferences:URL "http://www.informatik.uni-leipzig.de/~tmra/"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:end "2006-02-12"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:place "Leipzig, Germany"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2006-10-11"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:submissionsDue "2006-06-02"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:isAbout conferences:TopicMaps ;
+    swrc:title "Topic Maps Research and Applications" ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "TMRA 2006" ;
+    wgs84_pos:lat "51.333333"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "12.383333"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:TerryPayne
+    conferences:affiliation "University of Southampton" ;
+    conferences:country "United Kingdom" ;
+    a swrc:Person ;
+    rdfs:label "Terry Payne" .
+
+conferences:ThomasRiechert
+    conferences:country "Germany" ;
+    swrc:address "Johannisgasse 26, 04103 Leipzig, Germany" ;
+    swrc:affiliation conferences:UniversityOfLeipzig ;
+    swrc:email "riechert@informatik.uni-leipzig.de" ;
+    swrc:fax "+49 341 9732329" ;
+    swrc:firstName "Thomas" ;
+    swrc:lastName "Riechert" ;
+    swrc:phone "+49 341 9732323" ;
+    a swrc:AcademicStaff, swrc:Person, swrc:PhDStudent ;
+    rdfs:label "Thomas Riechert" ;
+    foaf:depiction "http://aksw.org/images/jpegPhoto.php?name=sn&value=Riechert" ;
+    foaf:workInfoHomepage "http://bis.informatik.uni-leipzig.de/ThomasRiechert" .
+
+conferences:ThomasRisse
+    conferences:affiliation "Fraunhofer IPSI" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Thomas Risse" .
+
+conferences:TizianaCatarci
+    conferences:affiliation "Universita' degli Studi di Roma \"La Sapienza\"" ;
+    conferences:country "Italy" ;
+    a swrc:Person ;
+    rdfs:label "Tiziana Catarci" .
+
+conferences:TonyCohn
+    conferences:affiliation "School of Computing, University of Leeds" ;
+    conferences:country "United Kingdom" ;
+    a swrc:Person ;
+    rdfs:label "Tony Cohn" .
+
+conferences:TopicMaps
+    a swrc:Topic .
+
+conferences:URL
+    a owl:DatatypeProperty ;
+    rdfs:label "URL" .
+
+conferences:UbboVisser
+    conferences:affiliation "University of Bremen" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Ubbo Visser" .
+
+conferences:UdoHahn
+    conferences:affiliation "Jena University" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Udo Hahn" .
+
+conferences:UlrichReimer
+    conferences:affiliation "University of Konstanz and University of Applied Sciences St. Gallen" ;
+    conferences:country "Switzerland" ;
+    a swrc:Person ;
+    rdfs:label "Ulrich Reimer" .
+
+conferences:UniversityOfLeipzig
+    swrc:hasParts conferences:FMILeipzig ;
+    a swrc:University ;
+    rdfs:label "University of Leipzig" ;
+    foaf:homepage <http://www.uni-leipzig.de/> .
+
+conferences:VLDB2006
+    conferences:URL "http://aitrc.kaist.ac.kr/~vldb06/"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:abstractsDue "2006-03-09"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:acceptanceNotification "2006-05-30"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:camera-readySubmission "2006-06-23"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:end "2006-09-15"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:place "Convention and Exhibition Center (COEX), Seoul, Korea"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2006-09-12"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:submissionsDue "2006-03-16"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:isAbout conferences:Databases ;
+    swrc:title "32nd International Conference on Very Large Data Bases" ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "VLDB2006" ;
+    wgs84_pos:lat "37.583333"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "127"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:ValentinaTamma
+    conferences:affiliation "University of Liverpool" ;
+    conferences:country "United Kingdom" ;
+    a swrc:Person ;
+    rdfs:label "Valentina Tamma" .
+
+conferences:VangelisKarkaletsis
+    conferences:affiliation "NCSR Demokritos" ;
+    conferences:country "Greece" ;
+    a swrc:Person ;
+    rdfs:label "Vangelis Karkaletsis" .
+
+conferences:VedaStorey
+    conferences:affiliation "Department of Computer Information Systems, Georgia State University" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Veda Storey" .
+
+conferences:VibhuMittal
+    conferences:affiliation "Google Research" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Vibhu Mittal" .
+
+conferences:VipulKashyap
+    conferences:affiliation "Clinical informatics R&D" ;
+    conferences:country "United States" ;
+    a swrc:Person ;
+    rdfs:label "Vipul Kashyap" .
+
+conferences:VojtechSvatek
+    conferences:affiliation "University of Economics" ;
+    conferences:country "Czech Republic" ;
+    a swrc:Person ;
+    rdfs:label "Vojtech Svatek" .
+
+conferences:VolkerHaarslev
+    conferences:affiliation "Concordia University" ;
+    conferences:country "Canada" ;
+    a swrc:Person ;
+    rdfs:label "Volker Haarslev" .
+
+conferences:WETICE2006
+    conferences:URL "http://wetice.co.umist.ac.uk/"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:end "2006-06-28"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:logo "http://wetice.co.umist.ac.uk/assets/images/wetice2006.jpg"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:place "The University of Manchester, Manchester, U.K."^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2006-06-26"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:isAbout conferences:E-Collaboration, conferences:Multiagent-Systems ;
+    swrc:title "15th International Workshops on Enabling Technologies: Infrastructures for Collaborative Enterprises" ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "WETICE 2006" ;
+    wgs84_pos:lat "53.483333"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "-2.25"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:WORLDCOMP06
+    conferences:URL "http://www.world-academy-of-science.org/worldcomp06/ws"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:end "2006-06-29"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:place "Las Vegas, USA"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2006-06-26"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:title "The 2006 World Congress in Computer Science, Computer Engineering, and Applied Computing" ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "WORLDCOMP06" ;
+    wgs84_pos:lat "36.183333"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "-115.216667"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:WWW2006
+    conferences:URL "http://www2006.org"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:end "2006-05-26"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:logo "http://www2006.org/images/template/titlelogo.gif"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:place "Edinburgh International Conference Centre"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2006-05-23"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:isAbout conferences:WorldWideWeb ;
+    swrc:title "15th International World Wide Web Conference" ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "WWW2006" ;
+    wgs84_pos:lat "55.949556"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "-3.160288"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:WWW2007
+    conferences:URL "http://www2007.org/"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:end "2007-05-12"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:logo "http://www2007.org/images/menuWWW2007logo.jpg"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:place "Banff, Canada"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2007-05-08"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:submissionsDue "2006-11-20"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:title "16th International World Wide Web Conference"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    swrc:year "2007" ;
+    a swrc:Conference ;
+    rdfs:label "WWW2007" ;
+    wgs84_pos:lat "50.729502"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "-110.67627"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:WalterBinder
+    conferences:affiliation "EPFL" ;
+    conferences:country "Switzerland" ;
+    a swrc:Person ;
+    rdfs:label "Walter Binder" .
+
+conferences:WebApplications
+    a swrc:Topic ;
+    rdfs:label "WebApplications"^^<http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:WebServices
+    a swrc:Topic ;
+    rdfs:label "WebServices"^^<http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:WernerCeusters
+    conferences:affiliation "European Centre for Ontological Research" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Werner Ceusters" .
+
+conferences:WernerKuhn
+    conferences:affiliation "IFGI" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Werner Kuhn" .
+
+conferences:WolfgangNeijdl
+    conferences:affiliation "L3C" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Wolfgang Neijdl" .
+
+conferences:WolfgangNejdl
+    conferences:affiliation "University of Hannover and L3S" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "Wolfgang Nejdl" .
+
+conferences:WorldWideWeb
+    a swrc:Topic .
+
+conferences:XML
+    a swrc:Topic ;
+    rdfs:label "XML"^^<http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:XTECH2006
+    conferences:URL "http://xtech06.usefulinc.com/"^^<http://www.w3.org/2001/XMLSchema#anyURI> ;
+    conferences:end "2006-05-19"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    conferences:place "Amsterdam, Netherlands"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    conferences:start "2006-05-16"^^<http://www.w3.org/2001/XMLSchema#date> ;
+    swrc:isAbout conferences:XML ;
+    swrc:title "XTECH 2006 \"Building Web 2.0\""^^<http://www.w3.org/2001/XMLSchema#string> ;
+    swrc:year "2006" ;
+    a swrc:Conference ;
+    rdfs:label "XTECH2006" ;
+    wgs84_pos:lat "52.370197"^^<http://www.w3.org/2001/XMLSchema#float> ;
+    wgs84_pos:long "4.890444"^^<http://www.w3.org/2001/XMLSchema#float> .
+
+conferences:YingDing
+    conferences:affiliation "University of Innsbruck" ;
+    conferences:country "Austria" ;
+    a swrc:Person ;
+    rdfs:label "Ying Ding" .
+
+conferences:YorkSure
+    conferences:affiliation "University Karlsruhe" ;
+    conferences:country "Germany" ;
+    a swrc:Person ;
+    rdfs:label "York Sure" .
+
+conferences:abstractsDue
+    a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:domain swrc:Conference ;
+    rdfs:label "abstracts due" ;
+    rdfs:range <http://www.w3.org/2001/XMLSchema#date> .
+
+conferences:acceptanceNotification
+    a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:domain swrc:Conference ;
+    rdfs:label "acceptance Notification" ;
+    rdfs:range <http://www.w3.org/2001/XMLSchema#date> .
+
+conferences:affiliation
+    a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:domain swrc:Person ;
+    rdfs:label "affiliation" ;
+    rdfs:range <http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:audience
+    a owl:DatatypeProperty ;
+    rdfs:domain swrc:Conference ;
+    rdfs:label "audience" ;
+    rdfs:range <http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:auer-s-2006-736-a
+    dc:identifier <http://www.informatik.uni-leipzig.de/~auer/publication/ontowiki.pdf> ;
+    dc:publisher conferences:ISWC2006 ;
+    swrc:creator conferences:SebastianDietzold, conferences:SrenAuer, conferences:ThomasRiechert ;
+    swrc:describesProject conferences:OntoWiki ;
+    a swrc:InProceedings ;
+    rdfs:label "OntoWiki – A Tool for Social, Semantic Collaboration" .
+
+conferences:camera-readySubmission
+    a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:domain swrc:Conference ;
+    rdfs:label "camera-ready Submission" ;
+    rdfs:range <http://www.w3.org/2001/XMLSchema#date> .
+
+conferences:conferenceChair
+    a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:domain swrc:Conference ;
+    rdfs:label "Chair" ;
+    rdfs:range <http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:conferenceFee
+    a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:domain swrc:Conference ;
+    rdfs:label "Fee" ;
+    rdfs:range <http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:conferenceFeeLate
+    a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:domain swrc:Conference ;
+    rdfs:label "Fee (late)" ;
+    rdfs:range <http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:conferenceFeeStudent
+    a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:domain swrc:Conference ;
+    rdfs:label "Fee (student)" ;
+    rdfs:range <http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:conferenceFeeStudentLate
+    a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:domain swrc:Conference ;
+    rdfs:label "Fee (student, late)" ;
+    rdfs:range <http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:country
+    a owl:DatatypeProperty ;
+    rdfs:label "Country" .
+
+conferences:end
+    a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:comment conferences:end ;
+    rdfs:domain swrc:Conference ;
+    rdfs:label "end" ;
+    rdfs:range <http://www.w3.org/2001/XMLSchema#date> .
+
+conferences:inConjunctionWith
+    a owl:ObjectProperty ;
+    rdfs:comment "inConjunctionWith" ;
+    rdfs:domain swrc:Conference ;
+    rdfs:label "inConjunctionWith"^^<http://www.w3.org/2001/XMLSchema#string> ;
+    rdfs:range swrc:Event .
+
+conferences:interval
+    a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:label "Interval" ;
+    rdfs:range <http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:issn
+    a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:label "ISSN" ;
+    rdfs:range <http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:localChair
+    a owl:DatatypeProperty, owl:FunctionalProperty, owl:ObjectProperty ;
+    rdfs:domain swrc:Conference ;
+    rdfs:label "Chair (local)" .
+
+conferences:logo
+    a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:label "Logo" ;
+    rdfs:range <http://www.w3.org/2001/XMLSchema#anyURI> .
+
+conferences:pcMember
+    a owl:DatatypeProperty, owl:ObjectProperty ;
+    rdfs:domain swrc:Conference ;
+    rdfs:label "PC Member" .
+
+conferences:place
+    a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:domain swrc:Conference ;
+    rdfs:label "Place" ;
+    rdfs:range <http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:preRegistration
+    a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:domain swrc:Conference ;
+    rdfs:label "preRegistration" ;
+    rdfs:range <http://www.w3.org/2001/XMLSchema#anyURI> .
+
+conferences:price
+    a owl:DatatypeProperty .
+
+conferences:programChair
+    a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:domain swrc:Conference ;
+    rdfs:label "Chair (Program)" ;
+    rdfs:range <http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:programmeCommittee
+    a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:domain swrc:Conference ;
+    rdfs:label "Programme Committee" ;
+    rdfs:range <http://www.w3.org/2001/XMLSchema#string> .
+
+conferences:publicityChair
+    a owl:DatatypeProperty, owl:FunctionalProperty, owl:ObjectProperty ;
+    rdfs:domain swrc:Conference ;
+    rdfs:label "Chair (Publicity)" .
+
+conferences:start
+    a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:domain swrc:Conference ;
+    rdfs:label "start" ;
+    rdfs:range <http://www.w3.org/2001/XMLSchema#date> .
+
+conferences:submissionsDue
+    a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:domain swrc:Conference ;
+    rdfs:label "Submissions due" ;
+    rdfs:range <http://www.w3.org/2001/XMLSchema#date> .
+
+swrc:Conference
+    a owl:Class ;
+    rdfs:label "Conference" ;
+    rdfs:subClassOf swrc:Event .
+
+swrc:Event
+    a owl:Class ;
+    rdfs:label "Event" .
+
+swrc:Journal
+    a owl:Class ;
+    rdfs:label "Journal" .
+
+swrc:Person
+    a owl:Class ;
+    rdfs:label "Person" .
+
+swrc:PhDStudent
+    a owl:Class ;
+    rdfs:subClassOf swrc:Student .
+
+swrc:Student
+    a owl:Class .
+
+swrc:Topic
+    a owl:Class ;
+    rdfs:label "Topic" .
+
+swrc:Workshop
+    a owl:Class ;
+    rdfs:label "Workshop" ;
+    rdfs:subClassOf swrc:Event .
+
+swrc:isAbout
+    a owl:ObjectProperty ;
+    rdfs:domain swrc:Event ;
+    rdfs:label "topics" ;
+    rdfs:range swrc:Topic .
+
+swrc:title
+    a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:domain swrc:Conference ;
+    rdfs:label "Title" .
+
+rdfs:comment
+    a owl:AnnotationProperty ;
+    rdfs:label "comment" .
+
+rdfs:label
+    a owl:AnnotationProperty ;
+    rdfs:label "label" .
+
+<http://www.w3.org/2001/XMLSchema#anyURI>
+    a rdfs:Datatype .
+
+<http://www.w3.org/2001/XMLSchema#date>
+    a rdfs:Datatype .
+
+<http://www.w3.org/2001/XMLSchema#string>
+    a rdfs:Datatype .
+
+wgs84_pos:lat
+    a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:domain swrc:Event ;
+    rdfs:label "latitude" .
+
+wgs84_pos:long
+    a owl:DatatypeProperty, owl:FunctionalProperty ;
+    rdfs:domain swrc:Event ;
+    rdfs:label "longitude" .
+
+foaf:currentProject
+    a owl:FunctionalProperty, owl:ObjectProperty ;
+    rdfs:comment "http://xmlns.com/foaf/0.1/currentProject" ;
+    rdfs:label "current Project"^^<http://www.w3.org/2001/XMLSchema#string> .
+

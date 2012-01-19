@@ -7,8 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		94AA95E7149387E600C5932B /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 94AA95E6149387E600C5932B /* main.cpp */; };
-		94AA95E9149387E600C5932B /* grdfs.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 94AA95E8149387E600C5932B /* grdfs.1 */; };
+		946CD91A1495616200E98860 /* Dictionary.cc in Sources */ = {isa = PBXBuildFile; fileRef = 946CD9121495616200E98860 /* Dictionary.cc */; };
+		946CD91B1495616200E98860 /* Reasoner.cc in Sources */ = {isa = PBXBuildFile; fileRef = 946CD9141495616200E98860 /* Reasoner.cc */; };
+		946CD91C1495616200E98860 /* Store.cc in Sources */ = {isa = PBXBuildFile; fileRef = 946CD9161495616200E98860 /* Store.cc */; };
+		946CD91D1495616200E98860 /* main.cc in Sources */ = {isa = PBXBuildFile; fileRef = 946CD9181495616200E98860 /* main.cc */; };
+		946CD922149561D600E98860 /* OpenCLReasoner.cc in Sources */ = {isa = PBXBuildFile; fileRef = 946CD920149561D600E98860 /* OpenCLReasoner.cc */; };
+		946CD925149561F400E98860 /* NativeReasoner.cc in Sources */ = {isa = PBXBuildFile; fileRef = 946CD923149561F400E98860 /* NativeReasoner.cc */; };
+		949560C7149627DE00E0E9C3 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 949560C6149627DE00E0E9C3 /* OpenCL.framework */; };
+		949560D2149635A600E0E9C3 /* libraptor2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 949560D1149635A600E0E9C3 /* libraptor2.dylib */; };
+		94C8915E14BF14D8009527AC /* grdfs_kernels.cl in Sources */ = {isa = PBXBuildFile; fileRef = 94C8915D14BF14D8009527AC /* grdfs_kernels.cl */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -18,16 +25,30 @@
 			dstPath = /usr/share/man/man1/;
 			dstSubfolderSpec = 0;
 			files = (
-				94AA95E9149387E600C5932B /* grdfs.1 in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		946CD9121495616200E98860 /* Dictionary.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Dictionary.cc; sourceTree = "<group>"; };
+		946CD9131495616200E98860 /* Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Dictionary.h; sourceTree = "<group>"; };
+		946CD9141495616200E98860 /* Reasoner.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Reasoner.cc; sourceTree = "<group>"; };
+		946CD9151495616200E98860 /* Reasoner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reasoner.h; sourceTree = "<group>"; };
+		946CD9161495616200E98860 /* Store.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Store.cc; sourceTree = "<group>"; };
+		946CD9171495616200E98860 /* Store.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Store.h; sourceTree = "<group>"; };
+		946CD9181495616200E98860 /* main.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cc; sourceTree = "<group>"; };
+		946CD9191495616200E98860 /* types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = types.h; sourceTree = "<group>"; };
+		946CD920149561D600E98860 /* OpenCLReasoner.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OpenCLReasoner.cc; sourceTree = "<group>"; };
+		946CD921149561D600E98860 /* OpenCLReasoner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenCLReasoner.h; sourceTree = "<group>"; };
+		946CD923149561F400E98860 /* NativeReasoner.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NativeReasoner.cc; sourceTree = "<group>"; };
+		946CD924149561F400E98860 /* NativeReasoner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NativeReasoner.h; sourceTree = "<group>"; };
+		949560C6149627DE00E0E9C3 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
+		949560CE14962FD700E0E9C3 /* cl.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = cl.hpp; path = include/cl.hpp; sourceTree = "<group>"; };
+		949560D014962FD700E0E9C3 /* raptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = raptor.h; sourceTree = "<group>"; };
+		949560D1149635A600E0E9C3 /* libraptor2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libraptor2.dylib; path = usr/local/lib/libraptor2.dylib; sourceTree = SDKROOT; };
 		94AA95E2149387E600C5932B /* grdfs */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = grdfs; sourceTree = BUILT_PRODUCTS_DIR; };
-		94AA95E6149387E600C5932B /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		94AA95E8149387E600C5932B /* grdfs.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = grdfs.1; sourceTree = "<group>"; };
+		94C8915D14BF14D8009527AC /* grdfs_kernels.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; path = grdfs_kernels.cl; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -35,19 +56,89 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				949560D2149635A600E0E9C3 /* libraptor2.dylib in Frameworks */,
+				949560C7149627DE00E0E9C3 /* OpenCL.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		946CD9111495616200E98860 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				94C8915B14BF14A1009527AC /* Kernels */,
+				946CD91F1495619800E98860 /* Storage */,
+				946CD91E1495618800E98860 /* Reasoner */,
+				946CD9181495616200E98860 /* main.cc */,
+				946CD9191495616200E98860 /* types.h */,
+			);
+			name = Source;
+			path = src;
+			sourceTree = "<group>";
+		};
+		946CD91E1495618800E98860 /* Reasoner */ = {
+			isa = PBXGroup;
+			children = (
+				946CD9141495616200E98860 /* Reasoner.cc */,
+				946CD9151495616200E98860 /* Reasoner.h */,
+				946CD920149561D600E98860 /* OpenCLReasoner.cc */,
+				946CD921149561D600E98860 /* OpenCLReasoner.h */,
+				946CD923149561F400E98860 /* NativeReasoner.cc */,
+				946CD924149561F400E98860 /* NativeReasoner.h */,
+			);
+			name = Reasoner;
+			sourceTree = "<group>";
+		};
+		946CD91F1495619800E98860 /* Storage */ = {
+			isa = PBXGroup;
+			children = (
+				946CD9121495616200E98860 /* Dictionary.cc */,
+				946CD9131495616200E98860 /* Dictionary.h */,
+				946CD9161495616200E98860 /* Store.cc */,
+				946CD9171495616200E98860 /* Store.h */,
+			);
+			name = Storage;
+			sourceTree = "<group>";
+		};
+		949560C814962F9500E0E9C3 /* Includes */ = {
+			isa = PBXGroup;
+			children = (
+				949560CE14962FD700E0E9C3 /* cl.hpp */,
+				949560CF14962FD700E0E9C3 /* raptor2 */,
+			);
+			name = Includes;
+			sourceTree = "<group>";
+		};
+		949560C914962F9F00E0E9C3 /* Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				949560D1149635A600E0E9C3 /* libraptor2.dylib */,
+				949560C6149627DE00E0E9C3 /* OpenCL.framework */,
+			);
+			name = Libraries;
+			sourceTree = "<group>";
+		};
+		949560CF14962FD700E0E9C3 /* raptor2 */ = {
+			isa = PBXGroup;
+			children = (
+				949560D014962FD700E0E9C3 /* raptor.h */,
+			);
+			name = raptor2;
+			path = include/raptor2;
+			sourceTree = "<group>";
+		};
 		94AA95D7149387E500C5932B = {
 			isa = PBXGroup;
 			children = (
-				94AA95E5149387E600C5932B /* grdfs */,
+				946CD9111495616200E98860 /* Source */,
+				949560C814962F9500E0E9C3 /* Includes */,
+				949560C914962F9F00E0E9C3 /* Libraries */,
 				94AA95E3149387E600C5932B /* Products */,
 			);
+			indentWidth = 2;
 			sourceTree = "<group>";
+			tabWidth = 2;
 		};
 		94AA95E3149387E600C5932B /* Products */ = {
 			isa = PBXGroup;
@@ -57,13 +148,12 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		94AA95E5149387E600C5932B /* grdfs */ = {
+		94C8915B14BF14A1009527AC /* Kernels */ = {
 			isa = PBXGroup;
 			children = (
-				94AA95E6149387E600C5932B /* main.cpp */,
-				94AA95E8149387E600C5932B /* grdfs.1 */,
+				94C8915D14BF14D8009527AC /* grdfs_kernels.cl */,
 			);
-			path = grdfs;
+			name = Kernels;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -117,7 +207,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				94AA95E7149387E600C5932B /* main.cpp in Sources */,
+				946CD91A1495616200E98860 /* Dictionary.cc in Sources */,
+				946CD91B1495616200E98860 /* Reasoner.cc in Sources */,
+				946CD91C1495616200E98860 /* Store.cc in Sources */,
+				946CD91D1495616200E98860 /* main.cc in Sources */,
+				946CD922149561D600E98860 /* OpenCLReasoner.cc in Sources */,
+				946CD925149561F400E98860 /* NativeReasoner.cc in Sources */,
+				94C8915E14BF14D8009527AC /* grdfs_kernels.cl in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -129,6 +225,9 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CONFIGURATION_BUILD_DIR = "$(PROJECT_DIR)/build";
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -144,9 +243,11 @@
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/include";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
+				SYMROOT = "$(PROJECT_DIR)/build";
 			};
 			name = Debug;
 		};
@@ -155,6 +256,9 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CONFIGURATION_BUILD_DIR = "$(PROJECT_DIR)/build";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -164,8 +268,10 @@
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/include";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				SDKROOT = macosx;
+				SYMROOT = "$(PROJECT_DIR)/build";
 			};
 			name = Release;
 		};
@@ -202,6 +308,7 @@
 				94AA95EE149387E600C5932B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
