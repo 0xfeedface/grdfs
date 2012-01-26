@@ -12,43 +12,130 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graph_utility.hpp>
 
-void NativeReasoner::computeClosure() {
+#include <unordered_set>
+#include <queue>
+#include <algorithm>
+
+typedef std::queue<term_id> TermQueue;
+
+void NativeReasoner::printSet(TermSet s) {
+  for (auto sit(std::begin(s)); sit != std::end(s); ++sit) {
+    std::cout << *sit << " ";
+  }
+  std::cout << std::endl;
+}
+
+void NativeReasoner::addTriple(triple t) {
+  Reasoner::addTriple(t);
+  
+  // store in inverse map
+  if (t.predicate == subClassOf_) {
+    scPairs_[t.subject].insert(t.object);
+    scPairsInverse_[t.object].insert(t.subject);
+  } else if (t.predicate == subPropertyOf_) {
+    spPairs_[t.subject].insert(t.object);
+    spPairsInverse_[t.object].insert(t.subject);
+  }
+}
+
+void NativeReasoner::computeClosure_Boost() {
   using namespace boost;
   
-  if (scTerms_.size()) {
-    TermVector indexedTerms;
-    std::map<term_id, TermVector::size_type> termsIndexes;
-    // copy from the set to the vector so we get indices
-    std::copy(std::begin(scTerms_), std::end(scTerms_), std::back_inserter(indexedTerms));
-    
-    // transitive closure w/ boost
-    typedef property <vertex_name_t, term_id> Name;
-    typedef property <vertex_index_t, std::size_t, Name> Index;
-    typedef adjacency_list <listS, listS, directedS, Index> graph_t;
-    typedef graph_traits <graph_t>::vertex_descriptor vertex_t;
-    std::vector<vertex_t> verts;
-    graph_t g;
-    
-    // create vertex list
-    for (std::vector<term_id>::size_type i(0); i != indexedTerms.size(); ++i) {
-      term_id val(indexedTerms[i]);
-      termsIndexes[val] = i;
-      verts.push_back(add_vertex(Index(i, Name(val)), g));
+  TermVector indexedTerms;
+  std::map<term_id, TermVector::size_type> termsIndexes;
+  // copy from the set to the vector so we get indices
+  std::copy(std::begin(scTerms_), std::end(scTerms_), std::back_inserter(indexedTerms));
+  
+  // transitive closure w/ boost
+  typedef property <vertex_name_t, term_id> Name;
+  typedef property <vertex_index_t, std::size_t, Name> Index;
+  typedef adjacency_list <listS, listS, directedS, Index> graph_t;
+  typedef graph_traits <graph_t>::vertex_descriptor vertex_t;
+  std::vector<vertex_t> verts;
+  graph_t g;
+  
+  // create vertex list
+  for (std::vector<term_id>::size_type i(0); i != indexedTerms.size(); ++i) {
+    term_id val(indexedTerms[i]);
+    termsIndexes[val] = i;
+    verts.push_back(add_vertex(Index(i, Name(val)), g));
+  }
+  
+  // create boost graph
+  for (std::vector<so_pair>::iterator it(std::begin(scTriples_)); it != std::end(scTriples_); ++it) {
+    size_t sidx = termsIndexes[it->subject];
+    size_t oidx = termsIndexes[it->object];
+    // add to boost graph
+    add_edge(verts[sidx], verts[oidx], g);
+  }
+  
+  adjacency_list <> tc;
+  transitive_closure(g, tc);
+  
+  print_graph(g);
+  std::cout << std::endl;
+  print_graph(tc);
+}
+
+void NativeReasoner::computeClosure_InverseAdjacency(const TermMap& adjacentNodes,
+                                                     const TermMap& adjacentNodesInverse) {
+  TermMap closure;
+  TermQueue nodes;
+  
+  // determine leaf nodes
+  for (auto it(std::begin(adjacentNodesInverse)); it != std::end(adjacentNodesInverse); ++it) {
+    if (adjacentNodes.find(it->first) == std::end(adjacentNodes)) {
+      nodes.push(it->first);
     }
-    
-    // create boost graph
-    for (std::vector<so_pair>::iterator it(std::begin(scTriples_)); it != std::end(scTriples_); ++it) {
-      size_t sidx = termsIndexes[it->subject];
-      size_t oidx = termsIndexes[it->object];
-      // add to boost graph
-      add_edge(verts[sidx], verts[oidx], g);
+  }
+  
+  if (!nodes.size()) {
+    // graph contains cycles
+    std::cout << "Cannot calculate transitive closure on non-DAG.\n";
+    return;
+  }
+  
+  // process nodes, starting with leafs
+  while (nodes.size()) {
+    term_id currentNode = nodes.front();
+    nodes.pop();
+
+//    std::cout << "front node: " << dict_->Find(currentNode) << " (" << currentNode << ")\n";
+
+    auto parents = adjacentNodesInverse.find(currentNode);
+    for (auto parent_it(std::begin(parents->second)); parent_it != std::end(parents->second); ++parent_it) {
+      closure[*parent_it].insert(currentNode);
+      // add the children of the current node as children of the parent node
+      for (auto children_it(std::begin(closure[currentNode])); children_it != std::end(closure[currentNode]); ++children_it) {
+        closure[*parent_it].insert(*children_it);
+      }
+      // push updated parent node to the queue, if it is not the last already and if it has children
+      auto parentsChildren(adjacentNodesInverse.find(*parent_it));
+      if ((parentsChildren != std::end(adjacentNodesInverse)) && (parentsChildren->second.size()) && (nodes.back() != *parent_it)) {
+        nodes.push(*parent_it);
+      }
     }
-    
-    adjacency_list <> tc;
-    transitive_closure(g, tc);
-    
-    print_graph(g);
+  }
+  
+  /*
+  for (TermMap::iterator it(std::begin(closure)); it != std::end(closure); ++it) {
+    std::cout << dict_->Find(it->first) << ": ";
+    for (TermSet::iterator sit(std::begin(it->second)); sit != std::end(it->second); ++sit) {
+      std::cout << dict_->Find(*sit) << " ";
+    }
     std::cout << std::endl;
-    print_graph(tc);
+  }
+  std::cout << std::endl;
+//*/
+}
+
+void NativeReasoner::computeClosure() {
+//  Reasoner::computeClosure();
+  if (scTerms_.size()) {
+    computeClosure_InverseAdjacency(scPairs_, scPairsInverse_);
+  }
+  
+  if (spTerms_.size()) {
+    computeClosure_InverseAdjacency(spPairs_, spPairsInverse_);
   }
 }
