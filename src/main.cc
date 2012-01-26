@@ -6,6 +6,11 @@
 //  Copyright (c) 2011 Norman Heino. All rights reserved.
 //
 
+#if defined(__APPLE__) || defined(__MACOSX)
+#define GRDFS_PROFILING 1
+#include <mach/mach_time.h>
+#endif
+
 #include <iostream>
 #include <cassert>
 #include <raptor2/raptor.h>
@@ -33,8 +38,8 @@ int main (int argc, const char * argv[]) {
   }
   
   Dictionary dictionary;
-  OpenCLReasoner reasoner(dictionary);
-//  NativeReasoner reasoner(dictionary);
+//  OpenCLReasoner reasoner(dictionary);
+  NativeReasoner reasoner(&dictionary);
   
   // Parse the turtle file
   raptor_world* world = raptor_new_world();
@@ -49,9 +54,16 @@ int main (int argc, const char * argv[]) {
   raptor_free_parser(turtleParser);
   raptor_free_world(world);
   
-  dictionary.PrintStatistics();
+//  dictionary.PrintStatistics();
   
+  uint64_t beforeClosure = mach_absolute_time();
   reasoner.computeClosure();
+  uint64_t afterClosure = mach_absolute_time();
+  
+  struct mach_timebase_info info;
+  mach_timebase_info(&info);
+  
+  std::cout << "\nClosure calculation took " << 1e-6 * ((afterClosure - beforeClosure) * info.numer / info.denom) << " ms" << std::endl;
   
   return EXIT_SUCCESS;
 }
