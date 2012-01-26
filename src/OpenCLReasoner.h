@@ -23,7 +23,7 @@
 
 class OpenCLReasoner : public Reasoner {
 public:
-  OpenCLReasoner(Dictionary& dict);
+  OpenCLReasoner(Dictionary* dict);
   ~OpenCLReasoner();
   void computeClosure();
 private:

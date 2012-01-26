@@ -39,12 +39,12 @@
       </MacroExpansion>
    </TestAction>
    <LaunchAction
-      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.GDB"
-      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.GDB"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
       useCustomWorkingDirectory = "YES"
       customWorkingDirectory = "$(PROJECT_DIR)"
-      buildConfiguration = "Debug"
+      buildConfiguration = "Release"
       debugDocumentVersioning = "YES"
       allowLocationSimulation = "YES">
       <BuildableProductRunnable>
@@ -58,15 +58,15 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "/Users/norman/Projekte/Experiments/opencl/grdfs/data/subClassTest.ttl"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "/Users/norman/Desktop/yago2core/y2c_schema.ttl"
+            argument = "/Users/norman/Projekte/Experiments/opencl/grdfs/data/subClassTest2.ttl"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/Users/norman/Desktop/yago2core/y2c_rdftype.ttl"
+            argument = "/Users/norman/Dissertation/Daten/yago2core/y2c_schema.ttl"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Users/norman/Dissertation/Daten/yago2core/y2c_rdftype.ttl"
             isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>
