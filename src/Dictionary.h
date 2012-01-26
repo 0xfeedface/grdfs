@@ -16,8 +16,9 @@
 #include <vector>
 
 typedef std::unordered_map<std::string, term_id> literal_map_t;
-//typedef std::unordered_map<term_id, std::string> key_map_t;
-typedef std::vector<const std::string*> key_map_t;
+typedef std::unordered_map<term_id, std::string> key_map_t;
+//typedef std::vector<const std::string*> key_map_t;
+//typedef std::vector<std::string> literals;
 
 class Dictionary {
 public:

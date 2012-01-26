@@ -31,7 +31,7 @@ term_id Dictionary::Lookup(const std::string& lit, const bool lit_hint) {
     }
     
     map_[lit] = key;
-    keys_.push_back(&map_.find(lit)->first);
+    keys_[key] = map_.find(lit)->first;
   } else {
     key = map_[lit];
   }
@@ -48,8 +48,8 @@ void Dictionary::Add(const std::string& lit, const bool lit_hint) {
 }
 
 std::string Dictionary::Find(const term_id key) const {
-  if (key + 1 <= keys_.size()) {
-    return *keys_[key + 1];
+  if (keys_.find(key) != keys_.end()) {
+    return keys_.find(key)->second;
   }
   
   return nullptr;
