@@ -1,5 +1,5 @@
 //
-//  main.cpp
+//  main.cc
 //  grdfs
 //
 //  Created by Norman Heino on 11-12-10.
@@ -19,6 +19,8 @@
 #include "Dictionary.h"
 #include "OpenCLReasoner.h"
 #include "NativeReasoner.h"
+
+//#undef GRDFS_PROFILING
 
 void printUsage();
 std::shared_ptr<std::string> raptorTermToString(raptor_term* term);
@@ -56,14 +58,16 @@ int main (int argc, const char * argv[]) {
   
 //  dictionary.PrintStatistics();
   
+#ifdef GRDFS_PROFILING
   uint64_t beforeClosure = mach_absolute_time();
+#endif
   reasoner.computeClosure();
+#ifdef GRDFS_PROFILING
   uint64_t afterClosure = mach_absolute_time();
-  
   struct mach_timebase_info info;
   mach_timebase_info(&info);
-  
-  std::cout << "\nClosure calculation took " << 1e-6 * ((afterClosure - beforeClosure) * info.numer / info.denom) << " ms" << std::endl;
+  std::cout << "Closure calculation took " << 1e-6 * ((afterClosure - beforeClosure) * info.numer / info.denom) << " ms" << std::endl;
+#endif
   
   return EXIT_SUCCESS;
 }
