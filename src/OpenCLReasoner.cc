@@ -14,7 +14,7 @@
 #include <sys/stat.h>
 #include <cassert>
 
-OpenCLReasoner::OpenCLReasoner(Dictionary* dict) : Reasoner(dict) {
+OpenCLReasoner::OpenCLReasoner(Dictionary& dict) : Reasoner(dict) {
   context_ = context();
   // query devices
   std::vector<cl::Device> devices = context_->getInfo<CL_CONTEXT_DEVICES>();

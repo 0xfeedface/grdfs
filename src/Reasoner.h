@@ -23,13 +23,13 @@ typedef std::unordered_set<term_id> TermSet;
 
 class Reasoner {
 public:
-  Reasoner(Dictionary* dict);
+  Reasoner(Dictionary& dict);
   virtual ~Reasoner() {}
   virtual void addTriple(triple);
   virtual void computeClosure() = 0;
 protected:
   term_id subClassOf_, subPropertyOf_, domain_, range_, type_;  // term identifiers for schema vocabulary
-  Dictionary* dict_;  // URI -> term identifier dictionary
+  Dictionary& dict_;  // URI -> term identifier dictionary
   
   PairVector scTriples_;      // rdfs:subClassOf
   PairVector spTriples_;      // rdfs:subPropertyOf

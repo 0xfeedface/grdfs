@@ -16,7 +16,7 @@ typedef std::unordered_map<term_id, TermSet> TermMap;
 
 class NativeReasoner : public Reasoner {
 public:
-  NativeReasoner(Dictionary* dict) : Reasoner(dict) {}
+  NativeReasoner(Dictionary& dict) : Reasoner(dict) {}
   void computeClosure();
   void addTriple(triple);
   void computeClosure_Boost();

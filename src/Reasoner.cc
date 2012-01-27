@@ -10,12 +10,12 @@
 
 #include "Reasoner.h"
 
-Reasoner::Reasoner(Dictionary* dict) : dict_(dict) {
-  subClassOf_    = dict->Lookup(kSubClassOfURI);
-  subPropertyOf_ = dict->Lookup(kSubPropertyOfURI);
-  domain_        = dict->Lookup(kDomainURI);
-  range_         = dict->Lookup(kRangeURI);
-  type_          = dict->Lookup(kTypeURI);
+Reasoner::Reasoner(Dictionary& dict) : dict_(dict) {
+  subClassOf_    = dict.Lookup(kSubClassOfURI);
+  subPropertyOf_ = dict.Lookup(kSubPropertyOfURI);
+  domain_        = dict.Lookup(kDomainURI);
+  range_         = dict.Lookup(kRangeURI);
+  type_          = dict.Lookup(kTypeURI);
 }
 
 void Reasoner::addTriple(triple t) {
@@ -49,6 +49,6 @@ void Reasoner::computeClosure() {
   std::cout << "sp triples: " << spTriples_.size() << std::endl;
   std::cout << "dom triples: " << domTriples_.size() << std::endl;
   std::cout << "range triples: " << rngTriples_.size() << std::endl;
-  std::cout << "dictionary size: " << dict_->Size() << std::endl;
+  std::cout << "dictionary size: " << dict_.Size() << std::endl;
   std::cout << std::endl;
 }

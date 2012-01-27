@@ -92,8 +92,6 @@ void NativeReasoner::computeClosure_InverseAdjacency(const TermMap& adjacentNode
     term_id currentNode = nodes.front();
     nodes.pop();
 
-//    std::cout << "front node: " << dict_->Find(currentNode) << " (" << currentNode << ")\n";
-
     auto parents = adjacentNodesInverse.find(currentNode);
     for (auto parent_it(std::begin(parents->second)); parent_it != std::end(parents->second); ++parent_it) {
       closure[*parent_it].insert(currentNode);

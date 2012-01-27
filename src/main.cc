@@ -41,7 +41,7 @@ int main (int argc, const char * argv[]) {
   
   Dictionary dictionary;
 //  OpenCLReasoner reasoner(dictionary);
-  NativeReasoner reasoner(&dictionary);
+  NativeReasoner reasoner(dictionary);
   
   // Parse the turtle file
   raptor_world* world = raptor_new_world();
