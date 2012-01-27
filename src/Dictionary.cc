@@ -10,7 +10,7 @@
 
 #include "Dictionary.h"
 
-static term_id kMSBMask = (1U << 31); // get the most significant bit
+static term_id kMSBMask = (1UL << sizeof(term_id) * 8 - 1); // get the most significant bit
 
 term_id Dictionary::NextKey() {
   return nextKey_++;
