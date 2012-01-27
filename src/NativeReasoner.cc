@@ -14,16 +14,8 @@
 
 #include <unordered_set>
 #include <queue>
-#include <algorithm>
 
 typedef std::queue<term_id> TermQueue;
-
-void NativeReasoner::printSet(TermSet s) {
-  for (auto sit(std::begin(s)); sit != std::end(s); ++sit) {
-    std::cout << *sit << " ";
-  }
-  std::cout << std::endl;
-}
 
 void NativeReasoner::addTriple(triple t) {
   Reasoner::addTriple(t);
@@ -116,17 +108,6 @@ void NativeReasoner::computeClosure_InverseAdjacency(const TermMap& adjacentNode
       }
     }
   }
-  
-  /*
-  for (TermMap::iterator it(std::begin(closure)); it != std::end(closure); ++it) {
-    std::cout << dict_->Find(it->first) << ": ";
-    for (TermSet::iterator sit(std::begin(it->second)); sit != std::end(it->second); ++sit) {
-      std::cout << dict_->Find(*sit) << " ";
-    }
-    std::cout << std::endl;
-  }
-  std::cout << std::endl;
-//*/
 }
 
 void NativeReasoner::computeClosure() {
