@@ -14,7 +14,7 @@
 #include <iostream>
 #include <cassert>
 #include <memory>
-#include <raptor.h>
+#include <raptor2.h>
 
 #include "types.h"
 #include "Dictionary.h"

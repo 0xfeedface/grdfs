@@ -31,6 +31,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		9458D17714D3F6B30051AE13 /* raptor2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = raptor2.h; path = ../../../../../../usr/local/Cellar/raptor/2.0.4/include/raptor2/raptor2.h; sourceTree = "<group>"; };
 		946CD9121495616200E98860 /* Dictionary.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Dictionary.cc; sourceTree = "<group>"; };
 		946CD9131495616200E98860 /* Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Dictionary.h; sourceTree = "<group>"; };
 		946CD9141495616200E98860 /* Reasoner.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Reasoner.cc; sourceTree = "<group>"; };
@@ -45,7 +46,6 @@
 		946CD924149561F400E98860 /* NativeReasoner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NativeReasoner.h; sourceTree = "<group>"; };
 		949560C6149627DE00E0E9C3 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
 		949560CE14962FD700E0E9C3 /* cl.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = cl.hpp; path = include/cl.hpp; sourceTree = "<group>"; };
-		949560D014962FD700E0E9C3 /* raptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = raptor.h; sourceTree = "<group>"; };
 		949560D1149635A600E0E9C3 /* libraptor2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libraptor2.dylib; path = usr/local/lib/libraptor2.dylib; sourceTree = SDKROOT; };
 		94AA95E2149387E600C5932B /* grdfs */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = grdfs; sourceTree = BUILT_PRODUCTS_DIR; };
 		94C8915D14BF14D8009527AC /* grdfs_kernels.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; path = grdfs_kernels.cl; sourceTree = "<group>"; };
@@ -105,7 +105,7 @@
 			isa = PBXGroup;
 			children = (
 				949560CE14962FD700E0E9C3 /* cl.hpp */,
-				949560CF14962FD700E0E9C3 /* raptor2 */,
+				9458D17714D3F6B30051AE13 /* raptor2.h */,
 			);
 			name = Includes;
 			sourceTree = "<group>";
@@ -117,15 +117,6 @@
 				949560C6149627DE00E0E9C3 /* OpenCL.framework */,
 			);
 			name = Libraries;
-			sourceTree = "<group>";
-		};
-		949560CF14962FD700E0E9C3 /* raptor2 */ = {
-			isa = PBXGroup;
-			children = (
-				949560D014962FD700E0E9C3 /* raptor.h */,
-			);
-			name = raptor2;
-			path = include/raptor2;
 			sourceTree = "<group>";
 		};
 		94AA95D7149387E500C5932B = {
@@ -278,14 +269,18 @@
 		94AA95ED149387E600C5932B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = /usr/local/include/raptor2;
 			};
 			name = Debug;
 		};
 		94AA95EE149387E600C5932B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = /usr/local/include/raptor2;
 			};
 			name = Release;
 		};
