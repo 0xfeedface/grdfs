@@ -13,7 +13,14 @@
 
 #define __CL_ENABLE_EXCEPTIONS
 #if defined(__APPLE__) || defined(__MACOSX)
+
+// disable some warnings during include
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#pragma clang diagnostic ignored "-Wignored-qualifiers"
 #include "cl.hpp"
+#pragma clang diagnostic pop
+
 #else
 #include <CL/cl.hpp>
 #endif
