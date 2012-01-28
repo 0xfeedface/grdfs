@@ -32,6 +32,7 @@
 
 /* Begin PBXFileReference section */
 		9458D17714D3F6B30051AE13 /* raptor2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = raptor2.h; path = ../../../../../../usr/local/Cellar/raptor/2.0.4/include/raptor2/raptor2.h; sourceTree = "<group>"; };
+		9458D17914D3F8810051AE13 /* README.mdown */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.mdown; sourceTree = "<group>"; };
 		946CD9121495616200E98860 /* Dictionary.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Dictionary.cc; sourceTree = "<group>"; };
 		946CD9131495616200E98860 /* Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Dictionary.h; sourceTree = "<group>"; };
 		946CD9141495616200E98860 /* Reasoner.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Reasoner.cc; sourceTree = "<group>"; };
@@ -64,6 +65,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9458D17814D3F8600051AE13 /* Documentation */ = {
+			isa = PBXGroup;
+			children = (
+				9458D17914D3F8810051AE13 /* README.mdown */,
+			);
+			name = Documentation;
+			sourceTree = "<group>";
+		};
 		946CD9111495616200E98860 /* Source */ = {
 			isa = PBXGroup;
 			children = (
@@ -122,6 +131,7 @@
 		94AA95D7149387E500C5932B = {
 			isa = PBXGroup;
 			children = (
+				9458D17814D3F8600051AE13 /* Documentation */,
 				946CD9111495616200E98860 /* Source */,
 				949560C814962F9500E0E9C3 /* Includes */,
 				949560C914962F9F00E0E9C3 /* Libraries */,
