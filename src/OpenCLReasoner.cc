@@ -52,11 +52,18 @@ void OpenCLReasoner::computeClosure() {
     
     cl_uint* inputClosure = new (std::nothrow) cl_uint[scClosureSize];
     assert(nullptr != inputClosure);
-    for (PairVector::iterator it(std::begin(scTriples_)); it != std::end(scTriples_); ++it) {
-      size_t sidx = termsIndexes[it->subject];
-      size_t oidx = termsIndexes[it->object];
-      // add to GPU graph
-      inputClosure[sidx * scNodeNumber + oidx] = 1;
+    // create boost graph
+    auto it(std::begin(scSuccessors_));
+    for (; it != std::end(scSuccessors_); ++it) {
+      auto sit(std::begin(it->second));
+      if (sit != std::end(it->second)) {
+        size_t sidx = termsIndexes[it->first];
+        for (; sit != std::end(it->second); ++sit) {
+          size_t oidx = termsIndexes[*sit];
+          // add to boost graph
+          inputClosure[sidx * scNodeNumber + oidx] = 1;
+        }
+      }
     }
     
     // load program
@@ -81,13 +88,13 @@ void OpenCLReasoner::computeClosure() {
     
     queue_->enqueueReadBuffer(inputOutputBuffer, CL_TRUE, 0, scClosureSize * sizeof(cl_uint), &inputClosure[0]);
     
-    scTriples_.clear();
+    scSuccessors_.clear();
     for (size_t row(0); row < scNodeNumber; ++row) {
       for (size_t col(0); col < scNodeNumber; ++col) {
         if (inputClosure[row * scNodeNumber + col] == 1) {
           term_id subj = indexedTerms[row];
           term_id obj  = indexedTerms[col];
-          scTriples_.push_back(so_pair(subj, obj));
+          scSuccessors_[subj].insert(obj);
         }
       }
     }
@@ -95,8 +102,6 @@ void OpenCLReasoner::computeClosure() {
     delete [] inputClosure;
     delete [] indexedTerms;
   }
-  
-  Reasoner::computeClosure();
 }
 
 cl::Context* OpenCLReasoner::context(cl_device_type type) {
