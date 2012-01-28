@@ -21,6 +21,8 @@ public:
   void addTriple(triple);
   void computeClosure_Boost();
   void computeClosure_InverseAdjacency(const TermMap&, const TermMap&);
+  void computeClosure_InverseTopological(TermMap&, const TermMap&);
+  void printClosure(const TermMap&, bool);
 protected:
   TermMap scPairs_;
   TermMap scPairsInverse_;
