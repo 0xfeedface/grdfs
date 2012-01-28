@@ -63,10 +63,6 @@ void NativeReasoner::computeClosure_Boost() {
   
   adjacency_list <> tc;
   transitive_closure(g, tc);
-  
-  print_graph(g);
-  std::cout << std::endl;
-  print_graph(tc);
 }
 
 void NativeReasoner::computeClosure_InverseAdjacency(const TermMap& adjacentNodes,
@@ -111,10 +107,11 @@ void NativeReasoner::computeClosure_InverseAdjacency(const TermMap& adjacentNode
 void NativeReasoner::computeClosure() {
 //  Reasoner::computeClosure();
   if (scTerms_.size()) {
-    computeClosure_InverseAdjacency(scPairs_, scPairsInverse_);
+    computeClosure_Boost();
+//    computeClosure_InverseAdjacency(scPairs_, scPairsInverse_);
   }
   
-  if (spTerms_.size()) {
-    computeClosure_InverseAdjacency(spPairs_, spPairsInverse_);
-  }
+//  if (spTerms_.size()) {
+//    computeClosure_InverseAdjacency(spPairs_, spPairsInverse_);
+//  }
 }
