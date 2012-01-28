@@ -13,7 +13,8 @@
 
 #include <iostream>
 #include <cassert>
-#include <raptor2/raptor.h>
+#include <memory>
+#include <raptor.h>
 
 #include "types.h"
 #include "Dictionary.h"
