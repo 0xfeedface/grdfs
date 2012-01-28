@@ -18,14 +18,16 @@ Reasoner::Reasoner(Dictionary& dict) : dict_(dict) {
   type_          = dict.Lookup(kTypeURI);
 }
 
-void Reasoner::addTriple(triple t) {
+void Reasoner::addTriple(triple t) {  
   if (isSchemaProperty(t.predicate)) {
     if (t.predicate == subClassOf_) {
-      scTriples_.push_back(so_pair(t.subject, t.object));
+      scSuccessors_[t.subject].insert(t.object);
+      scPredecessors_[t.object].insert(t.subject);
       scTerms_.insert(t.subject);
       scTerms_.insert(t.object);
     } else if (t.predicate == subPropertyOf_) {
-      spTriples_.push_back(so_pair(t.subject, t.object));
+      spSuccessors_[t.subject].insert(t.object);
+      spPredecessors_[t.object].insert(t.subject);
       spTerms_.insert(t.subject);
       spTerms_.insert(t.object);
     } else if (t.predicate == domain_) {
@@ -43,10 +45,10 @@ void Reasoner::addTriple(triple t) {
   }
 }
 
-void Reasoner::computeClosure() {
+void Reasoner::printStatistics() {
   std::cout << "triples: " << triples_.size() << std::endl;
-  std::cout << "sc triples: " << scTriples_.size() << ", sc terms: " << scTerms_.size() << std::endl;
-  std::cout << "sp triples: " << spTriples_.size() << std::endl;
+  std::cout << "sc terms: " << scSuccessors_.size() << std::endl;
+  std::cout << "sp terms: " << spSuccessors_.size() << std::endl;
   std::cout << "dom triples: " << domTriples_.size() << std::endl;
   std::cout << "range triples: " << rngTriples_.size() << std::endl;
   std::cout << "dictionary size: " << dict_.Size() << std::endl;

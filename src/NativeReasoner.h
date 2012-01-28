@@ -12,22 +12,14 @@
 #include "Dictionary.h"
 #include "Reasoner.h"
 
-typedef std::unordered_map<term_id, TermSet> TermMap;
-
 class NativeReasoner : public Reasoner {
 public:
   NativeReasoner(Dictionary& dict) : Reasoner(dict) {}
   void computeClosure();
-  void addTriple(triple);
   void computeClosure_Boost();
   void computeClosure_InverseAdjacency(const TermMap&, const TermMap&);
   void computeClosure_InverseTopological(TermMap&, const TermMap&);
   void printClosure(const TermMap&, bool);
-protected:
-  TermMap scPairs_;
-  TermMap scPairsInverse_;
-  TermMap spPairs_;
-  TermMap spPairsInverse_;
 };
 
 #endif

@@ -11,6 +11,7 @@
 
 #include <vector>
 #include <unordered_set>
+#include <unordered_map>
 
 #include "types.h"
 #include "Store.h"
@@ -20,6 +21,7 @@ typedef std::vector<term_id> TermVector;
 typedef std::vector<so_pair> PairVector;
 typedef std::vector<triple> TripleVector;
 typedef std::unordered_set<term_id> TermSet;
+typedef std::unordered_map<term_id, TermSet> TermMap;
 
 class Reasoner {
 public:
@@ -27,12 +29,16 @@ public:
   virtual ~Reasoner() {}
   virtual void addTriple(triple);
   virtual void computeClosure() = 0;
+  virtual void printStatistics();
 protected:
   term_id subClassOf_, subPropertyOf_, domain_, range_, type_;  // term identifiers for schema vocabulary
   Dictionary& dict_;  // URI -> term identifier dictionary
   
-  PairVector scTriples_;      // rdfs:subClassOf
-  PairVector spTriples_;      // rdfs:subPropertyOf
+  TermMap scSuccessors_;      // rdfs:subClassOf successor sets
+  TermMap scPredecessors_;    // rdfs:subClassOf predecessor sets
+  TermMap spSuccessors_;      // rdfs:subPropertyOf successor sets
+  TermMap spPredecessors_;    // rdfs:subPropertyOf predecessor sets
+
   PairVector domTriples_;     // rdfs:domain
   PairVector rngTriples_;     // rdfs:range
   TripleVector typeTriples_;  // rdf:type

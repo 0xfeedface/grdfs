@@ -12,23 +12,9 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graph_utility.hpp>
 
-#include <unordered_set>
 #include <queue>
 
 typedef std::queue<term_id> TermQueue;
-
-void NativeReasoner::addTriple(triple t) {
-  Reasoner::addTriple(t);
-  
-  // store in inverse map
-  if (t.predicate == subClassOf_) {
-    scPairs_[t.subject].insert(t.object);
-    scPairsInverse_[t.object].insert(t.subject);
-  } else if (t.predicate == subPropertyOf_) {
-    spPairs_[t.subject].insert(t.object);
-    spPairsInverse_[t.object].insert(t.subject);
-  }
-}
 
 void NativeReasoner::computeClosure_Boost() {
   using namespace boost;
@@ -54,11 +40,17 @@ void NativeReasoner::computeClosure_Boost() {
   }
   
   // create boost graph
-  for (auto it(std::begin(scTriples_)); it != std::end(scTriples_); ++it) {
-    size_t sidx = termsIndexes[it->subject];
-    size_t oidx = termsIndexes[it->object];
-    // add to boost graph
-    add_edge(verts[sidx], verts[oidx], g);
+  auto it(std::begin(scSuccessors_));
+  for (; it != std::end(scSuccessors_); ++it) {
+    auto sit(std::begin(it->second));
+    if (sit != std::end(it->second)) {
+      size_t sidx = termsIndexes[it->first];
+      for (; sit != std::end(it->second); ++sit) {
+        size_t oidx = termsIndexes[*sit];
+        // add to boost graph
+        add_edge(verts[sidx], verts[oidx], g);
+      }
+    }
   }
   
   adjacency_list <> tc;
@@ -179,7 +171,7 @@ void NativeReasoner::computeClosure() {
   if (scTerms_.size()) {
 //    computeClosure_Boost();
 //    computeClosure_InverseAdjacency(scPairs_, scPairsInverse_);
-    computeClosure_InverseTopological(scPairs_, scPairsInverse_);
+    computeClosure_InverseTopological(scSuccessors_, scPredecessors_);
   }
   
 //  if (spTerms_.size()) {
