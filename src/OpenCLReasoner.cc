@@ -69,24 +69,28 @@ void OpenCLReasoner::computeClosure() {
     // load program
     program_ = program("src/grdfs_kernels.cl");
     cl::Kernel scKernel(*program_, "transitivity");
-    cl::Buffer inputOutputBuffer(*context_, 
-                                 CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 
-                                 scClosureSize * sizeof(cl_uint), 
-                                 inputClosure);
-    
-    scKernel.setArg(0, inputOutputBuffer);
-    scKernel.setArg(1, scNodeNumber);
-    queue_->flush();
-    
-    for (unsigned i(0); i < scNodeNumber; ++i) {
-      // set the pass kernel argument
-      scKernel.setArg(2, i);
-      queue_->enqueueNDRangeKernel(scKernel, cl::NullRange, cl::NDRange(scClosureSize), cl::NDRange(scNodeNumber), NULL, NULL);
+    try {
+      cl::Buffer inputOutputBuffer(*context_, 
+                                   CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 
+                                   scClosureSize * sizeof(cl_uint), 
+                                   inputClosure);
+      
+      scKernel.setArg(0, inputOutputBuffer);
+      scKernel.setArg(1, scNodeNumber);
+      queue_->flush();
+      
+      for (unsigned i(0); i < scNodeNumber; ++i) {
+        // set the pass kernel argument
+        scKernel.setArg(2, i);
+        queue_->enqueueNDRangeKernel(scKernel, cl::NullRange, cl::NDRange(scClosureSize), cl::NDRange(scNodeNumber), NULL, NULL);
+      }
+      
+      queue_->flush();
+      
+      queue_->enqueueReadBuffer(inputOutputBuffer, CL_TRUE, 0, scClosureSize * sizeof(cl_uint), &inputClosure[0]);
+    } catch (cl::Error e) {
+      std::cout << "Error in " << e.what() << " (" << e.err() << ")" << std::endl;
     }
-    
-    queue_->flush();
-    
-    queue_->enqueueReadBuffer(inputOutputBuffer, CL_TRUE, 0, scClosureSize * sizeof(cl_uint), &inputClosure[0]);
     
     scSuccessors_.clear();
     for (size_t row(0); row < scNodeNumber; ++row) {
