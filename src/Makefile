@@ -2,8 +2,10 @@ SYS=$(shell uname)
 MV=mv
 RM=rm -f
 
-CXXFLAGS=-W -Wall -O2 -std=c++0x
-CXXSOURCES=Dictionary.cc NativeReasoner.cc OpenCLReasoner.cc Reasoner.cc Store.cc
+MAIN=main.cc
+
+CXXFLAGS=-g -Wall -O3 -std=c++0x
+CXXSOURCES=$(filter-out $(MAIN),$(wildcard *.cc))
 CXXOBJECTS=$(CXXSOURCES:.cc=.o)
 
 # compiler
@@ -27,13 +29,10 @@ CXXFLAGS+=-I$(AMDAPPSDKROOT)/include
 LDFLAGS+=-L$(AMDAPPSDKROOT)/lib -laticalcl
 endif
 
-all: move
+all: $(BUILD)/grdfs
 
-move: main
-	$(MV) $< $(BUILD)/grdfs
-
-main: $(CXXOBJECTS)
-	$(CXX) -o $@ main.cc $(CXXOBJECTS) $(CXXFLAGS) $(LDFLAGS)
+$(BUILD)/grdfs: $(CXXOBJECTS)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ main.cc $(CXXOBJECTS)
 
 .PHONY: clean
 clean:
