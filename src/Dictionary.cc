@@ -60,8 +60,8 @@ int Dictionary::Size() const {
 }
 
 void Dictionary::Print() const {
-  for (literal_map_t::const_iterator iter = map_.begin(); iter != map_.end(); iter++) {
-    std::cout << (*iter).first << " => " << (*iter).second << std::endl;
+  for (auto iter = map_.begin(); iter != map_.end(); iter++) {
+    std::cout << iter->first << " => " << iter->second << std::endl;
   }
 }
 
