@@ -31,8 +31,8 @@ endif
 
 all: $(BUILD)/grdfs
 
-$(BUILD)/grdfs: $(CXXOBJECTS)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ main.cc $(CXXOBJECTS)
+$(BUILD)/grdfs: $(CXXOBJECTS) $(MAIN)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $(MAIN) $(CXXOBJECTS)
 
 .PHONY: clean
 clean:
