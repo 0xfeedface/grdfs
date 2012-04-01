@@ -15,11 +15,6 @@
 #include <unordered_map>
 #include <vector>
 
-typedef std::unordered_map<std::string, term_id> literal_map_t;
-typedef std::unordered_map<term_id, std::string> key_map_t;
-//typedef std::vector<const std::string*> key_map_t;
-//typedef std::vector<std::string> literals;
-
 class Dictionary {
 public:
   Dictionary() : nextKey_(1) {}
@@ -33,9 +28,13 @@ public:
   void PrintStatistics() const;
   std::string Find(const term_id key) const;
 private:
+  typedef std::unordered_map<std::string, term_id> LiteralMap;
+  typedef std::unordered_map<term_id, std::string const&> KeyMap;
+
   term_id nextKey_;
-  literal_map_t map_;
-  key_map_t keys_;
+
+  LiteralMap map_;
+  KeyMap keys_;
 };
 
 #endif

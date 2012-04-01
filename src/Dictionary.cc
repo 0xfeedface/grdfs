@@ -29,11 +29,9 @@ term_id Dictionary::Lookup(const std::string& lit, const bool lit_hint) {
     if (lit_hint) {
       key |= kMSBMask;
     }
-    
+
     map_[lit] = key;
-    keys_[key] = map_.find(lit)->first;
-  } else {
-    key = map_[lit];
+    keys_.insert(std::make_pair(key, map_.find(lit)->first));
   }
   
   return key;
