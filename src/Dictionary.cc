@@ -30,10 +30,8 @@ term_id Dictionary::Lookup(const std::string& lit, const bool lit_hint) {
       key |= kMSBMask;
     }
 
-    auto res = map_.insert(std::make_pair(lit, key));
-    keys_.insert(std::make_pair(key, res.first->first));
-  } else {
-    key = map_[lit];
+    map_[lit] = key;
+    keys_.insert(std::make_pair(key, map_.find(lit)->first));
   }
   
   return key;
