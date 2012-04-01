@@ -34,6 +34,8 @@ all: $(BUILD)/grdfs
 $(BUILD)/grdfs: $(CXXOBJECTS) $(MAIN)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $(MAIN) $(CXXOBJECTS)
 
+Reasoner.o: Store.o
+
 .PHONY: clean
 clean:
 	-$(RM) *.o

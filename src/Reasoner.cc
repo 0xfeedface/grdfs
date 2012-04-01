@@ -36,17 +36,18 @@ void Reasoner::addTriple(triple t) {
       rngTriples_.push_back(so_pair(t.subject, t.object));
     }
   } else {
+    // instance triple
+    auto storeDidAdd = triples_.addTriple(t);
+
     // additionally store separate rdf:type triples
-    if (t.predicate == type_) {
+    if (t.predicate == type_ && storeDidAdd) {
       typeTriples_.push_back(t);
     }
-    // instance triple
-    triples_.push_back(t);
   }
 }
 
 void Reasoner::printStatistics() {
-  std::cout << "triples: " << triples_.size() << std::endl;
+  triples_.PrintStatistics();
   std::cout << "sc terms: " << scSuccessors_.size() << std::endl;
   std::cout << "sp terms: " << spSuccessors_.size() << std::endl;
   std::cout << "dom triples: " << domTriples_.size() << std::endl;
