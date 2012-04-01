@@ -8,6 +8,17 @@
 
 #include "Store.h"
 
-void Store::addTriple(triple t) {
-  storage_.push_back(t);
+#include <iostream>
+
+using std::cout;
+
+bool Store::addTriple(triple t) {
+  auto predicates = storage_[t.subject];
+  auto objects = predicates[t.predicate];
+  auto result = objects.insert(t.object);
+  return result.second;
+}
+
+void Store::PrintStatistics() {
+  cout << "Distinct subjects: " << storage_.size() << "\n";
 }

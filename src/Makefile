@@ -1,10 +1,10 @@
 SYS=$(shell uname)
 MV=mv
-RM=rm -f
+RM=rm -rf
 
 MAIN=main.cc
 
-CXXFLAGS=-g -Wall -O3 -std=c++0x
+CXXFLAGS=-g -Wall -O3 -std=c++11
 CXXSOURCES=$(filter-out $(MAIN),$(wildcard *.cc))
 CXXOBJECTS=$(CXXSOURCES:.cc=.o)
 
@@ -34,8 +34,10 @@ all: $(BUILD)/grdfs
 $(BUILD)/grdfs: $(CXXOBJECTS) $(MAIN)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $(MAIN) $(CXXOBJECTS)
 
+Reasoner.o: Store.o
+
 .PHONY: clean
 clean:
 	-$(RM) *.o
 	-$(RM) $(BUILD)/grdfs
-
+	-$(RM) $(BUILD)/grdfs.dSYM

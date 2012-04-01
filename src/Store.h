@@ -9,15 +9,19 @@
 #ifndef Store_h
 #define Store_h
 
-#include <vector>
-
+#include <unordered_map>
+#include <unordered_set>
 #include "types.h"
 
 class Store {
 public:
-  void addTriple(triple);
+  bool addTriple(triple);
+  void PrintStatistics();
 private:
-  std::vector<triple> storage_;
+  typedef std::unordered_set<term_id> TermSet;
+  typedef std::unordered_map<term_id, TermSet> PredicateMap;
+  typedef std::unordered_map<term_id, PredicateMap> SubjectMap;
+  SubjectMap storage_;
 };
 
 #endif

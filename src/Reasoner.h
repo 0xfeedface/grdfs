@@ -42,7 +42,7 @@ protected:
   PairVector domTriples_;     // rdfs:domain
   PairVector rngTriples_;     // rdfs:range
   TripleVector typeTriples_;  // rdf:type
-  TripleVector triples_;      // instance + rdf:type triples
+  Store triples_;             // instance + rdf:type triples
   
   TermSet scTerms_; // unique rdfs:subClassOf terms
   TermSet spTerms_; // unique rdfs:subPropertyOf terms
