@@ -1,6 +1,6 @@
 SYS=$(shell uname)
 MV=mv
-RM=rm -f
+RM=rm -rf
 
 MAIN=main.cc
 
@@ -38,4 +38,4 @@ $(BUILD)/grdfs: $(CXXOBJECTS) $(MAIN)
 clean:
 	-$(RM) *.o
 	-$(RM) $(BUILD)/grdfs
-
+	-$(RM) $(BUILD)/grdfs.dSYM
