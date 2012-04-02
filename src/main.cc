@@ -14,7 +14,8 @@
 #include <iostream>
 #include <cassert>
 #include <memory>
-#include <raptor2.h>
+#include <fstream>
+#include "cts/parser/TurtleParser.hpp"
 
 #include "types.h"
 #include "Dictionary.h"
@@ -24,8 +25,6 @@
 //#undef GRDFS_PROFILING
 
 void printUsage();
-std::shared_ptr<std::string> raptorTermToString(raptor_term* term);
-void statementHandler(void* userData, raptor_statement* statement);
 
 int main (int argc, const char * argv[]) {
   if (argc < 2) {
@@ -34,31 +33,43 @@ int main (int argc, const char * argv[]) {
   }
   
   const char* fileName = argv[1];
-  FILE* file = fopen(fileName, "rb");
-  if (!file) {
-    std::cout << "File " << fileName << " not readable." << std::endl;
+  std::ifstream file(fileName, std::ifstream::in);
+  if (file.fail()) {
+    std::cout << "Could not read file '" << fileName << "'.\n";
     return EXIT_FAILURE;
   }
   
   Dictionary dictionary;
 //  OpenCLReasoner reasoner(dictionary);
   NativeReasoner reasoner(dictionary);
-  
-  // Parse the turtle file
-  raptor_world* world = raptor_new_world();
-  raptor_parser* turtleParser = raptor_new_parser(world, "turtle");
-  
-  std::pair<Dictionary*, Reasoner*> dar(&dictionary, &reasoner);
-  raptor_parser_set_statement_handler(turtleParser, &dar, statementHandler);
-  raptor_uri* baseURI = raptor_new_uri(world, reinterpret_cast<const unsigned char*>(fileName));
-  raptor_parser_parse_file_stream(turtleParser, file, fileName, baseURI);
-  raptor_free_uri(baseURI);
-  fclose(file);
-  raptor_free_parser(turtleParser);
-  raptor_free_world(world);
-  
-//  dictionary.PrintStatistics();
-  
+
+  TurtleParser parser(file);
+  std::string subject, predicate, object, subType;
+  Type::ID type;
+  while (true) {
+    try {
+      if (!parser.parse(subject, predicate, object, type, subType)) {
+        break;
+      }
+    } catch (TurtleParser::Exception& e) {
+      std::cerr << e.message << std::endl;
+
+      // ignore rest of the line an conintue with the next one
+      while (file.get() != '\n') {
+        continue;
+      }
+    }
+
+    term_id subjectID   = dictionary.Lookup(subject);
+    term_id predicateID = dictionary.Lookup(predicate);
+    term_id objectID    = dictionary.Lookup(object, type == Type::ID::Literal);
+
+    reasoner.addTriple(triple(subjectID, predicateID, objectID));
+  }
+
+
+  dictionary.PrintStatistics();
+
 #ifdef GRDFS_PROFILING
   uint64_t beforeClosure = mach_absolute_time();
 #endif
@@ -79,37 +90,3 @@ void printUsage() {
 //  std::cout <<  "       -p: print profiling information" << std::endl;
 }
 
-std::shared_ptr<std::string> raptorTermToString(raptor_term* term) {
-  assert(term != NULL);
-  std::shared_ptr<std::string> termString;
-  switch (term->type) {
-    case RAPTOR_TERM_TYPE_URI:
-      termString.reset(new std::string(reinterpret_cast<char*>(raptor_uri_as_string(term->value.uri))));
-      break;
-    case RAPTOR_TERM_TYPE_LITERAL:
-      termString.reset(new std::string(reinterpret_cast<char*>(term->value.literal.string)));
-      break;
-    case RAPTOR_TERM_TYPE_BLANK:
-      termString.reset(new std::string(reinterpret_cast<char*>(term->value.blank.string)));
-      break;
-    case RAPTOR_TERM_TYPE_UNKNOWN:
-    default:
-      break;
-  }
-  return termString;
-}
-
-void statementHandler(void* userData, raptor_statement* statement) {
-  std::pair<Dictionary*, Reasoner*>* dar = static_cast<std::pair<Dictionary*, Reasoner*>*>(userData);
-  Dictionary* dictionary = dar->first;
-  Reasoner* reasoner = dar->second;
-  
-  term_id subject   = dictionary->Lookup(*raptorTermToString(statement->subject));
-  term_id predicate = dictionary->Lookup(*raptorTermToString(statement->predicate));
-  term_id object    = dictionary->Lookup(*raptorTermToString(statement->object), 
-                                         statement->object->type == RAPTOR_TERM_TYPE_LITERAL);
-  
-//  std::cout << *raptorTermToString(statement->predicate) << std::endl;
-  
-  reasoner->addTriple(triple(subject, predicate, object));
-}

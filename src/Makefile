@@ -17,9 +17,7 @@ CXX=g++
 endif
 
 BUILD=../build
-INCLUDE=-I/usr/include/raptor2 -I/usr/local/include/raptor2
-CXXFLAGS+=$(INCLUDE)
-LDFLAGS=-lraptor2
+INCLUDE=../include
 
 ifeq ($(SYS), Darwin)
 CXXFLAGS+=-I../include
