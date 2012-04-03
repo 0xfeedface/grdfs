@@ -569,6 +569,7 @@ void TurtleParser::parseBlank(std::string& entry)
       triples.push_back(Triple(nodes[index], "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest", nodes[index + 1], Type::URI, ""));
     }
     entry = nodes.front();
+    return;
   }
 
   default:
@@ -608,6 +609,7 @@ void TurtleParser::parseSubject(Lexer::Token token, std::string& subject)
     // Opening bracket/parenthesis
     lexer.unget(token, subject);
     parseBlank(subject);
+    return;
   default:
     parseError("invalid subject");
   }
