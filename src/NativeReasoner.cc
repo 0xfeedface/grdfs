@@ -19,8 +19,8 @@ typedef std::queue<term_id> TermQueue;
 void NativeReasoner::computeClosure_Boost() {
   using namespace boost;
   
-  TermVector indexedTerms;
-  std::map<term_id, TermVector::size_type> termsIndexes;
+  Store::TermVector indexedTerms;
+  std::map<term_id, Store::TermVector::size_type> termsIndexes;
   // copy from the set to the vector so we get indices
   std::copy(std::begin(scTerms_), std::end(scTerms_), std::back_inserter(indexedTerms));
   
@@ -57,9 +57,9 @@ void NativeReasoner::computeClosure_Boost() {
   transitive_closure(g, tc);
 }
 
-void NativeReasoner::computeClosure_InverseAdjacency(const TermMap& adjacentNodes,
-                                                     const TermMap& adjacentNodesInverse) {
-  TermMap closure;
+void NativeReasoner::computeClosure_InverseAdjacency(const Store::TermMap& adjacentNodes,
+                                                     const Store::TermMap& adjacentNodesInverse) {
+  Store::TermMap closure;
   TermQueue nodes;
   std::unordered_map<term_id, bool> pendingNodes;
   
@@ -111,7 +111,8 @@ void NativeReasoner::computeClosure_InverseAdjacency(const TermMap& adjacentNode
 //  printClosure(closure, true);
 }
 
-void NativeReasoner::computeClosure_InverseTopological(TermMap& successorMap, const TermMap& predecessorMap) {
+void NativeReasoner::computeClosure_InverseTopological(Store::TermMap& successorMap,
+                                                       const Store::TermMap& predecessorMap) {
   TermQueue nodes;
   std::unordered_map<term_id, bool> finishedNodes;
   
@@ -179,7 +180,7 @@ void NativeReasoner::computeClosure() {
 //  }
 }
 
-void NativeReasoner::printClosure(const TermMap& closure, bool translate) {
+void NativeReasoner::printClosure(const Store::TermMap& closure, bool translate) {
   auto closure_it(std::begin(closure));
   for (; closure_it != std::end(closure); ++closure_it) {
     if (translate) {
