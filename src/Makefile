@@ -7,6 +7,7 @@ MAIN=main.cc
 CXXFLAGS=-g -Wall -O3 -std=c++11
 CXXSOURCES=$(filter-out $(MAIN),$(wildcard *.cc))
 CXXOBJECTS=$(CXXSOURCES:.cc=.o)
+CXXHEADERS=$(wildcard *.h)
 
 # compiler
 ifeq ($(SYS), Darwin)
@@ -29,7 +30,7 @@ endif
 
 all: $(BUILD)/grdfs
 
-$(BUILD)/grdfs: $(CXXOBJECTS) $(MAIN)
+$(BUILD)/grdfs: $(CXXOBJECTS) $(CXXHEADERS) $(MAIN)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $(MAIN) $(CXXOBJECTS)
 
 Reasoner.o: Store.o
