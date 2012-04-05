@@ -13,6 +13,7 @@
 		946CD91D1495616200E98860 /* main.cc in Sources */ = {isa = PBXBuildFile; fileRef = 946CD9181495616200E98860 /* main.cc */; };
 		946CD922149561D600E98860 /* OpenCLReasoner.cc in Sources */ = {isa = PBXBuildFile; fileRef = 946CD920149561D600E98860 /* OpenCLReasoner.cc */; };
 		946CD925149561F400E98860 /* NativeReasoner.cc in Sources */ = {isa = PBXBuildFile; fileRef = 946CD923149561F400E98860 /* NativeReasoner.cc */; };
+		948AB10F152B5B5E00F0382D /* TurtleParser.cc in Sources */ = {isa = PBXBuildFile; fileRef = 948AB10E152B5B5E00F0382D /* TurtleParser.cc */; };
 		949560C7149627DE00E0E9C3 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 949560C6149627DE00E0E9C3 /* OpenCL.framework */; };
 		949560D2149635A600E0E9C3 /* libraptor2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 949560D1149635A600E0E9C3 /* libraptor2.dylib */; };
 		94C8915E14BF14D8009527AC /* grdfs_kernels.cl in Sources */ = {isa = PBXBuildFile; fileRef = 94C8915D14BF14D8009527AC /* grdfs_kernels.cl */; };
@@ -31,7 +32,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		9458D17714D3F6B30051AE13 /* raptor2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = raptor2.h; path = ../../../../../../usr/local/Cellar/raptor/2.0.4/include/raptor2/raptor2.h; sourceTree = "<group>"; };
 		9458D17914D3F8810051AE13 /* README.mdown */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.mdown; sourceTree = "<group>"; };
 		946CD9121495616200E98860 /* Dictionary.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Dictionary.cc; sourceTree = "<group>"; };
 		946CD9131495616200E98860 /* Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Dictionary.h; sourceTree = "<group>"; };
@@ -45,11 +45,12 @@
 		946CD921149561D600E98860 /* OpenCLReasoner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OpenCLReasoner.h; sourceTree = "<group>"; };
 		946CD923149561F400E98860 /* NativeReasoner.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NativeReasoner.cc; sourceTree = "<group>"; };
 		946CD924149561F400E98860 /* NativeReasoner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NativeReasoner.h; sourceTree = "<group>"; };
+		948AB10E152B5B5E00F0382D /* TurtleParser.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TurtleParser.cc; sourceTree = "<group>"; };
 		949560C6149627DE00E0E9C3 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
 		949560CE14962FD700E0E9C3 /* cl.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = cl.hpp; path = include/cl.hpp; sourceTree = "<group>"; };
 		949560D1149635A600E0E9C3 /* libraptor2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libraptor2.dylib; path = usr/local/lib/libraptor2.dylib; sourceTree = SDKROOT; };
 		94AA95E2149387E600C5932B /* grdfs */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = grdfs; sourceTree = BUILT_PRODUCTS_DIR; };
-		94C8915D14BF14D8009527AC /* grdfs_kernels.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; path = grdfs_kernels.cl; sourceTree = "<group>"; };
+		94C8915D14BF14D8009527AC /* grdfs_kernels.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; path = grdfs_kernels.cl; sourceTree = "<group>"; tabWidth = 4; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,6 +77,7 @@
 		946CD9111495616200E98860 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				948AB10C152B5B3C00F0382D /* Parser */,
 				94C8915B14BF14A1009527AC /* Kernels */,
 				946CD91F1495619800E98860 /* Storage */,
 				946CD91E1495618800E98860 /* Reasoner */,
@@ -110,11 +112,18 @@
 			name = Storage;
 			sourceTree = "<group>";
 		};
+		948AB10C152B5B3C00F0382D /* Parser */ = {
+			isa = PBXGroup;
+			children = (
+				948AB10E152B5B5E00F0382D /* TurtleParser.cc */,
+			);
+			name = Parser;
+			sourceTree = "<group>";
+		};
 		949560C814962F9500E0E9C3 /* Includes */ = {
 			isa = PBXGroup;
 			children = (
 				949560CE14962FD700E0E9C3 /* cl.hpp */,
-				9458D17714D3F6B30051AE13 /* raptor2.h */,
 			);
 			name = Includes;
 			sourceTree = "<group>";
@@ -215,6 +224,7 @@
 				946CD922149561D600E98860 /* OpenCLReasoner.cc in Sources */,
 				946CD925149561F400E98860 /* NativeReasoner.cc in Sources */,
 				94C8915E14BF14D8009527AC /* grdfs_kernels.cl in Sources */,
+				948AB10F152B5B5E00F0382D /* TurtleParser.cc in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -264,6 +274,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
