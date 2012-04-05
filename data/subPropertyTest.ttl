@@ -1,0 +1,16 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix : <http://example.com/SubPropertyTest/> .
+
+:p rdfs:subPropertyOf :q .
+:q rdfs:subPropertyOf :r .
+:r rdfs:subPropertyOf :s .
+
+:A :p :B .
+:C :r :D .
+:E :q :F .
+:G :r :H .
+:I :s :J .
+:K :r :L .
+:M :p :N .
+:C :p :D .

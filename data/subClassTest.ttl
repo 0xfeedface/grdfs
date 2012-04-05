@@ -6,3 +6,8 @@
 :B rdfs:subClassOf :A .
 :C rdfs:subClassOf :B .
 :D rdfs:subClassOf :B .
+
+:i a :B .
+:j a :C .
+:k a :D .
+
