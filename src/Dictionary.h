@@ -12,8 +12,8 @@
 #include "types.h"
 
 #include <string>
-#include <unordered_map>
 #include <vector>
+#include <unordered_map>
 
 class Dictionary {
 public:
@@ -29,7 +29,7 @@ public:
   std::string Find(const term_id key) const;
 private:
   typedef std::unordered_map<std::string, term_id> LiteralMap;
-  typedef std::unordered_map<term_id, std::string const&> KeyMap;
+  typedef std::unordered_map<term_id, std::string> KeyMap;
 
   term_id nextKey_;
 
