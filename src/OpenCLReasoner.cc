@@ -9,104 +9,302 @@
 #include "OpenCLReasoner.h"
 
 #include <vector>
+#include <algorithm>
 #include <map>
-#include <iostream>
+#include <sstream>
+#include <stdexcept>
 #include <sys/stat.h>
 #include <cassert>
+#include <queue>
+#include <sstream>
+
+#include <iostream>
+
+typedef std::queue<term_id> TermQueue;
+
+void PrintVector(Store::TermVector const& terms) {
+  auto iter(terms.cbegin());
+  std::cout << *iter++;
+  for (; iter != terms.end(); ++iter) {
+    std::cout << " " << *iter;
+  }
+  std::cout << "\n----------------\n";
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 
 OpenCLReasoner::OpenCLReasoner(Dictionary& dict) : Reasoner(dict) {
-  context_ = context();
+  context_ = context(CL_DEVICE_TYPE_CPU);
   // query devices
   std::vector<cl::Device> devices = context_->getInfo<CL_CONTEXT_DEVICES>();
   device_ = &devices[0];
   queue_ = commandQueue();
+  program_ = program(loadSource("src/grdfs_kernels.cl"));
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 OpenCLReasoner::~OpenCLReasoner() {
   delete context_;
   delete queue_;
-  
-  // program_ is created lazily, so at this point we don't know 
+
+  // program_ is created lazily, so at this point we don't know
   // whether it has been created or not
   if (program_ != nullptr) {
     delete program_;
   }
 }
 
-void OpenCLReasoner::computeClosure() {
-  TermVector::size_type scNodeNumber(scTerms_.size());
-  if (scNodeNumber) {
-    unsigned long long scClosureSize((unsigned long long)scNodeNumber * (unsigned long long)scNodeNumber);
-    
-    term_id* indexedTerms = new (std::nothrow) term_id[scNodeNumber];
-    assert(nullptr != indexedTerms);
-    std::map<term_id, size_t> termsIndexes;
-    // copy from the set to the vector so we get indices
-    std::copy(std::begin(scTerms_), std::end(scTerms_), indexedTerms);
-    
-    
-    for (unsigned i(0); i != scNodeNumber; ++i) {
-      term_id val(indexedTerms[i]);
-      termsIndexes[val] = i;
-    }
-    
-    cl_uint* inputClosure = new (std::nothrow) cl_uint[scClosureSize];
-    assert(nullptr != inputClosure);
-    // create boost graph
-    auto it(std::begin(scSuccessors_));
-    for (; it != std::end(scSuccessors_); ++it) {
-      auto sit(std::begin(it->second));
-      if (sit != std::end(it->second)) {
-        size_t sidx = termsIndexes[it->first];
-        for (; sit != std::end(it->second); ++sit) {
-          size_t oidx = termsIndexes[*sit];
-          // add to boost graph
-          inputClosure[sidx * scNodeNumber + oidx] = 1;
-        }
-      }
-    }
-    
-    // load program
-    program_ = program("src/grdfs_kernels.cl");
-    cl::Kernel scKernel(*program_, "transitivity");
-    try {
-      cl::Buffer inputOutputBuffer(*context_, 
-                                   CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 
-                                   scClosureSize * sizeof(cl_uint), 
-                                   inputClosure);
-      
-      scKernel.setArg(0, inputOutputBuffer);
-      scKernel.setArg(1, scNodeNumber);
-      queue_->flush();
-      
-      for (unsigned i(0); i < scNodeNumber; ++i) {
-        // set the pass kernel argument
-        scKernel.setArg(2, i);
-        queue_->enqueueNDRangeKernel(scKernel, cl::NullRange, cl::NDRange(scClosureSize), cl::NDRange(scNodeNumber), NULL, NULL);
-      }
-      
-      queue_->flush();
-      
-      queue_->enqueueReadBuffer(inputOutputBuffer, CL_TRUE, 0, scClosureSize * sizeof(cl_uint), &inputClosure[0]);
-    } catch (cl::Error e) {
-      std::cout << "Error in " << e.what() << " (" << e.err() << ")" << std::endl;
-    }
-    
-    scSuccessors_.clear();
-    for (size_t row(0); row < scNodeNumber; ++row) {
-      for (size_t col(0); col < scNodeNumber; ++col) {
-        if (inputClosure[row * scNodeNumber + col] == 1) {
-          term_id subj = indexedTerms[row];
-          term_id obj  = indexedTerms[col];
-          scSuccessors_[subj].insert(obj);
-        }
-      }
-    }
-    
-    delete [] inputClosure;
-    delete [] indexedTerms;
+////////////////////////////////////////////////////////////////////////////////
+
+// Create an OpenCL buffer from STL vector
+template <typename T>
+void OpenCLReasoner::createBuffer(cl::Buffer& buffer, cl_mem_flags flags, std::vector<T>& data) {
+  try {
+    buffer = cl::Buffer(*context_,
+                        flags,
+                        data.size() * sizeof(T),
+                        data.data());
+  } catch (cl::Error& err) {
+    std::stringstream str(err.what());
+    str << " (" << err.err() << ")";
+    throw Error(str.str());
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+void OpenCLReasoner::computeClosure() {
+  if (spTerms_.size()) {
+    // 1) compute rule 5 (subPropertyOf transitivity)
+    computeTransitiveClosure(spSuccessors_, spPredecessors_);
+
+    // 2) compute rule 7 (subPropertyOf inheritance)
+    if (triples_.size()) {
+      computeSubPropertyEntailment(triples_, triples_, spSuccessors_);
+    }
+  }
+
+  if (domTriples_.size() || rngTriples_.size()) {
+    // 3) compute rules 2, 3 (domain, range expansion)
+    // TODO:
+  }
+
+  if (scTerms_.size()) {
+    // compute rule 11 (subClassOf transitivity)
+    computeTransitiveClosure(scSuccessors_, scPredecessors_);
+
+    // compute rule 9 (subClassOf inheritance)
+    if (triples_.size()) {
+      Store::TermVector objects;
+      copyObjects(objects);
+      Store::TermVector results(objects.size(), 0);
+      Store::TermVector schemaSubjects;
+      for (auto scSubject : scSuccessors_) {
+        term_id subject(scSubject.first);
+        schemaSubjects.push_back(subject);
+      }
+      try {
+        computeJoin(results, objects, schemaSubjects);
+      } catch (cl::Error& err) {
+        std::stringstream str;
+        str << err.what() << " (" << err.err() << ")";
+        throw Error(str.str());
+      }
+
+      Store::TripleVector sourceTriples;
+      triples_.copyTriples(sourceTriples);
+      for (uint64_t i(0); i != sourceTriples.size(); ++i) {
+        term_id s(sourceTriples[i].subject);
+        term_id os(results[i]);
+        if (os) {
+          try {
+            for (auto o : scSuccessors_.at(os)) {
+              if (triples_.addTriple(triple(s, type_, o))) {
+                ++inferredTriplesCount_;
+              }
+            }
+          } catch (std::out_of_range& oor) {
+            std::stringstream str(oor.what());
+            str << " (" << os << " not found).";
+            throw Error(str.str());
+          }
+        }
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void OpenCLReasoner::computeJoin(Store::TermVector& target,
+                                 Store::TermVector& source,
+                                 Store::TermVector& match) {
+  cl::Kernel inheritanceKernel(*program_, "phase1");
+  std::size_t globalSize = source.size();
+
+  /* input elements to match */
+  cl::Buffer inputBuffer;
+  createBuffer(inputBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, source);
+  inheritanceKernel.setArg(0, inputBuffer);
+
+  /* output with matching elements or 0 otherwise */
+  cl::Buffer outputBuffer;
+  createBuffer(outputBuffer, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, target);
+  inheritanceKernel.setArg(1, outputBuffer);
+
+  /* schema elements to be matched against */
+  std::sort(std::begin(match), std::end(match));
+  cl::Buffer schemaBuffer;
+  createBuffer(schemaBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, match);
+  inheritanceKernel.setArg(2, schemaBuffer);
+  inheritanceKernel.setArg(3, match.size());
+
+  /* enqueue */
+  queue_->enqueueNDRangeKernel(inheritanceKernel,
+                               cl::NullRange,
+                               cl::NDRange(globalSize),
+                               cl::NullRange,
+                               NULL,
+                               NULL);
+
+  /* read */
+  queue_->enqueueReadBuffer(outputBuffer,
+                            CL_TRUE,
+                            0,
+                            target.size() * sizeof(term_id),
+                            target.data());
+
+  /* block until done */
+  queue_->finish();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void OpenCLReasoner::computeSubPropertyEntailment(Store& triples,
+                                                  Store& results,
+                                                  const Store::TermMap& schema) {
+  cl::Kernel phase1Kernel(*program_, "phase1");
+  Store::TermVector predicates;
+  std::size_t globalSize = triples.size();
+  triples.copyPredicates(predicates);
+  assert(predicates.size() == globalSize);
+
+  Store::TermVector matchedPredicates(globalSize, 0);
+
+  cl::Buffer inputBuffer;
+  createBuffer(inputBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, predicates);
+  phase1Kernel.setArg(0, inputBuffer);
+
+  cl::Buffer outputBuffer;
+  createBuffer(outputBuffer, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, matchedPredicates);
+  phase1Kernel.setArg(1, outputBuffer);
+
+  Store::TermVector schemaSubjects;
+  for (auto succValue : schema) {
+    term_id subject(succValue.first);
+    schemaSubjects.push_back(subject);
+  }
+
+  std::sort(std::begin(schemaSubjects), std::end(schemaSubjects));
+  cl::Buffer schemaBuffer;
+  createBuffer(schemaBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, schemaSubjects);
+  phase1Kernel.setArg(2, schemaBuffer);
+
+  phase1Kernel.setArg(3, schemaSubjects.size());
+
+  try {
+    queue_->enqueueNDRangeKernel(phase1Kernel,
+                                 cl::NullRange,
+                                 cl::NDRange(globalSize),
+                                 cl::NullRange,
+                                 NULL,
+                                 NULL);
+  } catch (cl::Error& err) {
+    std::stringstream str;
+    str << "build error: " << program_->getBuildInfo<CL_PROGRAM_BUILD_LOG>(*device_);
+    throw Error(str.str());
+  }
+
+  queue_->enqueueReadBuffer(outputBuffer,
+                            CL_TRUE,
+                            0,
+                            matchedPredicates.size() * sizeof(term_id),
+                            matchedPredicates.data());
+
+  queue_->finish();
+
+  Store::TripleVector sourceTriples;
+  triples.copyTriples(sourceTriples);
+  for (uint64_t i(0); i != globalSize; ++i) {
+    term_id s(sourceTriples[i].subject);
+    term_id o(sourceTriples[i].object);
+    term_id ps(matchedPredicates[i]);
+    if (ps) {
+      for (auto p : schema.at(ps)) {
+        results.addTriple(triple(s, p, o));
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void OpenCLReasoner::computeTransitiveClosure(Store::TermMap& successorMap,
+                                              const Store::TermMap& predecessorMap) {
+  TermQueue nodes;
+  std::unordered_map<term_id, bool> finishedNodes;
+
+  // initialize the queue with the leaf nodes
+  auto it(std::begin(predecessorMap));
+  for (; it != std::end(predecessorMap); ++it) {
+    if (successorMap.find(it->first) == std::end(successorMap)) {
+      nodes.push(it->first);
+    }
+  }
+
+  // no leafs means the graph contains cycles
+  // TODO: detect strongly connected components and calculate closure on those
+  if (!nodes.size()) {
+    throw std::runtime_error("Cannot calculate transitive closure on non-DAG.");
+  }
+
+  while (nodes.size()) {
+    term_id currentNode = nodes.front();
+    nodes.pop();
+
+    auto pit = predecessorMap.find(currentNode);
+    if (pit != std::end(predecessorMap)) {
+      auto parent_it = std::begin(pit->second);
+      for (; parent_it != std::end(pit->second); ++parent_it) {
+        if (!finishedNodes[*parent_it]) {
+          nodes.push(*parent_it);
+          finishedNodes[*parent_it] = true;
+        }
+      }
+    }
+
+    // if the current node has children
+    auto cit = successorMap.find(currentNode);
+    if (cit != std::end(successorMap)) {
+      // go through all children of the current node
+      auto children_it(std::begin(cit->second));
+      for (; children_it != std::end(cit->second); ++children_it) {
+        auto gcit(successorMap.find(*children_it));
+        if (gcit != std::end(successorMap)) {
+          // add all of the children's children as the current node's children
+          auto grandchildren_it(std::begin(gcit->second));
+          for (; grandchildren_it != std::end(gcit->second); ++grandchildren_it) {
+            successorMap[currentNode].insert(*grandchildren_it);
+          }
+        }
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 cl::Context* OpenCLReasoner::context(cl_device_type type) {
   // query platforms
@@ -114,44 +312,53 @@ cl::Context* OpenCLReasoner::context(cl_device_type type) {
   cl::Platform::get(&platforms);
   // use first platform
   cl_context_properties contextProperties[] = {
-    CL_CONTEXT_PLATFORM, 
-    (cl_context_properties)(platforms[0])(), 
+    CL_CONTEXT_PLATFORM,
+    (cl_context_properties)(platforms[0])(),
     0
   };
   cl::Context* context = new cl::Context(type, contextProperties);
   return context;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 cl::CommandQueue* OpenCLReasoner::commandQueue(bool enableProfiling) {
   // create command queue
-  cl::CommandQueue* queue = new cl::CommandQueue(*context_, *device_, enableProfiling ? CL_QUEUE_PROFILING_ENABLE : 0);
+  cl::CommandQueue* queue = new cl::CommandQueue(*context_,
+                                                 *device_,
+                                                 enableProfiling ? CL_QUEUE_PROFILING_ENABLE : 0);
   return queue;
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 cl::Program* OpenCLReasoner::program(const std::string& source) {
   cl::Program::Sources sources(1, std::make_pair(source.c_str(), 0));
   cl::Program* program = new cl::Program(*context_, sources);
-  
+
   try {
     program->build(context_->getInfo<CL_CONTEXT_DEVICES>());
   } catch (cl::Error err) {
-    std::cout << program_->getBuildInfo<CL_PROGRAM_BUILD_LOG>(*device_) << std::endl;
-    throw err;
+    std::stringstream str;
+    str << "build error: " << program_->getBuildInfo<CL_PROGRAM_BUILD_LOG>(*device_);
+    throw std::runtime_error(str.str());
   }
-  
+
   return program;
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 std::string OpenCLReasoner::loadSource(const std::string& filename) {
   struct stat statbuf;
   FILE        *fh;
   char        *source;
-  
+
   fh = fopen(filename.c_str(), "r");
   if (fh == 0) {
     throw std::runtime_error("source file not readable.");
   }
-  
+
   stat(filename.c_str(), &statbuf);
   source = new char[statbuf.st_size + 1];
   fread(source, statbuf.st_size, 1, fh);

@@ -10,6 +10,7 @@
 #define OpenCLReasoner_h
 
 #include "Reasoner.h"
+#include "Store.h"
 
 #define __CL_ENABLE_EXCEPTIONS
 #if defined(__APPLE__) || defined(__MACOSX)
@@ -43,6 +44,15 @@ private:
   cl::CommandQueue* commandQueue(bool enableProfiling = false);
   cl::Program* program(const std::string& source);
   std::string loadSource(const std::string& filename);
+  
+  template <typename T>
+  void createBuffer(cl::Buffer& buffer, cl_mem_flags, std::vector<T>&);
+
+  void computeTransitiveClosure(Store::TermMap&, const Store::TermMap&);
+  void computeSubPropertyEntailment(Store&, Store&, const Store::TermMap&);
+  
+  // Join source against match and store the result in target.
+  void computeJoin(Store::TermVector& target, Store::TermVector& source, Store::TermVector& match);
 };
 
 #endif
