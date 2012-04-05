@@ -1,55 +1,45 @@
 #define FIN CL_UINT_MAX
-
 typedef ulong term_id;
+__constant term_id literal_mask = (1UL << (sizeof(term_id) * 8 - 1));
 
-__kernel void transitivity(__global uint * reachabilityBuffer,
-                           const uint width,
-                           const uint pass) {
-  
-  size_t x = get_local_id(0);
-  size_t y = get_group_id(0);
-  
-  size_t k = pass;
-  unsigned yXwidth = y * width;
-  
-  bool reachableYK = reachabilityBuffer[yXwidth + k];
-  bool reachableKX = reachabilityBuffer[k * width + x];
-  
-  if (reachableYK && reachableKX) {
-    reachabilityBuffer[yXwidth + x] = 1;
+__kernel
+void phase1(__global term_id * input,   /* predicates */
+            __global term_id * results, /* matched predicates */
+            __global term_id * schema,  /* subjects of subPropertyOf statements */
+            const uint schema_size)
+{
+  size_t globx = get_global_id(0);
+  size_t locx  = get_local_id(0);
+
+  // the property to be searched for
+  term_id p = input[globx];
+
+  // perform binary search on schema vector
+  int lower = 0;
+  int upper = schema_size - 1;
+  term_id result = 0;
+  while (lower <= upper) {
+    int mid = ((uint)lower + (uint)upper) >> 1;
+    term_id curr = schema[mid];
+
+    if (curr < p) {
+      lower = mid + 1;
+    } else if (curr > p) {
+      upper = mid - 1;
+    } else {
+      result = (curr & literal_mask) ? 0 : curr;
+      break;
+    }
   }
+
+  results[globx] = result;
 }
 
-__kernel void transitive_closure(__global uint * vertex_list,
-                                 __global uint * adjacency_list,
-                                 __global uint * thread_ids,
-                                 __global uint * results,
-                                 const uint gpass,
-                                 const uint gstep) {
-  
-  size_t gid = get_global_id(0);
-  size_t tid = thread_ids[gid];
-  
-  // cache locally
-  uint pass = gpass;
-  uint step = gstep;
-  
-  uint adj_index = vertex_list[tid];
-  uint adj_index_next = vertex_list[tid + 1];
-  
-  /*
-  if (pass < (adj_index_next - adj_index)) {
-    uint pass_vertex = adjacency_list[vertex + pass];
-    uint step_adj_index = vertex_list[pass_vertex];
-    uint step_adj_index_next = vertex_list[pass_vertex + 1];
-    
-    if (step < (step_adj_index_next - step_adj_index)) {
-      results[tid] = adjacency_list[step_adj_index + step];
-    } else {
-      results[tid] = FIN;
-    }
-  } else {
-    results[tid] = FIN;
-  }
-  */
+__kernel
+void phase2(__global term_id * input,
+            __global term_id * phase1_results,
+            __global term_id * results,
+            __global term_id * schema,
+            const uint schema_size)
+{
 }
