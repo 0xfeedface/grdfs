@@ -143,16 +143,17 @@ void OpenCLReasoner::computeClosure() {
 ////////////////////////////////////////////////////////////////////////////////
 
 /*!
- * Given a vector of triples (s, p, o) and a map (p : p1, p2, p3 ...), 
- * constructs the triples (s, p1, o), (s, p2, o), (s, p3, o), ...
+ * Given a vector of triples (s, p, o), a map (p : p1, p2, p3 ...), 
+ * and a vector of indexes into the map for each triple, comstructs
+ * the triples (s, p1, o), (s, p2, o), (s, p3, o), ...
  */
 void OpenCLReasoner::spanTriplesByPredicate(Store::TripleVector& triples,
-                                            Store::TermVector& predicates,
+                                            Store::TermVector& predicateMapIndexes,
                                             Store::TermMap& predicateMap) {
   for (std::size_t i(0); i != triples.size(); ++i) {
     term_id subject(triples[i].subject);
     term_id object(triples[i].object);
-    term_id predicateMapIndex(predicates[i]);
+    term_id predicateMapIndex(predicateMapIndexes[i]);
     if (predicateMapIndex) {
       try {
         for (auto predicate : predicateMap.at(predicateMapIndex)) {
@@ -172,17 +173,17 @@ void OpenCLReasoner::spanTriplesByPredicate(Store::TripleVector& triples,
 ////////////////////////////////////////////////////////////////////////////////
 
 /*!
- * Given a vector of triples (s, p, o) and a map (o : o1, o2, o3 ...), 
- * constructs the triples (s, p, o1), (s, p, o2), (s, p, o3), ...
- * The predicate is fixed.
+ * Given a vector of triples (s, p, o), a map (o : o1, o2, o3 ...), 
+ * and a vector of indexes into the map for each triple, constructs
+ * the triples (s, p, o1), (s, p, o2), (s, p, o3), ...
  */
 void OpenCLReasoner::spanTriplesByObject(Store::TripleVector& triples,
-                                         Store::TermVector& objects,
+                                         Store::TermVector& objectMapIndexes,
                                          Store::TermMap& objectMap,
                                          term_id predicate) {
   for (std::size_t i(0); i != triples.size(); ++i) {
     term_id subject(triples[i].subject);
-    term_id objectMapIndex(objects[i]);
+    term_id objectMapIndex(objectMapIndexes[i]);
     if (objectMapIndex) {
       try {
         for (auto object : objectMap.at(objectMapIndex)) {
