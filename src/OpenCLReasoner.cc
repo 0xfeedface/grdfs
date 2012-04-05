@@ -82,7 +82,26 @@ void OpenCLReasoner::computeClosure() {
 
     // 2) compute rule 7 (subPropertyOf inheritance)
     if (triples_.size()) {
-      computeSubPropertyEntailment(triples_, triples_, spSuccessors_);
+      Store::TermVector predicates;
+      copyPredicates(predicates);
+      Store::TermVector results(predicates.size(), 0);
+      Store::TermVector schemaSubjects;
+      for (auto spSubject : spSuccessors_) {
+        term_id subject(spSubject.first);
+        schemaSubjects.push_back(subject);
+      }
+      try {
+        computeJoin(results, predicates, schemaSubjects);
+      } catch (cl::Error& err) {
+        std::stringstream str;
+        str << err.what() << " (" << err.err() << ")";
+        throw Error(str.str());
+      }
+      
+      Store::TripleVector sourceTriples;
+      triples_.copyTriples(sourceTriples);
+      
+      spanTriplesByPredicate(sourceTriples, results, spSuccessors_);
     }
   }
 
@@ -115,22 +134,66 @@ void OpenCLReasoner::computeClosure() {
 
       Store::TripleVector sourceTriples;
       triples_.copyTriples(sourceTriples);
-      for (uint64_t i(0); i != sourceTriples.size(); ++i) {
-        term_id s(sourceTriples[i].subject);
-        term_id os(results[i]);
-        if (os) {
-          try {
-            for (auto o : scSuccessors_.at(os)) {
-              if (triples_.addTriple(triple(s, type_, o))) {
-                ++inferredTriplesCount_;
-              }
-            }
-          } catch (std::out_of_range& oor) {
-            std::stringstream str(oor.what());
-            str << " (" << os << " not found).";
-            throw Error(str.str());
+      
+      spanTriplesByObject(sourceTriples, results, scSuccessors_, type_);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/*!
+ * Given a vector of triples (s, p, o) and a map (p : p1, p2, p3 ...), 
+ * constructs the triples (s, p1, o), (s, p2, o), (s, p3, o), ...
+ */
+void OpenCLReasoner::spanTriplesByPredicate(Store::TripleVector& triples,
+                                            Store::TermVector& predicates,
+                                            Store::TermMap& predicateMap) {
+  for (std::size_t i(0); i != triples.size(); ++i) {
+    term_id subject(triples[i].subject);
+    term_id object(triples[i].object);
+    term_id predicateMapIndex(predicates[i]);
+    if (predicateMapIndex) {
+      try {
+        for (auto predicate : predicateMap.at(predicateMapIndex)) {
+          if (triples_.addTriple(triple(subject, predicate, object))) {
+            ++inferredTriplesCount_;
           }
         }
+      } catch (std::out_of_range& oor) {
+        std::stringstream str(oor.what());
+        str << " (" << predicateMapIndex << " not found).";
+        throw Error(str.str());
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/*!
+ * Given a vector of triples (s, p, o) and a map (o : o1, o2, o3 ...), 
+ * constructs the triples (s, p, o1), (s, p, o2), (s, p, o3), ...
+ * The predicate is fixed.
+ */
+void OpenCLReasoner::spanTriplesByObject(Store::TripleVector& triples,
+                                         Store::TermVector& objects,
+                                         Store::TermMap& objectMap,
+                                         term_id predicate) {
+  for (std::size_t i(0); i != triples.size(); ++i) {
+    term_id subject(triples[i].subject);
+    term_id objectMapIndex(objects[i]);
+    if (objectMapIndex) {
+      try {
+        for (auto object : objectMap.at(objectMapIndex)) {
+          if (triples_.addTriple(triple(subject, predicate, object))) {
+            ++inferredTriplesCount_;
+          }
+        }
+      } catch (std::out_of_range& oor) {
+        std::stringstream str(oor.what());
+        str << " (" << objectMapIndex << " not found).";
+        throw Error(str.str());
       }
     }
   }
@@ -178,75 +241,6 @@ void OpenCLReasoner::computeJoin(Store::TermVector& target,
 
   /* block until done */
   queue_->finish();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-void OpenCLReasoner::computeSubPropertyEntailment(Store& triples,
-                                                  Store& results,
-                                                  const Store::TermMap& schema) {
-  cl::Kernel phase1Kernel(*program_, "phase1");
-  Store::TermVector predicates;
-  std::size_t globalSize = triples.size();
-  triples.copyPredicates(predicates);
-  assert(predicates.size() == globalSize);
-
-  Store::TermVector matchedPredicates(globalSize, 0);
-
-  cl::Buffer inputBuffer;
-  createBuffer(inputBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, predicates);
-  phase1Kernel.setArg(0, inputBuffer);
-
-  cl::Buffer outputBuffer;
-  createBuffer(outputBuffer, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, matchedPredicates);
-  phase1Kernel.setArg(1, outputBuffer);
-
-  Store::TermVector schemaSubjects;
-  for (auto succValue : schema) {
-    term_id subject(succValue.first);
-    schemaSubjects.push_back(subject);
-  }
-
-  std::sort(std::begin(schemaSubjects), std::end(schemaSubjects));
-  cl::Buffer schemaBuffer;
-  createBuffer(schemaBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, schemaSubjects);
-  phase1Kernel.setArg(2, schemaBuffer);
-
-  phase1Kernel.setArg(3, schemaSubjects.size());
-
-  try {
-    queue_->enqueueNDRangeKernel(phase1Kernel,
-                                 cl::NullRange,
-                                 cl::NDRange(globalSize),
-                                 cl::NullRange,
-                                 NULL,
-                                 NULL);
-  } catch (cl::Error& err) {
-    std::stringstream str;
-    str << "build error: " << program_->getBuildInfo<CL_PROGRAM_BUILD_LOG>(*device_);
-    throw Error(str.str());
-  }
-
-  queue_->enqueueReadBuffer(outputBuffer,
-                            CL_TRUE,
-                            0,
-                            matchedPredicates.size() * sizeof(term_id),
-                            matchedPredicates.data());
-
-  queue_->finish();
-
-  Store::TripleVector sourceTriples;
-  triples.copyTriples(sourceTriples);
-  for (uint64_t i(0); i != globalSize; ++i) {
-    term_id s(sourceTriples[i].subject);
-    term_id o(sourceTriples[i].object);
-    term_id ps(matchedPredicates[i]);
-    if (ps) {
-      for (auto p : schema.at(ps)) {
-        results.addTriple(triple(s, p, o));
-      }
-    }
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

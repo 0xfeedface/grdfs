@@ -49,10 +49,12 @@ private:
   void createBuffer(cl::Buffer& buffer, cl_mem_flags, std::vector<T>&);
 
   void computeTransitiveClosure(Store::TermMap&, const Store::TermMap&);
-  void computeSubPropertyEntailment(Store&, Store&, const Store::TermMap&);
   
   // Join source against match and store the result in target.
   void computeJoin(Store::TermVector& target, Store::TermVector& source, Store::TermVector& match);
+  
+  void spanTriplesByPredicate(Store::TripleVector&, Store::TermVector&, Store::TermMap&);
+  void spanTriplesByObject(Store::TripleVector&, Store::TermVector&, Store::TermMap&, term_id);
 };
 
 #endif
