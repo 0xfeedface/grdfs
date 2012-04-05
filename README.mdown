@@ -10,18 +10,12 @@ to `stdout`.
 
 Requirements
 ------------
-* libraptor2 is required to be installed on your system in `/usr/lib` or
-  `/usr/local/lib` or a standard library path. That is, `/usr/include` and 
-  `/usr/local/include` are used as include paths for `raptor2.h`. If you 
-  have installed raptor2 to a different location you need to adapt the 
-  `Makefile`.
-* For building grdfs a C++0x compiler is needed. We recommend one the following:
+* For building grdfs a C++11 compiler is needed. We recommend one the following:
     * LLVM 3.0 or higher on Mac OS X
-    * GCC 4.7 or higher on Linux
+    * GCC 4.6 or higher on Linux
 * On Linux, the AMD APP SDK must be installed
 
 Bulding
 -------
 * _Mac OS X_: use the provided Xcode 4 project or type `make`.
 * _Linux_: type `make`.
-* _Windows_: use the provided Visual Studio project file.
