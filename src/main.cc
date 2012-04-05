@@ -26,29 +26,29 @@
 //#undef GRDFS_PROFILING
 
 void printUsage();
-std::string const& translateType(Type::ID);
+const std::string& translateType(Type::ID);
 
 static const char* typeNames[] = {
   "URI", "Literal", "CustomLanguage", "CustomType",
   "String", "Integer", "Decimal", "Double", "Boolean"
 };
 
-int main (int argc, const char * argv[]) {
+int main (int argc, const char* argv[]) {
   if (argc < 2) {
     printUsage();
     return EXIT_FAILURE;
   }
-  
+
   const char* fileName = argv[1];
   std::ifstream file(fileName, std::ifstream::in);
   if (file.fail()) {
     std::cout << "Could not read file '" << fileName << "'.\n";
     return EXIT_FAILURE;
   }
-  
+
   Dictionary dictionary;
-//  OpenCLReasoner reasoner(dictionary);
-  NativeReasoner reasoner(dictionary);
+  OpenCLReasoner reasoner(dictionary);
+  // NativeReasoner reasoner(dictionary);
 
 #ifdef GRDFS_PROFILING
   uint64_t preParsing, parsing(0), preLookup, lookup(0), preStorage, storage(0);
@@ -101,12 +101,18 @@ int main (int argc, const char * argv[]) {
 #endif
   }
 
-  dictionary.PrintStatistics();
+//  dictionary.Print();
+//  std::cout << "----------------\n";
 
 #ifdef GRDFS_PROFILING
   uint64_t beforeClosure = mach_absolute_time();
 #endif
-  reasoner.computeClosure();
+  try {
+    reasoner.computeClosure();
+    std::cout << "inferred triples: " << reasoner.inferredTriples() << std::endl;
+  } catch (Reasoner::Error& err) {
+    std::cout << err.message() << std::endl;
+  }
 #ifdef GRDFS_PROFILING
   uint64_t afterClosure = mach_absolute_time();
   struct mach_timebase_info info;
@@ -119,6 +125,8 @@ int main (int argc, const char * argv[]) {
   std::cout << "Storage: " << 1e-6 * storage * info.numer / info.denom << " ms\n";
 #endif
 
+  reasoner.printStatistics();
+
   return EXIT_SUCCESS;
 }
 
@@ -128,7 +136,7 @@ void printUsage() {
 //  std::cout <<  "       -p: print profiling information" << std::endl;
 }
 
-std::string const& translateType(Type::ID type) {
+const std::string& translateType(Type::ID type) {
   return typeNames[type];
 }
 
