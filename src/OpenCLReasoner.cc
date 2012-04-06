@@ -19,19 +19,7 @@
 #include <sstream>
 #include <fstream>
 
-#include <iostream>
-
 typedef std::queue<term_id> TermQueue;
-
-void PrintVector(Store::TermVector const& terms) {
-  auto iter(terms.cbegin());
-  std::cout << *iter++;
-  for (; iter != terms.end(); ++iter) {
-    std::cout << " " << *iter;
-  }
-  std::cout << "\n----------------\n";
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 
