@@ -39,10 +39,11 @@ private:
   cl::CommandQueue* queue_ = nullptr;
   cl::Device* device_ = nullptr;
   cl::Program* program_ = nullptr;
+  const std::string programName_ = "src/grdfs_kernels.cl";
   
   cl::Context* context(cl_device_type type = CL_DEVICE_TYPE_GPU);
   cl::CommandQueue* commandQueue(bool enableProfiling = false);
-  cl::Program* program(const std::string& source);
+  cl::Program* program();
   std::string loadSource(const std::string& filename);
   
   template <typename T>

@@ -17,6 +17,7 @@
 #include <cassert>
 #include <queue>
 #include <sstream>
+#include <fstream>
 
 #include <iostream>
 
@@ -35,12 +36,11 @@ void PrintVector(Store::TermVector const& terms) {
 ////////////////////////////////////////////////////////////////////////////////
 
 OpenCLReasoner::OpenCLReasoner(Dictionary& dict) : Reasoner(dict) {
-  context_ = context(CL_DEVICE_TYPE_CPU);
+  context_ = context();
   // query devices
   std::vector<cl::Device> devices = context_->getInfo<CL_CONTEXT_DEVICES>();
   device_ = &devices[0];
   queue_ = commandQueue();
-  program_ = program(loadSource("src/grdfs_kernels.cl"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -205,7 +205,7 @@ void OpenCLReasoner::spanTriplesByObject(Store::TripleVector& triples,
 void OpenCLReasoner::computeJoin(Store::TermVector& target,
                                  Store::TermVector& source,
                                  Store::TermVector& match) {
-  cl::Kernel inheritanceKernel(*program_, "phase1");
+  cl::Kernel inheritanceKernel(*program(), "phase1");
   std::size_t globalSize = source.size();
 
   /* input elements to match */
@@ -327,38 +327,36 @@ cl::CommandQueue* OpenCLReasoner::commandQueue(bool enableProfiling) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-cl::Program* OpenCLReasoner::program(const std::string& source) {
+cl::Program* OpenCLReasoner::program() {
+  if (nullptr != program_) {
+    return program_;
+  }
+
+  std::string source(loadSource(programName_));
   cl::Program::Sources sources(1, std::make_pair(source.c_str(), 0));
-  cl::Program* program = new cl::Program(*context_, sources);
+  program_ = new cl::Program(*context_, sources);
 
   try {
-    program->build(context_->getInfo<CL_CONTEXT_DEVICES>());
+    program_->build(context_->getInfo<CL_CONTEXT_DEVICES>());
   } catch (cl::Error err) {
     std::stringstream str;
     str << "build error: " << program_->getBuildInfo<CL_PROGRAM_BUILD_LOG>(*device_);
-    throw std::runtime_error(str.str());
+    throw Error(str.str());
   }
 
-  return program;
+  return program_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 std::string OpenCLReasoner::loadSource(const std::string& filename) {
-  struct stat statbuf;
-  FILE        *fh;
-  char        *source;
-
-  fh = fopen(filename.c_str(), "r");
-  if (fh == 0) {
-    throw std::runtime_error("source file not readable.");
+  std::ifstream fin(filename, std::ios_base::in);
+  if (!fin.is_open()) {
+    throw Error("could not read kernel source file.");
   }
 
-  stat(filename.c_str(), &statbuf);
-  source = new char[statbuf.st_size + 1];
-  fread(source, statbuf.st_size, 1, fh);
-  source[statbuf.st_size] = '\0';
-  std::string ret(source);
-  delete [] source;
-  return ret;
+  std::istreambuf_iterator<char> fbegin(fin);
+  std::istreambuf_iterator<char> eos;
+  std::string source(fbegin, eos);
+  return source;
 }
