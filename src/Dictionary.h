@@ -27,6 +27,7 @@ public:
   void Print() const;
   void PrintStatistics() const;
   std::string Find(const term_id key) const;
+  static const term_id literalMask = (1UL << (sizeof(term_id) * 8 - 1));
 private:
   typedef std::unordered_map<std::string, term_id> LiteralMap;
   typedef std::unordered_map<term_id, std::string> KeyMap;

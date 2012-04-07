@@ -10,8 +10,6 @@
 
 #include "Dictionary.h"
 
-static term_id kMSBMask = (1UL << (sizeof(term_id) * 8 - 1)); // get the most significant bit
-
 term_id Dictionary::NextKey() {
   return nextKey_++;
 }
@@ -27,7 +25,7 @@ term_id Dictionary::Lookup(const std::string& lit, const bool lit_hint) {
     
     // For literal strings, the most significant bit will be 1
     if (lit_hint) {
-      key |= kMSBMask;
+      key |= literalMask;
     }
 
     map_[lit] = key;
