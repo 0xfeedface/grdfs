@@ -31,9 +31,9 @@ void Reasoner::addTriple(triple t) {
       spTerms_.insert(t.subject);
       spTerms_.insert(t.object);
     } else if (t.predicate == domain_) {
-      domTriples_.push_back(so_pair(t.subject, t.object));
+      domTriples_[t.subject].insert(t.object);
     } else if (t.predicate == range_) {
-      rngTriples_.push_back(so_pair(t.subject, t.object));
+      rngTriples_[t.subject].insert(t.object);
     }
   } else {
     // additionally store separate rdf:type triples

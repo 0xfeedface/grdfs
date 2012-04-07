@@ -93,9 +93,50 @@ void OpenCLReasoner::computeClosure() {
     }
   }
 
-  if (domTriples_.size() || rngTriples_.size()) {
+  if (domTriples_.size()) {
     // 3) compute rules 2, 3 (domain, range expansion)
-    // TODO:
+    Store::TermVector predicates;
+    copyPredicates(predicates);
+    Store::TermVector results(predicates.size(), 0);
+    Store::TermVector schemaSubjects;
+    for (auto domSubject : domTriples_) {
+      term_id subject(domSubject.first);
+      schemaSubjects.push_back(subject);
+    }
+    try {
+      computeJoin(results, predicates, schemaSubjects);
+    } catch (cl::Error& err) {
+      std::stringstream str;
+      str << err.what() << " (" << err.err() << ")";
+      throw Error(str.str());
+    }
+
+    Store::TripleVector sourceTriples;
+    triples_.copyTriples(sourceTriples);
+    spanTriplesByObject(sourceTriples, results, domTriples_, type_);
+  }
+
+  if (rngTriples_.size()) {
+    // 3) compute rules 2, 3 (domain, range expansion)
+    Store::TermVector predicates;
+    copyPredicates(predicates);
+    Store::TermVector results(predicates.size(), 0);
+    Store::TermVector schemaSubjects;
+    for (auto rangeValue : rngTriples_) {
+      term_id subject(rangeValue.first);
+      schemaSubjects.push_back(subject);
+    }
+    try {
+      computeJoin(results, predicates, schemaSubjects);
+    } catch (cl::Error& err) {
+      std::stringstream str;
+      str << err.what() << " (" << err.err() << ")";
+      throw Error(str.str());
+    }
+
+    Store::TripleVector sourceTriples;
+    triples_.copyTriples(sourceTriples);
+    spanTriplesByObject(sourceTriples, results, rngTriples_, type_);
   }
 
   if (scTerms_.size()) {

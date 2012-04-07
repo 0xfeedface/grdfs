@@ -53,10 +53,10 @@ protected:
   Store::TermMap spSuccessors_;      // rdfs:subPropertyOf successor sets
   Store::TermMap spPredecessors_;    // rdfs:subPropertyOf predecessor sets
 
-  PairVector domTriples_;     // rdfs:domain
-  PairVector rngTriples_;     // rdfs:range
-  Store::TripleVector typeTriples_;  // rdf:type
-  Store triples_;             // instance + rdf:type triples
+  Store::TermMap domTriples_;       // rdfs:domain
+  Store::TermMap rngTriples_;       // rdfs:range
+  Store::TripleVector typeTriples_; // rdf:type
+  Store triples_;                   // instance + rdf:type triples
 
   Store::TermSet scTerms_; // unique rdfs:subClassOf terms
   Store::TermSet spTerms_; // unique rdfs:subPropertyOf terms
