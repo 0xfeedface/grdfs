@@ -23,10 +23,9 @@
 #include "OpenCLReasoner.h"
 #include "NativeReasoner.h"
 
-//#undef GRDFS_PROFILING
+// #undef GRDFS_PROFILING
 
 void printUsage();
-const std::string& translateType(Type::ID);
 
 static const char* typeNames[] = {
   "URI", "Literal", "CustomLanguage", "CustomType",
@@ -42,11 +41,11 @@ int main (int argc, const char* argv[]) {
   const char* fileName = argv[1];
   std::ifstream file(fileName, std::ifstream::in);
   if (file.fail()) {
-    std::cout << "Could not read file '" << fileName << "'.\n";
+    std::cerr << "Could not read file '" << fileName << "'.\n";
     return EXIT_FAILURE;
   }
 
-  Dictionary dictionary;
+  Dictionary dictionary("strings.data");
   OpenCLReasoner reasoner(dictionary);
   // NativeReasoner reasoner(dictionary);
 
@@ -81,7 +80,7 @@ int main (int argc, const char* argv[]) {
 #endif
     term_id subjectID   = dictionary.Lookup(subject);
     term_id predicateID = dictionary.Lookup(predicate);
-    term_id objectID    = dictionary.Lookup(object, type == Type::ID::Literal);
+    term_id objectID    = dictionary.Lookup(object);
 #ifdef GRDFS_PROFILING
     lookup += mach_absolute_time() - preLookup;
 #endif
@@ -109,34 +108,45 @@ int main (int argc, const char* argv[]) {
 #endif
   try {
     reasoner.computeClosure();
-    std::cout << "inferred triples: " << reasoner.inferredTriples() << std::endl;
+    std::clog << "Inferred triples: " << reasoner.inferredTriples() << std::endl;
+    /*
+     * Store::TripleVector results;
+     * reasoner.copyTriples(results);
+     * for (triple t : results) {
+     *   if (t.subject & Reasoner::entailedMask) {
+     *     std::string subject(dictionary.Find(t.subject & ~Reasoner::entailedMask));
+     *     std::string predicate(dictionary.Find(t.predicate));
+     *     std::string object(dictionary.Find(t.object));
+     *     if (t.object & Dictionary::literalMask) {
+     *       std::cout << "<" << subject << "> <" << predicate << "> \"" << object << "\" .\n";
+     *     } else {
+     *       std::cout << "<" << subject << "> <" << predicate << "> <" << object << "> .\n";
+     *     }
+     *   }
+     * }
+     */
   } catch (Reasoner::Error& err) {
-    std::cout << err.message() << std::endl;
+    std::cerr << err.message() << std::endl;
+    exit(EXIT_FAILURE);
   }
 #ifdef GRDFS_PROFILING
   uint64_t afterClosure = mach_absolute_time();
   struct mach_timebase_info info;
   mach_timebase_info(&info);
-  std::cout.setf(std::ios::fixed, std::ios::floatfield);
-  std::cout.precision(2);
-  std::cout << "Closure calculation took " << 1e-6 * ((afterClosure - beforeClosure) * info.numer / info.denom) << " ms" << std::endl;
-  std::cout << "Parsing: " << 1e-6 * parsing * info.numer / info.denom << " ms\n";
-  std::cout << "Dictionary lookup: " << 1e-6 * lookup * info.numer / info.denom << " ms\n";
-  std::cout << "Storage: " << 1e-6 * storage * info.numer / info.denom << " ms\n";
+  std::clog.setf(std::ios::fixed, std::ios::floatfield);
+  std::clog.precision(2);
+  std::clog << "Closure calculation took " << 1e-6 * ((afterClosure - beforeClosure) * info.numer / info.denom) << " ms" << std::endl;
+  std::clog << "Parsing: " << 1e-6 * parsing * info.numer / info.denom << " ms\n";
+  std::clog << "Dictionary lookup: " << 1e-6 * lookup * info.numer / info.denom << " ms\n";
+  std::clog << "Storage: " << 1e-6 * storage * info.numer / info.denom << " ms\n";
 #endif
-
-  reasoner.printStatistics();
 
   return EXIT_SUCCESS;
 }
 
 void printUsage() {
-  std::cout <<  "usage: grdfs <rdf_file.ttl>" << std::endl;
+  std::cerr <<  "usage: grdfs <rdf_file.ttl>" << std::endl;
 //  std::cout <<  "usage: grdfs <rdf_file.ttl> [-p]" << std::endl;
 //  std::cout <<  "       -p: print profiling information" << std::endl;
-}
-
-const std::string& translateType(Type::ID type) {
-  return typeNames[type];
 }
 
