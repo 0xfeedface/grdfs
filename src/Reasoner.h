@@ -41,6 +41,7 @@ public:
   virtual void copyObjects(Store::TermVector&);
   virtual void copyTriples(Store::TripleVector&);
   std::size_t inferredTriples() { return inferredTriplesCount_; }
+  static const term_id entailedMask = (1UL << (sizeof(term_id) * 8 - 2));
 protected:
   typedef std::vector<so_pair> PairVector;
   std::size_t inferredTriplesCount_ = 0;
