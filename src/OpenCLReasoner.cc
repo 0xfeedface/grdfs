@@ -186,7 +186,7 @@ void OpenCLReasoner::spanTriplesByPredicate(Store::TripleVector& triples,
     if (predicateMapIndex) {
       try {
         for (auto predicate : predicateMap.at(predicateMapIndex)) {
-          if (triples_.addTriple(triple(subject, predicate, object))) {
+          if (triples_.addTriple(triple(subject | entailedMask, predicate, object))) {
             ++inferredTriplesCount_;
           }
         }
@@ -216,7 +216,7 @@ void OpenCLReasoner::spanTriplesByObject(Store::TripleVector& triples,
     if (objectMapIndex) {
       try {
         for (auto object : objectMap.at(objectMapIndex)) {
-          if (triples_.addTriple(triple(subject, predicate, object))) {
+          if (triples_.addTriple(triple(subject | entailedMask, predicate, object))) {
             ++inferredTriplesCount_;
           }
         }
