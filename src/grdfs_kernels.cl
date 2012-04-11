@@ -27,7 +27,7 @@ void phase1(__global term_id * input,   /* predicates */
     } else if (curr > p) {
       upper = mid - 1;
     } else {
-      result = (curr & literal_mask) ? 0 : curr;
+      result = curr;
       break;
     }
   }
