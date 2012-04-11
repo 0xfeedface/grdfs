@@ -11,7 +11,7 @@ public:
   typedef std::size_t KeyType;
   Dictionary(const std::string& fileName);
   ~Dictionary();
-  KeyType Lookup(std::string const& key);
+  KeyType Lookup(std::string const& key, bool literalHint = false);
   std::string Find(KeyType key) const;
   std::size_t Size() const { return 0; }
   static const KeyType literalMask = (1UL << (sizeof(KeyType) * 8 - 1));
@@ -52,10 +52,10 @@ private:
 
   std::size_t writeHeader(Entry const& entry, std::size_t offset);
   std::size_t writeLiteral(std::string const& lit, std::size_t offset);
-  Entry readEntry(KeyType const offset);
-  std::string readLiteral(KeyType const offset, std::size_t length);
+  inline Entry readEntry(KeyType const offset);
+  inline std::string readLiteral(KeyType const offset, std::size_t length);
 
-  KeyType writeEntry(std::string const& lit, std::ptrdiff_t offset);
+  KeyType writeEntry(std::string const& lit, std::ptrdiff_t offset, bool literal = false);
 
   std::size_t hash(std::string const& str);
 };

@@ -67,6 +67,8 @@ std::size_t Dictionary::writeLiteral(std::string const& lit, std::size_t offset)
   lit.copy(map_ + offset, lit.size());
 
   // advance pointer
+  // TODO: ofsetting to dword boundary seems to be slower!
+  // pos_ += (((offset + lit.size() - 1) >> 3) + 1) * 8 - offset;
   pos_ += lit.size();
 
   return offset;
@@ -100,7 +102,7 @@ std::size_t Dictionary::hash(std::string const& str)
 
 //////////////////////////////////////////////////////////////////////////////-
 
-Dictionary::KeyType Dictionary::Lookup(std::string const& lit)
+Dictionary::KeyType Dictionary::Lookup(std::string const& lit, bool literalHint)
 {
   std::size_t key = hasher_(lit);
   auto it(ids_.find(key));
@@ -124,22 +126,25 @@ Dictionary::KeyType Dictionary::Lookup(std::string const& lit)
     // overflow entry
     std::ptrdiff_t offset = pos_ - map_;
     writeValue(parentOffset + sizeof(KeyType), offset);
-    return writeEntry(lit, offset);
+    return writeEntry(lit, offset, literalHint);
   }
 
   // new entry
   std::ptrdiff_t offset = pos_ - map_;
-  literalID = writeEntry(lit, offset);
+  literalID = writeEntry(lit, offset, literalHint);
   ids_[key] = literalID;
   return literalID;
 }
 
 //////////////////////////////////////////////////////////////////////////////-
 
-Dictionary::KeyType Dictionary::writeEntry(std::string const& lit, std::ptrdiff_t offset)
+Dictionary::KeyType Dictionary::writeEntry(std::string const& lit, std::ptrdiff_t offset, bool literal)
 {
   // not found, create a new entry
   KeyType literalID = nextKey_++;
+  if (literal) {
+    literalID |= literalMask;
+  }
   Entry newEntry(literalID, 0, lit.size());
   offset = writeHeader(newEntry, offset);
   writeLiteral(lit, offset + sizeof(Entry));
