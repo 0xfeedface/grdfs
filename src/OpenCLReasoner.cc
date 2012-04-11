@@ -136,7 +136,7 @@ void OpenCLReasoner::computeClosure() {
 
     Store::TripleVector sourceTriples;
     triples_.copyTriples(sourceTriples);
-    spanTriplesByObject(sourceTriples, results, rngTriples_, type_);
+    spanTriplesByObject(sourceTriples, results, rngTriples_, type_, true);
   }
 
   if (scTerms_.size()) {
@@ -209,24 +209,36 @@ void OpenCLReasoner::spanTriplesByPredicate(Store::TripleVector& triples,
 void OpenCLReasoner::spanTriplesByObject(Store::TripleVector& triples,
                                          Store::TermVector& objectMapIndexes,
                                          Store::TermMap& objectMap,
-                                         term_id predicate) {
+                                         term_id predicate,
+                                         bool useObject) {
   for (std::size_t i(0); i != triples.size(); ++i) {
-    term_id subject(triples[i].subject);
-    term_id objectMapIndex(objectMapIndexes[i]);
-    if (objectMapIndex) {
-      try {
-        for (auto object : objectMap.at(objectMapIndex)) {
-          if (triples_.addTriple(triple(subject | entailedMask, predicate, object))) {
-            ++inferredTriplesCount_;
+    term_id subject(useObject ? triples[i].object : triples[i].subject);
+    if (!(subject & Dictionary::literalMask)) {
+      term_id objectMapIndex(objectMapIndexes[i]);
+      if (objectMapIndex) {
+        try {
+          for (auto object : objectMap.at(objectMapIndex)) {
+            if (triples_.addTriple(triple(subject | entailedMask, predicate, object))) {
+              ++inferredTriplesCount_;
+            }
           }
+        } catch (std::out_of_range& oor) {
+          std::stringstream str(oor.what());
+          str << " (" << objectMapIndex << " not found).";
+          throw Error(str.str());
         }
-      } catch (std::out_of_range& oor) {
-        std::stringstream str(oor.what());
-        str << " (" << objectMapIndex << " not found).";
-        throw Error(str.str());
       }
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void OpenCLReasoner::spanTriplesByObject(Store::TripleVector& triples,
+                                         Store::TermVector& objectMapIndexes,
+                                         Store::TermMap& objectMap,
+                                         term_id predicate) {
+  spanTriplesByObject(triples, objectMapIndexes, objectMap, predicate, false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

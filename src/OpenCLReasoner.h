@@ -56,6 +56,7 @@ private:
   
   void spanTriplesByPredicate(Store::TripleVector& triples, Store::TermVector& predicateMapIndexes, Store::TermMap& predicateMap);
   void spanTriplesByObject(Store::TripleVector& triples, Store::TermVector& objectMapIndexes, Store::TermMap& objectMap, term_id predicate);
+  void spanTriplesByObject(Store::TripleVector& triples, Store::TermVector& objectMapIndexes, Store::TermMap& objectMap, term_id predicate, bool useObject);
 };
 
 #endif
