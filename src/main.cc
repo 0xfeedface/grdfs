@@ -40,7 +40,7 @@ int main (int argc, const char* argv[]) {
     return EXIT_FAILURE;
   }
 
-  Dictionary dictionary("strings.data");
+  Dictionary dictionary;
   OpenCLReasoner reasoner(dictionary);
   // NativeReasoner reasoner(dictionary);
 
@@ -104,18 +104,20 @@ int main (int argc, const char* argv[]) {
   try {
     reasoner.computeClosure();
 
-    for (auto it(reasoner.triples_.ebegin()); it != reasoner.triples_.eend(); it++) {
-      std::string subject(dictionary.Find(it->subject));
-      std::string predicate(dictionary.Find(it->predicate));
-      std::string object(dictionary.Find(it->object));
-
-      if (it->object & Dictionary::literalMask) {
-        std::cout << "<" << subject << "> <" << predicate << "> \"" << object << "\" .\n";
-      } else {
-        std::cout << "<" << subject << "> <" << predicate << "> <" << object << "> .\n";
-      }
-    }
-    std::cout << std::endl;
+/*
+ *     for (auto it(reasoner.triples_.ebegin()); it != reasoner.triples_.eend(); it++) {
+ *       std::string subject(dictionary.Find(it->subject));
+ *       std::string predicate(dictionary.Find(it->predicate));
+ *       std::string object(dictionary.Find(it->object));
+ * 
+ *       if (it->object & Dictionary::literalMask) {
+ *         std::cout << "<" << subject << "> <" << predicate << "> \"" << object << "\" .\n";
+ *       } else {
+ *         std::cout << "<" << subject << "> <" << predicate << "> <" << object << "> .\n";
+ *       }
+ *     }
+ *     std::cout << std::endl;
+ */
 
   } catch (Reasoner::Error& err) {
     std::cerr << err.message() << std::endl;
