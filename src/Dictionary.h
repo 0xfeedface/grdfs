@@ -9,6 +9,9 @@
 class Dictionary {
 public:
   typedef std::size_t KeyType;
+  // default constructor, uses anonymous backing file
+  Dictionary();
+  // fileName constructor, tries to create file with requested name
   Dictionary(const std::string& fileName);
   ~Dictionary();
   KeyType Lookup(std::string const& key, bool literalHint = false);
@@ -19,8 +22,6 @@ private:
   typedef std::vector<KeyType> KeyVector;
   typedef std::hash<std::string> StringHasher;
   typedef std::unordered_map<KeyType, std::size_t> KeyMap;
-  // id, overflow, literal
-  typedef std::tuple<KeyType, KeyType, std::string> ValueType;
 
   struct Entry {
     KeyType id;
