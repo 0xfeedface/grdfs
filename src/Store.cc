@@ -1,90 +1,91 @@
-//
-//  Store.cc
-//  grdfs
-//
-//  Created by Norman Heino on 11-12-10.
-//  Copyright (c) 2011 Norman Heino. All rights reserved.
-//
-
 #include "Store.h"
-
 #include <iostream>
 
-using std::cout;
+#define ROT(val, shift) (shift == 0 ? (val) : (((val) >> shift) | ((val) << (64 - shift))))
 
-bool Store::addTriple(triple t) {
-  PredicateMap& predicates = storage_[t.subject];
-  TermSet& objects = predicates[t.predicate];
-  auto result = objects.insert(t.object).second;
-  
-  if (result) {
-    ++tripleCount_;
+bool Store::Triple::operator==(const Triple& rhs) const
+{
+  return subject == rhs.subject && predicate == rhs.predicate && object == rhs.object;
+}
+
+bool Store::Triple::operator!=(const Triple& rhs) const
+{
+  return subject != rhs.subject || predicate != rhs.predicate || object != rhs.object;
+}
+
+// Hashes a triple.
+// Subject, predicate and object are interpreted as one
+// byte sequence which is hashed using Google's CityHash
+// specialized for a length of 24 bytes.
+// See: http://code.google.com/p/cityhash
+std::size_t Store::Triple::hash() const
+{
+  assert(sizeof(std::size_t) == 8);
+
+  uint64_t a = this->subject * k1;
+  uint64_t b = this->predicate;
+  uint64_t c = this->object * k2;
+  uint64_t d = this->predicate * k0;
+
+  d = ROT(a - b, 43) + ROT(c, 30) + d;
+  b = a + ROT(b ^ k3, 20) - c + 24 /* len */;
+
+  c = (d ^ b) * kMul;
+  c ^= (c >> 47);
+  b = (b ^ c) * kMul;
+  b ^= (b >> 47);
+  b *= kMul;
+
+  return b;
+}
+
+Store::Iterator& Store::Iterator::operator++()
+{
+  if (entailedOnly_) {
+    do {
+      ++currentIndex_;
+    } while (currentIndex_ < store_.size_ && !(store_.flags_[currentIndex_] & kFlagsEntailed));
+  } else {
+    ++currentIndex_;
   }
-  
-  return result;
+
+  return *this;
 }
 
-void Store::printStatistics() {
-  cout << "Distinct subjects: " << storage_.size() << "\n";
+Store::Iterator Store::Iterator::operator++(int)
+{
+  Iterator old(*this);
+  ++(*this);
+  return old;
 }
 
-void Store::copySubjects(TermVector& subjects) {
-  for (auto value : storage_) {
-    subjects.push_back(value.first);
-  }
+Store::Triple Store::Iterator::operator*() const
+{
+  return Triple(
+      store_.subjects()[currentIndex_],
+      store_.predicates()[currentIndex_],
+      store_.objects()[currentIndex_]);
 }
 
-void Store::copyPredicates(TermVector& predicates) {
-  auto subjectIter(std::begin(storage_));
-  for (; subjectIter != std::end(storage_); ++subjectIter) {
-    PredicateMap preds(subjectIter->second);
-    
-    auto predicateIter(std::begin(preds));
-    for (; predicateIter != std::end(preds); ++predicateIter) {
-      term_id p(predicateIter->first);
-      TermSet objects(predicateIter->second);
-      // Insert p as many times as there are objects for it
-      predicates.insert(predicates.cend(), objects.size(), p);
+bool Store::addTriple(const Triple& t, TripleFlags flags)
+{
+  std::size_t hash(t.hash());
+  auto it(indices_.find(hash));
+  if (it != std::end(indices_)) {
+    std::size_t index = it->second;
+    if (t != Triple(subjects_[index], predicates_[index], objects_[index])) {
+      std::cout << "crap, we have a collision!\n";
     }
+    return false;
   }
+
+  indices_.insert(std::make_pair(hash, subjects_.size()));
+  subjects_.push_back(t.subject);
+  predicates_.push_back(t.predicate);
+  objects_.push_back(t.object);
+  flags_.push_back(flags);
+  ++size_;
+
+  return true;
 }
 
-void Store::copyObjects(TermVector& objectsTarget) {
-  auto subjectIter(std::begin(storage_));
-  for (; subjectIter != std::end(storage_); ++subjectIter) {
-    PredicateMap predicates(subjectIter->second);
-    
-    auto predicateIter(std::begin(predicates));
-    for (; predicateIter != std::end(predicates); ++predicateIter) {
-      TermSet objects(predicateIter->second);
-      
-      auto objectIter(std::begin(objects));
-      for (; objectIter != std::end(objects); ++objectIter) {
-        term_id o(*objectIter);
-        
-        objectsTarget.push_back(o);
-      }
-    }
-  }
-}
-
-void Store::copyTriples(TripleVector& triples) {
-  auto subjectIter(std::begin(storage_));
-  for (; subjectIter != std::end(storage_); ++subjectIter) {
-    term_id s(subjectIter->first);
-    PredicateMap predicates(subjectIter->second);
-    
-    auto predicateIter(std::begin(predicates));
-    for (; predicateIter != std::end(predicates); ++predicateIter) {
-      term_id p(predicateIter->first);
-      TermSet objects(predicateIter->second);
-      
-      auto objectIter(std::begin(objects));
-      for (; objectIter != std::end(objects); ++objectIter) {
-        term_id o(*objectIter);
-        
-        triples.push_back(triple(s, p, o));
-      }
-    }
-  }
-}
