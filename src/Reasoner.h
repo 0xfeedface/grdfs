@@ -33,34 +33,31 @@ public:
 
   Reasoner(Dictionary& dict);
   virtual ~Reasoner() {}
-  virtual void addTriple(triple);
+  virtual void addTriple(const Store::Triple&);
   virtual void computeClosure() = 0;
   virtual void printStatistics();
-  virtual void copyPredicates(Store::TermVector&);
-  virtual void copySubjects(Store::TermVector&);
-  virtual void copyObjects(Store::TermVector&);
-  virtual void copyTriples(Store::TripleVector&);
   std::size_t inferredTriples() { return inferredTriplesCount_; }
-  static const term_id entailedMask = (1UL << (sizeof(term_id) * 8 - 2));
+  Store triples_;             // instance + rdf:type triples
 protected:
   typedef std::vector<so_pair> PairVector;
+  typedef std::unordered_set<term_id> TermSet;
+  typedef std::unordered_map<term_id, TermSet> TermMap;
+  typedef Dictionary::KeyType KeyType;
   std::size_t inferredTriplesCount_ = 0;
 
   term_id subClassOf_, subPropertyOf_, domain_, range_, type_;  // term identifiers for schema vocabulary
   Dictionary& dict_;  // URI -> term identifier dictionary
 
-  Store::TermMap scSuccessors_;      // rdfs:subClassOf successor sets
-  Store::TermMap scPredecessors_;    // rdfs:subClassOf predecessor sets
-  Store::TermMap spSuccessors_;      // rdfs:subPropertyOf successor sets
-  Store::TermMap spPredecessors_;    // rdfs:subPropertyOf predecessor sets
+  TermMap scSuccessors_;      // rdfs:subClassOf successor sets
+  TermMap scPredecessors_;    // rdfs:subClassOf predecessor sets
+  TermMap spSuccessors_;      // rdfs:subPropertyOf successor sets
+  TermMap spPredecessors_;    // rdfs:subPropertyOf predecessor sets
 
-  Store::TermMap domTriples_;       // rdfs:domain
-  Store::TermMap rngTriples_;       // rdfs:range
-  Store::TripleVector typeTriples_; // rdf:type
-  Store triples_;                   // instance + rdf:type triples
+  TermMap domTriples_;        // rdfs:domain
+  TermMap rngTriples_;        // rdfs:range
 
-  Store::TermSet scTerms_; // unique rdfs:subClassOf terms
-  Store::TermSet spTerms_; // unique rdfs:subPropertyOf terms
+  TermSet scTerms_; // unique rdfs:subClassOf terms
+  TermSet spTerms_; // unique rdfs:subPropertyOf terms
 
   bool isSchemaProperty(term_id property) const { return (property <= range_); }
 };

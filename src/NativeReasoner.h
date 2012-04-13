@@ -18,9 +18,9 @@ public:
   NativeReasoner(Dictionary& dict) : Reasoner(dict) {}
   void computeClosure();
   void computeClosure_Boost();
-  void computeClosure_InverseAdjacency(const Store::TermMap&, const Store::TermMap&);
-  void computeClosure_InverseTopological(Store::TermMap&, const Store::TermMap&);
-  void printClosure(const Store::TermMap&, bool);
+  void computeClosure_InverseAdjacency(const TermMap&, const TermMap&);
+  void computeClosure_InverseTopological(TermMap&, const TermMap&);
+  void printClosure(const TermMap&, bool);
 };
 
 #endif

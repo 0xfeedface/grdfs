@@ -18,7 +18,7 @@ Reasoner::Reasoner(Dictionary& dict) : dict_(dict) {
   type_          = dict.Lookup(kTypeURI);
 }
 
-void Reasoner::addTriple(triple t) {
+void Reasoner::addTriple(const Store::Triple& t) {
   if (isSchemaProperty(t.predicate)) {
     if (t.predicate == subClassOf_) {
       scSuccessors_[t.subject].insert(t.object);
@@ -36,31 +36,12 @@ void Reasoner::addTriple(triple t) {
       rngTriples_[t.subject].insert(t.object);
     }
   } else {
-    // additionally store separate rdf:type triples
-    if (triples_.addTriple(t) && t.predicate == type_) {
-      typeTriples_.push_back(t);
-    }
+    // store separate non-schema triples
+    triples_.addTriple(t);
   }
 }
 
-void Reasoner::copySubjects(Store::TermVector& subjects) {
-  return triples_.copySubjects(subjects);
-}
-
-void Reasoner::copyPredicates(Store::TermVector& predicates) {
-  return triples_.copyPredicates(predicates);
-}
-
-void Reasoner::copyObjects(Store::TermVector& objects) {
-  return triples_.copyObjects(objects);
-}
-
-void Reasoner::copyTriples(Store::TripleVector& triples) {
-  return triples_.copyTriples(triples);
-}
-
 void Reasoner::printStatistics() {
-  triples_.printStatistics();
   std::cout << "sc terms: " << scSuccessors_.size() << std::endl;
   std::cout << "sp terms: " << spSuccessors_.size() << std::endl;
   std::cout << "dom triples: " << domTriples_.size() << std::endl;

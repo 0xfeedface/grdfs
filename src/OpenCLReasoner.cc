@@ -18,6 +18,7 @@
 #include <queue>
 #include <sstream>
 #include <fstream>
+#include <iostream>
 
 typedef std::queue<term_id> TermQueue;
 
@@ -47,13 +48,17 @@ OpenCLReasoner::~OpenCLReasoner() {
 ////////////////////////////////////////////////////////////////////////////////
 
 // Create an OpenCL buffer from STL vector
-template <typename T>
-void OpenCLReasoner::createBuffer(cl::Buffer& buffer, cl_mem_flags flags, std::vector<T>& data) {
+void OpenCLReasoner::createBuffer(cl::Buffer& buffer, cl_mem_flags flags,
+                                  const Store::KeyVector& data) {
   try {
     buffer = cl::Buffer(*context_,
                         flags,
-                        data.size() * sizeof(T),
-                        data.data());
+                        data.size() * sizeof(Dictionary::KeyType),
+                        // FIXME:
+                        // OpenCL C++ bindings do not provide a Buffer constructor
+                        // with a const argument, even if the memory is CL_MEM_READ_ONLY,
+                        // so we have to cast away the const. :(
+                        const_cast<Dictionary::KeyType*>(data.data()));
   } catch (cl::Error& err) {
     std::stringstream str(err.what());
     str << " (" << err.err() << ")";
@@ -70,10 +75,9 @@ void OpenCLReasoner::computeClosure() {
 
     // 2) compute rule 7 (subPropertyOf inheritance)
     if (triples_.size()) {
-      Store::TermVector predicates;
-      copyPredicates(predicates);
-      Store::TermVector results(predicates.size(), 0);
-      Store::TermVector schemaSubjects;
+      const Store::KeyVector& predicates(triples_.predicates());
+      Store::KeyVector results(predicates.size(), 0);
+      Store::KeyVector schemaSubjects;
       for (auto spSubject : spSuccessors_) {
         term_id subject(spSubject.first);
         schemaSubjects.push_back(subject);
@@ -86,19 +90,16 @@ void OpenCLReasoner::computeClosure() {
         throw Error(str.str());
       }
       
-      Store::TripleVector sourceTriples;
-      triples_.copyTriples(sourceTriples);
-      
-      spanTriplesByPredicate(sourceTriples, results, spSuccessors_);
+      spanTriplesByPredicate(triples_.subjects(), triples_.predicates(),
+                             triples_.objects(), results, spSuccessors_);
     }
   }
 
   if (domTriples_.size()) {
     // 3) compute rules 2, 3 (domain, range expansion)
-    Store::TermVector predicates;
-    copyPredicates(predicates);
-    Store::TermVector results(predicates.size(), 0);
-    Store::TermVector schemaSubjects;
+    const Store::KeyVector predicates(triples_.predicates());
+    Store::KeyVector results(predicates.size(), 0);
+    Store::KeyVector schemaSubjects;
     for (auto domSubject : domTriples_) {
       term_id subject(domSubject.first);
       schemaSubjects.push_back(subject);
@@ -111,17 +112,15 @@ void OpenCLReasoner::computeClosure() {
       throw Error(str.str());
     }
 
-    Store::TripleVector sourceTriples;
-    triples_.copyTriples(sourceTriples);
-    spanTriplesByObject(sourceTriples, results, domTriples_, type_);
+    spanTriplesByObject(triples_.subjects(), triples_.predicates(),
+                        triples_.objects(), results, domTriples_, type_);
   }
 
   if (rngTriples_.size()) {
     // 3) compute rules 2, 3 (domain, range expansion)
-    Store::TermVector predicates;
-    copyPredicates(predicates);
-    Store::TermVector results(predicates.size(), 0);
-    Store::TermVector schemaSubjects;
+    const Store::KeyVector predicates(triples_.predicates());
+    Store::KeyVector results(predicates.size(), 0);
+    Store::KeyVector schemaSubjects;
     for (auto rangeValue : rngTriples_) {
       term_id subject(rangeValue.first);
       schemaSubjects.push_back(subject);
@@ -134,9 +133,8 @@ void OpenCLReasoner::computeClosure() {
       throw Error(str.str());
     }
 
-    Store::TripleVector sourceTriples;
-    triples_.copyTriples(sourceTriples);
-    spanTriplesByObject(sourceTriples, results, rngTriples_, type_, true);
+    spanTriplesByObject(triples_.subjects(), triples_.predicates(),
+                        triples_.objects(), results, rngTriples_, type_, true);
   }
 
   if (scTerms_.size()) {
@@ -145,10 +143,9 @@ void OpenCLReasoner::computeClosure() {
 
     // compute rule 9 (subClassOf inheritance)
     if (triples_.size()) {
-      Store::TermVector objects;
-      copyObjects(objects);
-      Store::TermVector results(objects.size(), 0);
-      Store::TermVector schemaSubjects;
+      const Store::KeyVector objects(triples_.objects());
+      Store::KeyVector results(objects.size(), 0);
+      Store::KeyVector schemaSubjects;
       for (auto scSubject : scSuccessors_) {
         term_id subject(scSubject.first);
         schemaSubjects.push_back(subject);
@@ -161,10 +158,8 @@ void OpenCLReasoner::computeClosure() {
         throw Error(str.str());
       }
 
-      Store::TripleVector sourceTriples;
-      triples_.copyTriples(sourceTriples);
-      
-      spanTriplesByObject(sourceTriples, results, scSuccessors_, type_);
+      spanTriplesByObject(triples_.subjects(), triples_.predicates(),
+                          triples_.objects(), results, scSuccessors_, type_);
     }
   }
 }
@@ -176,24 +171,27 @@ void OpenCLReasoner::computeClosure() {
  * and a vector of indexes into the map for each triple, comstructs
  * the triples (s, p1, o), (s, p2, o), (s, p3, o), ...
  */
-void OpenCLReasoner::spanTriplesByPredicate(Store::TripleVector& triples,
-                                            Store::TermVector& predicateMapIndexes,
-                                            Store::TermMap& predicateMap) {
-  for (std::size_t i(0); i != triples.size(); ++i) {
-    term_id subject(triples[i].subject);
-    term_id object(triples[i].object);
-    term_id predicateMapIndex(predicateMapIndexes[i]);
+void OpenCLReasoner::spanTriplesByPredicate(const Store::KeyVector& subjects,
+                                            const Store::KeyVector& predicates,
+                                            const Store::KeyVector& objects,
+                                            const Store::KeyVector& predicateMapIndexes,
+                                            const TermMap& predicateMap) {
+  // We iterate over subjects but all vectors should have the same size
+  for (std::size_t i(0), size(subjects.size()); i != size; ++i) {
+    KeyType subject(subjects[i]);
+    KeyType object(objects[i]);
+    KeyType predicateMapIndex(predicateMapIndexes[i]);
     if (predicateMapIndex) {
       try {
         for (auto predicate : predicateMap.at(predicateMapIndex)) {
-          if (triples_.addTriple(triple(subject | entailedMask, predicate, object))) {
+          if (triples_.addTriple(Store::Triple(subject, predicate, object), Store::kFlagsEntailed)) {
             ++inferredTriplesCount_;
           }
         }
       } catch (std::out_of_range& oor) {
         std::stringstream str(oor.what());
         str << " (" << predicateMapIndex << " not found).";
-        throw Error(str.str());
+        // throw Error(str.str());
       }
     }
   }
@@ -206,26 +204,28 @@ void OpenCLReasoner::spanTriplesByPredicate(Store::TripleVector& triples,
  * and a vector of indexes into the map for each triple, constructs
  * the triples (s, p, o1), (s, p, o2), (s, p, o3), ...
  */
-void OpenCLReasoner::spanTriplesByObject(Store::TripleVector& triples,
-                                         Store::TermVector& objectMapIndexes,
-                                         Store::TermMap& objectMap,
-                                         term_id predicate,
-                                         bool useObject) {
-  for (std::size_t i(0); i != triples.size(); ++i) {
-    term_id subject(useObject ? triples[i].object : triples[i].subject);
+void OpenCLReasoner::spanTriplesByObject(const Store::KeyVector& subjects,
+                                         const Store::KeyVector& predicates,
+                                         const Store::KeyVector& objects,
+                                         const Store::KeyVector& objectMapIndexes,
+                                         const TermMap& objectMap,
+                                         const KeyType predicate,
+                                         const bool useObject) {
+  for (std::size_t i(0), size(subjects.size()); i != size; ++i) {
+    KeyType subject(useObject ? objects[i] : subjects[i]);
     if (!(subject & Dictionary::literalMask)) {
-      term_id objectMapIndex(objectMapIndexes[i]);
+      KeyType objectMapIndex(objectMapIndexes[i]);
       if (objectMapIndex) {
         try {
           for (auto object : objectMap.at(objectMapIndex)) {
-            if (triples_.addTriple(triple(subject | entailedMask, predicate, object))) {
+            if (triples_.addTriple(Store::Triple(subject, predicate, object), Store::kFlagsEntailed)) {
               ++inferredTriplesCount_;
             }
           }
         } catch (std::out_of_range& oor) {
           std::stringstream str(oor.what());
           str << " (" << objectMapIndex << " not found).";
-          throw Error(str.str());
+          // throw Error(str.str());
         }
       }
     }
@@ -234,18 +234,20 @@ void OpenCLReasoner::spanTriplesByObject(Store::TripleVector& triples,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void OpenCLReasoner::spanTriplesByObject(Store::TripleVector& triples,
-                                         Store::TermVector& objectMapIndexes,
-                                         Store::TermMap& objectMap,
-                                         term_id predicate) {
-  spanTriplesByObject(triples, objectMapIndexes, objectMap, predicate, false);
+void OpenCLReasoner::spanTriplesByObject(const Store::KeyVector& subjects,
+                                         const Store::KeyVector& predicates,
+                                         const Store::KeyVector& objects,
+                                         const Store::KeyVector& objectMapIndexes,
+                                         const TermMap& objectMap,
+                                         const KeyType predicate) {
+  spanTriplesByObject(subjects, predicates, objects, objectMapIndexes, objectMap, predicate, false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void OpenCLReasoner::computeJoin(Store::TermVector& target,
-                                 Store::TermVector& source,
-                                 Store::TermVector& match) {
+void OpenCLReasoner::computeJoin(Store::KeyVector& target,
+                                 const Store::KeyVector& source,
+                                 Store::KeyVector& match) {
   cl::Kernel inheritanceKernel(*program(), "phase1");
   std::size_t globalSize = source.size();
 
@@ -287,8 +289,8 @@ void OpenCLReasoner::computeJoin(Store::TermVector& target,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void OpenCLReasoner::computeTransitiveClosure(Store::TermMap& successorMap,
-                                              const Store::TermMap& predecessorMap) {
+void OpenCLReasoner::computeTransitiveClosure(TermMap& successorMap,
+                                              const TermMap& predecessorMap) {
   TermQueue nodes;
   std::unordered_map<term_id, bool> finishedNodes;
 
