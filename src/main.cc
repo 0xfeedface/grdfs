@@ -27,11 +27,6 @@
 
 void printUsage();
 
-static const char* typeNames[] = {
-  "URI", "Literal", "CustomLanguage", "CustomType",
-  "String", "Integer", "Decimal", "Double", "Boolean"
-};
-
 int main (int argc, const char* argv[]) {
   if (argc < 2) {
     printUsage();
@@ -80,21 +75,21 @@ int main (int argc, const char* argv[]) {
 #endif
     term_id subjectID   = dictionary.Lookup(subject);
     term_id predicateID = dictionary.Lookup(predicate);
-    term_id objectID    = dictionary.Lookup(object);
+    term_id objectID    = dictionary.Lookup(object, type != Type::ID::URI);
 #ifdef GRDFS_PROFILING
     lookup += mach_absolute_time() - preLookup;
 #endif
 
     /*
-     * if (type != Type::ID::URI && type != Type::ID::Literal && type != Type::ID::String) {
-     *   std::cout << object << " (" << subType << ", " << translateType(type) << ")\n";
+     * if (type != Type::ID::URI) {
+     *   std::cout << object << " (" << objectID << ")\n";
      * }
      */
 
 #ifdef GRDFS_PROFILING
     preStorage = mach_absolute_time();
 #endif
-    reasoner.addTriple(triple(subjectID, predicateID, objectID));
+    reasoner.addTriple(Store::Triple(subjectID, predicateID, objectID));
 #ifdef GRDFS_PROFILING
     storage += mach_absolute_time() - preStorage;
 #endif
@@ -108,23 +103,20 @@ int main (int argc, const char* argv[]) {
 #endif
   try {
     reasoner.computeClosure();
-    std::clog << "Inferred triples: " << reasoner.inferredTriples() << std::endl;
-    /*
-     * Store::TripleVector results;
-     * reasoner.copyTriples(results);
-     * for (triple t : results) {
-     *   if (t.subject & Reasoner::entailedMask) {
-     *     std::string subject(dictionary.Find(t.subject & ~Reasoner::entailedMask));
-     *     std::string predicate(dictionary.Find(t.predicate));
-     *     std::string object(dictionary.Find(t.object));
-     *     if (t.object & Dictionary::literalMask) {
-     *       std::cout << "<" << subject << "> <" << predicate << "> \"" << object << "\" .\n";
-     *     } else {
-     *       std::cout << "<" << subject << "> <" << predicate << "> <" << object << "> .\n";
-     *     }
-     *   }
-     * }
-     */
+
+    for (auto it(reasoner.triples_.ebegin()); it != reasoner.triples_.eend(); it++) {
+      std::string subject(dictionary.Find(it->subject));
+      std::string predicate(dictionary.Find(it->predicate));
+      std::string object(dictionary.Find(it->object));
+
+      if (it->object & Dictionary::literalMask) {
+        std::cout << "<" << subject << "> <" << predicate << "> \"" << object << "\" .\n";
+      } else {
+        std::cout << "<" << subject << "> <" << predicate << "> <" << object << "> .\n";
+      }
+    }
+    std::cout << std::endl;
+
   } catch (Reasoner::Error& err) {
     std::cerr << err.message() << std::endl;
     exit(EXIT_FAILURE);
@@ -135,6 +127,7 @@ int main (int argc, const char* argv[]) {
   mach_timebase_info(&info);
   std::clog.setf(std::ios::fixed, std::ios::floatfield);
   std::clog.precision(2);
+  std::clog << "Inferred triples: " << reasoner.inferredTriples() << std::endl;
   std::clog << "Closure calculation took " << 1e-6 * ((afterClosure - beforeClosure) * info.numer / info.denom) << " ms" << std::endl;
   std::clog << "Parsing: " << 1e-6 * parsing * info.numer / info.denom << " ms\n";
   std::clog << "Dictionary lookup: " << 1e-6 * lookup * info.numer / info.denom << " ms\n";
