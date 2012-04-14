@@ -191,7 +191,7 @@ void OpenCLReasoner::spanTriplesByPredicate(const Store::KeyVector& subjects,
       } catch (std::out_of_range& oor) {
         std::stringstream str(oor.what());
         str << " (" << predicateMapIndex << " not found).";
-        // throw Error(str.str());
+        throw Error(str.str());
       }
     }
   }
@@ -225,7 +225,7 @@ void OpenCLReasoner::spanTriplesByObject(const Store::KeyVector& subjects,
         } catch (std::out_of_range& oor) {
           std::stringstream str(oor.what());
           str << " (" << objectMapIndex << " not found).";
-          // throw Error(str.str());
+          throw Error(str.str());
         }
       }
     }

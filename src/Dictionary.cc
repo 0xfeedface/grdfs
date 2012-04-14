@@ -54,7 +54,7 @@ Dictionary::~Dictionary()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-std::size_t Dictionary::writeHeader(Entry const& entry, std::size_t offset)
+std::size_t Dictionary::writeHeader(const Entry& entry, std::size_t offset)
 {
   // prevent string from crossing page boundary,
   // moving it entirely to the next page
@@ -81,7 +81,7 @@ std::size_t Dictionary::writeHeader(Entry const& entry, std::size_t offset)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-std::size_t Dictionary::writeLiteral(std::string const& lit, std::size_t offset)
+std::size_t Dictionary::writeLiteral(const std::string& lit, std::size_t offset)
 {
   // write literal
   lit.copy(map_ + offset, lit.size());
@@ -96,21 +96,21 @@ std::size_t Dictionary::writeLiteral(std::string const& lit, std::size_t offset)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Dictionary::Entry Dictionary::readEntry(KeyType const offset)
+Dictionary::Entry Dictionary::readEntry(const KeyType offset)
 {
   return readValue<Entry>(offset);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-std::string Dictionary::readLiteral(KeyType const offset, std::size_t length)
+std::string Dictionary::readLiteral(const KeyType offset, std::size_t length)
 {
   return std::string(map_ + offset, length);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-std::size_t Dictionary::hash(std::string const& str)
+std::size_t Dictionary::hash(const std::string& str)
 {
   std::size_t hash(0);
   for (int i(0); i != str.size(); ++i) {
@@ -122,7 +122,7 @@ std::size_t Dictionary::hash(std::string const& str)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Dictionary::KeyType Dictionary::Lookup(std::string const& lit, bool literalHint)
+Dictionary::KeyType Dictionary::Lookup(const std::string& lit, bool literalHint)
 {
   std::size_t key = hasher_(lit);
   auto it(ids_.find(key));
@@ -158,7 +158,7 @@ Dictionary::KeyType Dictionary::Lookup(std::string const& lit, bool literalHint)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Dictionary::KeyType Dictionary::writeEntry(std::string const& lit, std::ptrdiff_t offset, bool literal)
+Dictionary::KeyType Dictionary::writeEntry(const std::string& lit, std::ptrdiff_t offset, bool literal)
 {
   // not found, create a new entry
   KeyType literalID = nextKey_++;

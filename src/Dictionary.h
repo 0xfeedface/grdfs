@@ -14,7 +14,7 @@ public:
   // fileName constructor, tries to create file with requested name
   Dictionary(const std::string& fileName);
   ~Dictionary();
-  KeyType Lookup(std::string const& key, bool literalHint = false);
+  KeyType Lookup(const std::string& key, bool literalHint = false);
   std::string Find(KeyType key) const;
   std::size_t Size() const { return 0; }
   static const KeyType literalMask = (1UL << (sizeof(KeyType) * 8 - 1));
@@ -46,19 +46,19 @@ private:
   void unmap();
 
   template <typename T>
-  void writeValue(KeyType const offset, T const value) { ::memcpy(map_ + offset, &value, sizeof(T)); }
+  void writeValue(const KeyType offset, const T value) { ::memcpy(map_ + offset, &value, sizeof(T)); }
 
   template <typename T>
-  T readValue(KeyType const offset) { T value; ::memcpy(&value, map_ + offset, sizeof(T)); return value; }
+  T readValue(const KeyType offset) { T value; ::memcpy(&value, map_ + offset, sizeof(T)); return value; }
 
-  std::size_t writeHeader(Entry const& entry, std::size_t offset);
-  std::size_t writeLiteral(std::string const& lit, std::size_t offset);
-  inline Entry readEntry(KeyType const offset);
-  inline std::string readLiteral(KeyType const offset, std::size_t length);
+  std::size_t writeHeader(const Entry& entry, std::size_t offset);
+  std::size_t writeLiteral(const std::string& lit, std::size_t offset);
+  inline Entry readEntry(const KeyType offset);
+  inline std::string readLiteral(const KeyType offset, std::size_t length);
 
-  KeyType writeEntry(std::string const& lit, std::ptrdiff_t offset, bool literal = false);
+  KeyType writeEntry(const std::string& lit, std::ptrdiff_t offset, bool literal = false);
 
-  std::size_t hash(std::string const& str);
+  std::size_t hash(const std::string& str);
 };
 
 #endif
