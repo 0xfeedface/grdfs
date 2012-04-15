@@ -213,7 +213,7 @@ void OpenCLReasoner::spanTriplesByObject(const Store::KeyVector& subjects,
                                          const bool useObject) {
   for (std::size_t i(0), size(subjects.size()); i != size; ++i) {
     KeyType subject(useObject ? objects[i] : subjects[i]);
-    if (!(subject & Dictionary::literalMask)) {
+    if (!(subject & literalMask)) {
       KeyType objectMapIndex(objectMapIndexes[i]);
       if (objectMapIndex) {
         try {

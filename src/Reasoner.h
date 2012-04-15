@@ -38,6 +38,7 @@ public:
   virtual void printStatistics();
   std::size_t inferredTriples() { return inferredTriplesCount_; }
   Store triples_;             // instance + rdf:type triples
+  static const Dictionary::KeyType literalMask = (1UL << (sizeof(Dictionary::KeyType) * 8 - 1));
 protected:
   typedef std::vector<so_pair> PairVector;
   typedef std::unordered_set<term_id> TermSet;

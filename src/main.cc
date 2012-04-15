@@ -20,12 +20,23 @@
 
 #include "types.h"
 #include "Dictionary.h"
+#include "Reasoner.h"
 #include "OpenCLReasoner.h"
 #include "NativeReasoner.h"
 
 // #undef GRDFS_PROFILING
 
 void printUsage();
+
+// TODO: replace with lambda once clang 3.1 is out
+struct LiteralModifier {
+  bool isLiteral = false;
+  void operator()(Dictionary::KeyType& key) {
+    if (isLiteral) {
+      key |= Reasoner::literalMask;
+    }
+  }
+};
 
 int main (int argc, const char* argv[]) {
   if (argc < 2) {
@@ -45,19 +56,24 @@ int main (int argc, const char* argv[]) {
   // NativeReasoner reasoner(dictionary);
 
 #ifdef GRDFS_PROFILING
-  uint64_t preParsing, parsing(0), preLookup, lookup(0), preStorage, storage(0);
+  uint64_t preParsing, postParsing, parsing(0), preLookup, lookup(0), preStorage, storage(0);
 #endif
   TurtleParser parser(file);
+  LiteralModifier modifier;
   std::string subject, predicate, object, subType;
   Type::ID type;
   while (true) {
-#ifdef GRDFS_PROFILING
-    preParsing = mach_absolute_time();
-#endif
     try {
+#ifdef GRDFS_PROFILING
+      preParsing = mach_absolute_time();
+#endif
       if (!parser.parse(subject, predicate, object, type, subType)) {
         break;
       }
+#ifdef GRDFS_PROFILING
+      postParsing = mach_absolute_time();
+      parsing += postParsing - preParsing;
+#endif
     } catch (TurtleParser::Exception& e) {
       std::cerr << e.message << std::endl;
 
@@ -66,16 +82,15 @@ int main (int argc, const char* argv[]) {
         continue;
       }
     }
-#ifdef GRDFS_PROFILING
-    parsing += mach_absolute_time() - preParsing;
-#endif
 
 #ifdef GRDFS_PROFILING
     preLookup = mach_absolute_time();
 #endif
-    term_id subjectID   = dictionary.Lookup(subject);
-    term_id predicateID = dictionary.Lookup(predicate);
-    term_id objectID    = dictionary.Lookup(object, type != Type::ID::URI);
+    Dictionary::KeyType subjectID   = dictionary.Lookup(subject);
+    Dictionary::KeyType predicateID = dictionary.Lookup(predicate);
+
+    modifier.isLiteral = (type != Type::ID::URI);
+    Dictionary::KeyType objectID = dictionary.Lookup(object, modifier);
 #ifdef GRDFS_PROFILING
     lookup += mach_absolute_time() - preLookup;
 #endif
@@ -110,7 +125,7 @@ int main (int argc, const char* argv[]) {
  *       std::string predicate(dictionary.Find(it->predicate));
  *       std::string object(dictionary.Find(it->object));
  * 
- *       if (it->object & Dictionary::literalMask) {
+ *       if (it->object & Reasoner::literalMask) {
  *         std::cout << "<" << subject << "> <" << predicate << "> \"" << object << "\" .\n";
  *       } else {
  *         std::cout << "<" << subject << "> <" << predicate << "> <" << object << "> .\n";

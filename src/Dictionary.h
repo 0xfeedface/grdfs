@@ -5,19 +5,21 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <functional>
 
 class Dictionary {
 public:
   typedef std::size_t KeyType;
+  typedef std::function<void (KeyType&)> KeyModifier;
   // default constructor, uses anonymous backing file
   Dictionary();
   // fileName constructor, tries to create file with requested name
   Dictionary(const std::string& fileName);
   ~Dictionary();
-  KeyType Lookup(const std::string& key, bool literalHint = false);
+  KeyType Lookup(const std::string& lit);
+  KeyType Lookup(const std::string& lit, const KeyModifier& keyModifier);
   std::string Find(KeyType key) const;
   std::size_t Size() const { return 0; }
-  static const KeyType literalMask = (1UL << (sizeof(KeyType) * 8 - 1));
 private:
   typedef std::vector<KeyType> KeyVector;
   typedef std::hash<std::string> StringHasher;
@@ -56,7 +58,7 @@ private:
   inline Entry readEntry(const KeyType offset);
   inline std::string readLiteral(const KeyType offset, std::size_t length);
 
-  KeyType writeEntry(const std::string& lit, std::ptrdiff_t offset, bool literal = false);
+  KeyType writeEntry(const std::string& lit, std::ptrdiff_t offset, const KeyModifier& keyModifier);
 
   std::size_t hash(const std::string& str);
 };

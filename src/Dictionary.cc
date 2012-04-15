@@ -122,7 +122,14 @@ std::size_t Dictionary::hash(const std::string& str)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Dictionary::KeyType Dictionary::Lookup(const std::string& lit, bool literalHint)
+Dictionary::KeyType Dictionary::Lookup(const std::string& lit)
+{
+  KeyModifier emptyModifier;
+  return Lookup(lit, emptyModifier);
+}
+////////////////////////////////////////////////////////////////////////////////
+
+Dictionary::KeyType Dictionary::Lookup(const std::string& lit, const KeyModifier& keyModifier)
 {
   std::size_t key = hasher_(lit);
   auto it(ids_.find(key));
@@ -146,24 +153,25 @@ Dictionary::KeyType Dictionary::Lookup(const std::string& lit, bool literalHint)
     // overflow entry
     std::ptrdiff_t offset = pos_ - map_;
     writeValue(parentOffset + sizeof(KeyType), offset);
-    return writeEntry(lit, offset, literalHint);
+    return writeEntry(lit, offset, keyModifier);
   }
 
   // new entry
   std::ptrdiff_t offset = pos_ - map_;
-  literalID = writeEntry(lit, offset, literalHint);
+  literalID = writeEntry(lit, offset, keyModifier);
   ids_[key] = literalID;
   return literalID;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Dictionary::KeyType Dictionary::writeEntry(const std::string& lit, std::ptrdiff_t offset, bool literal)
+Dictionary::KeyType Dictionary::writeEntry(const std::string& lit, std::ptrdiff_t offset,
+                                           const KeyModifier& keyModifier)
 {
   // not found, create a new entry
   KeyType literalID = nextKey_++;
-  if (literal) {
-    literalID |= literalMask;
+  if (static_cast<bool>(keyModifier)) {
+    keyModifier(literalID);
   }
   Entry newEntry(literalID, 0, lit.size());
   offset = writeHeader(newEntry, offset);
