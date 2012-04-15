@@ -1,11 +1,9 @@
-#define FIN CL_UINT_MAX
 typedef ulong term_id;
-__constant term_id literal_mask = (1UL << (sizeof(term_id) * 8 - 1));
 
 __kernel
-void phase1(__global term_id * input,   /* predicates */
-            __global term_id * results, /* matched predicates */
-            __global term_id * schema,  /* subjects of subPropertyOf statements */
+void phase1(__constant term_id * input,  /* predicates */
+            __global term_id * results,  /* matched predicates */
+            __constant term_id * schema, /* subjects of subPropertyOf statements */
             const uint schema_size)
 {
   size_t globx = get_global_id(0);
@@ -19,7 +17,7 @@ void phase1(__global term_id * input,   /* predicates */
   int upper = schema_size - 1;
   term_id result = 0;
   while (lower <= upper) {
-    int mid = ((uint)lower + (uint)upper) >> 1;
+    int mid = ((uint)lower + (uint)upper) >> 0x1;
     term_id curr = schema[mid];
 
     if (curr < p) {
@@ -35,11 +33,3 @@ void phase1(__global term_id * input,   /* predicates */
   results[globx] = result;
 }
 
-__kernel
-void phase2(__global term_id * input,
-            __global term_id * phase1_results,
-            __global term_id * results,
-            __global term_id * schema,
-            const uint schema_size)
-{
-}
