@@ -138,13 +138,13 @@ int main (int argc, const char* argv[]) {
     std::cerr << err.message() << std::endl;
     exit(EXIT_FAILURE);
   }
+  std::clog << "Inferred triples: " << reasoner.inferredTriples() << std::endl;
 #ifdef GRDFS_PROFILING
   uint64_t afterClosure = mach_absolute_time();
   struct mach_timebase_info info;
   mach_timebase_info(&info);
   std::clog.setf(std::ios::fixed, std::ios::floatfield);
   std::clog.precision(2);
-  std::clog << "Inferred triples: " << reasoner.inferredTriples() << std::endl;
   std::clog << "Closure calculation took " << 1e-6 * ((afterClosure - beforeClosure) * info.numer / info.denom) << " ms" << std::endl;
   std::clog << "Parsing: " << 1e-6 * parsing * info.numer / info.denom << " ms\n";
   std::clog << "Dictionary lookup: " << 1e-6 * lookup * info.numer / info.denom << " ms\n";

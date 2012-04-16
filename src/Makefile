@@ -4,7 +4,7 @@ RM=rm -rf
 
 MAIN=main.cc
 
-CXXFLAGS=-g -Wall -O3 -std=c++11
+CXXFLAGS=-g -Wall -O3
 CXXSOURCES=$(filter-out $(MAIN),$(wildcard *.cc))
 CXXOBJECTS=$(CXXSOURCES:.cc=.o)
 CXXHEADERS=$(wildcard *.h)
@@ -12,9 +12,10 @@ CXXHEADERS=$(wildcard *.h)
 # compiler
 ifeq ($(SYS), Darwin)
 CXX=clang++
-CXXFLAGS+=-stdlib=libc++
+CXXFLAGS+=-std=c++11 -stdlib=libc++
 else
-CXX=g++
+CXX=/opt/llvm-3.0/bin/clang++
+CXXFLAGS+=-std=c++0x
 endif
 
 BUILD=../build
@@ -24,14 +25,14 @@ ifeq ($(SYS), Darwin)
 CXXFLAGS+=-I../include
 LDFLAGS+=-framework OpenCL
 else
-CXXFLAGS+=-I$(AMDAPPSDKROOT)/include
-LDFLAGS+=-L$(AMDAPPSDKROOT)/lib -laticalcl
+CXXFLAGS+=-I../include -I$(AMDAPPSDKROOT)/include
+LDFLAGS+=-L$(AMDAPPSDKROOT)/lib -lOpenCL
 endif
 
 all: $(BUILD)/grdfs
 
 $(BUILD)/grdfs: $(CXXOBJECTS) $(CXXHEADERS) $(MAIN)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $(MAIN) $(CXXOBJECTS)
+	mkdir -p $(BUILD) && $(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $(MAIN) $(CXXOBJECTS)
 
 Reasoner.o: Store.o
 

@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <cstring>
 #include <cstdio>
+#include <cmath>
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <stdexcept>

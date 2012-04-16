@@ -266,7 +266,7 @@ void OpenCLReasoner::computeJoin(Store::KeyVector& target,
   cl::Buffer schemaBuffer;
   createBuffer(schemaBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, match);
   inheritanceKernel.setArg(2, schemaBuffer);
-  inheritanceKernel.setArg(3, match.size());
+  inheritanceKernel.setArg<cl_uint>(3, static_cast<cl_uint>(match.size()));
 
   /* enqueue */
   queue_->enqueueNDRangeKernel(inheritanceKernel,

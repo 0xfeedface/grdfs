@@ -2,6 +2,7 @@
 #define DICTIONARY_H
 
 #include <cstddef> // size_t
+#include <cstring> // memcpy
 #include <string>
 #include <unordered_map>
 #include <vector>
