@@ -6,11 +6,6 @@
 //  Copyright (c) 2011 Norman Heino. All rights reserved.
 //
 
-#if defined(__APPLE__) || defined(__MACOSX)
-#define GRDFS_PROFILING 1
-#include <mach/mach_time.h>
-#endif
-
 #include <iostream>
 #include <cassert>
 #include <memory>
@@ -23,8 +18,9 @@
 #include "Reasoner.h"
 #include "OpenCLReasoner.h"
 #include "NativeReasoner.h"
+#include "Timer.h"
 
-// #undef GRDFS_PROFILING
+#define GRDFS_PROFILING 1
 
 void printUsage();
 
@@ -55,25 +51,18 @@ int main (int argc, const char* argv[]) {
   OpenCLReasoner reasoner(dictionary, CL_DEVICE_TYPE_CPU);
   // NativeReasoner reasoner(dictionary);
 
-#ifdef GRDFS_PROFILING
-  uint64_t preParsing, postParsing, parsing(0), preLookup, lookup(0), preStorage, storage(0);
-#endif
+  Timer parsing, lookup, storage, closure;
   TurtleParser parser(file);
   LiteralModifier modifier;
   std::string subject, predicate, object, subType;
   Type::ID type;
   while (true) {
     try {
-#ifdef GRDFS_PROFILING
-      preParsing = mach_absolute_time();
-#endif
+      parsing.start();
       if (!parser.parse(subject, predicate, object, type, subType)) {
         break;
       }
-#ifdef GRDFS_PROFILING
-      postParsing = mach_absolute_time();
-      parsing += postParsing - preParsing;
-#endif
+      parsing.stop();
     } catch (TurtleParser::Exception& e) {
       std::cerr << e.message << std::endl;
 
@@ -83,17 +72,13 @@ int main (int argc, const char* argv[]) {
       }
     }
 
-#ifdef GRDFS_PROFILING
-    preLookup = mach_absolute_time();
-#endif
+    lookup.start();
     Dictionary::KeyType subjectID   = dictionary.Lookup(subject);
     Dictionary::KeyType predicateID = dictionary.Lookup(predicate);
 
     modifier.isLiteral = (type != Type::ID::URI);
     Dictionary::KeyType objectID = dictionary.Lookup(object, modifier);
-#ifdef GRDFS_PROFILING
-    lookup += mach_absolute_time() - preLookup;
-#endif
+    lookup.stop();
 
     /*
      * if (type != Type::ID::URI) {
@@ -101,21 +86,15 @@ int main (int argc, const char* argv[]) {
      * }
      */
 
-#ifdef GRDFS_PROFILING
-    preStorage = mach_absolute_time();
-#endif
+    storage.start();
     reasoner.addTriple(Store::Triple(subjectID, predicateID, objectID));
-#ifdef GRDFS_PROFILING
-    storage += mach_absolute_time() - preStorage;
-#endif
+    storage.stop();
   }
 
 //  dictionary.Print();
 //  std::cout << "----------------\n";
 
-#ifdef GRDFS_PROFILING
-  uint64_t beforeClosure = mach_absolute_time();
-#endif
+  closure.start();
   try {
     reasoner.computeClosure();
 
@@ -138,17 +117,15 @@ int main (int argc, const char* argv[]) {
     std::cerr << err.message() << std::endl;
     exit(EXIT_FAILURE);
   }
+  closure.stop();
   std::clog << "Inferred triples: " << reasoner.inferredTriples() << std::endl;
 #ifdef GRDFS_PROFILING
-  uint64_t afterClosure = mach_absolute_time();
-  struct mach_timebase_info info;
-  mach_timebase_info(&info);
   std::clog.setf(std::ios::fixed, std::ios::floatfield);
   std::clog.precision(2);
-  std::clog << "Closure calculation took " << 1e-6 * ((afterClosure - beforeClosure) * info.numer / info.denom) << " ms" << std::endl;
-  std::clog << "Parsing: " << 1e-6 * parsing * info.numer / info.denom << " ms\n";
-  std::clog << "Dictionary lookup: " << 1e-6 * lookup * info.numer / info.denom << " ms\n";
-  std::clog << "Storage: " << 1e-6 * storage * info.numer / info.denom << " ms\n";
+  std::clog << "Closure calculation took " << closure.elapsed() << " ms" << std::endl;
+  std::clog << "Parsing: " << parsing.elapsed() << " ms\n";
+  std::clog << "Dictionary lookup: " << lookup.elapsed() << " ms\n";
+  std::clog << "Storage: " << storage.elapsed() << " ms\n";
 #endif
 
   return EXIT_SUCCESS;
