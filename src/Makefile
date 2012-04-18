@@ -12,7 +12,8 @@ CXXHEADERS=$(wildcard *.h)
 # compiler
 ifeq ($(SYS), Darwin)
 CXX=clang++
-CXXFLAGS+=-std=c++11 -stdlib=libc++
+# CXX=/opt/gcc-4.7/bin/g++
+CXXFLAGS+=-std=c++11 $(if $(findstring clang,$(CXX)),-stdlib=libc++,)
 else
 CXX=/opt/llvm-3.0/bin/clang++
 CXXFLAGS+=-std=c++0x
