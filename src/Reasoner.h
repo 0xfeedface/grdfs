@@ -38,6 +38,7 @@ public:
   virtual void computeClosure() = 0;
   virtual void printStatistics();
   std::size_t inferredTriples() { return inferredTriplesCount_; }
+  std::size_t inferredDuplicates() { return inferredDuplicatesCount_; }
   Store triples_;             // instance + rdf:type triples
   static const Dictionary::KeyType literalMask = (1UL << (sizeof(Dictionary::KeyType) * 8 - 1));
   typedef std::map<std::string, double> TimingMap;
@@ -48,6 +49,7 @@ protected:
   typedef std::unordered_map<term_id, TermSet> TermMap;
   typedef Dictionary::KeyType KeyType;
   std::size_t inferredTriplesCount_ = 0;
+  std::size_t inferredDuplicatesCount_ = 0;
 
   term_id subClassOf_, subPropertyOf_, domain_, range_, type_;  // term identifiers for schema vocabulary
   Dictionary& dict_;  // URI -> term identifier dictionary
