@@ -1,11 +1,10 @@
+#include "Timer.h"
+
 #ifdef __APPLE__
 #include <mach/mach_time.h>
 #else
-#include <sys/time.h>
 #include <time.h>
 #endif
-
-#include "Timer.h"
 
 void Timer::start()
 {

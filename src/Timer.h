@@ -2,6 +2,7 @@
 #define TIMER_H
 
 #include <cstddef>
+#include <cstdint>
 
 class Timer {
 public:

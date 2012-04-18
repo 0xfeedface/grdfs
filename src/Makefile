@@ -16,6 +16,7 @@ CXXFLAGS+=-std=c++11 -stdlib=libc++
 else
 CXX=/opt/llvm-3.0/bin/clang++
 CXXFLAGS+=-std=c++0x
+LDFLAGS+=-lrt
 endif
 
 BUILD=../build
