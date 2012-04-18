@@ -114,7 +114,7 @@ std::string Dictionary::readLiteral(const KeyType offset, std::size_t length)
 std::size_t Dictionary::hash(const std::string& str)
 {
   std::size_t hash(0);
-  for (int i(0); i != str.size(); ++i) {
+  for (std::size_t i(0); i != str.size(); ++i) {
     hash = hash * 101 + str[i];
   }
 
