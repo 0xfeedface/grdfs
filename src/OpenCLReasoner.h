@@ -47,6 +47,7 @@ private:
   const std::string programName_ = "src/grdfs_kernels.cl";
   Timer deviceTime_;
   Timer hostTime_;
+  Timer storeTimer_;
   
   cl::Context* context(cl_device_type type);
   cl::CommandQueue* commandQueue(bool enableProfiling = false);

@@ -71,9 +71,7 @@ void OpenCLReasoner::createBuffer(cl::Buffer& buffer, cl_mem_flags flags,
 void OpenCLReasoner::computeClosure() {
   if (spTerms_.size()) {
     // 1) compute rule 5 (subPropertyOf transitivity)
-    hostTime_.start();
     computeTransitiveClosure(spSuccessors_, spPredecessors_);
-    hostTime_.stop();
 
     // 2) compute rule 7 (subPropertyOf inheritance)
     if (triples_.size()) {
@@ -86,7 +84,6 @@ void OpenCLReasoner::computeClosure() {
         schemaSubjects.push_back(subject);
       }
       hostTime_.stop();
-      deviceTime_.start();
       try {
         computeJoin(results, predicates, schemaSubjects);
       } catch (cl::Error& err) {
@@ -94,12 +91,9 @@ void OpenCLReasoner::computeClosure() {
         str << err.what() << " (" << err.err() << ")";
         throw Error(str.str());
       }
-      deviceTime_.stop();
       
-      hostTime_.start();
       spanTriplesByPredicate(triples_.subjects(), triples_.predicates(),
                              triples_.objects(), results, spSuccessors_);
-      hostTime_.stop();
     }
   }
 
@@ -114,7 +108,6 @@ void OpenCLReasoner::computeClosure() {
       schemaSubjects.push_back(subject);
     }
     hostTime_.stop();
-    deviceTime_.start();
     try {
       computeJoin(results, predicates, schemaSubjects);
     } catch (cl::Error& err) {
@@ -122,12 +115,9 @@ void OpenCLReasoner::computeClosure() {
       str << err.what() << " (" << err.err() << ")";
       throw Error(str.str());
     }
-    deviceTime_.stop();
 
-    hostTime_.start();
     spanTriplesByObject(triples_.subjects(), triples_.predicates(),
                         triples_.objects(), results, domTriples_, type_);
-    hostTime_.stop();
   }
 
   if (rngTriples_.size()) {
@@ -141,7 +131,6 @@ void OpenCLReasoner::computeClosure() {
       schemaSubjects.push_back(subject);
     }
     hostTime_.stop();
-    deviceTime_.start();
     try {
       computeJoin(results, predicates, schemaSubjects);
     } catch (cl::Error& err) {
@@ -149,19 +138,14 @@ void OpenCLReasoner::computeClosure() {
       str << err.what() << " (" << err.err() << ")";
       throw Error(str.str());
     }
-    deviceTime_.stop();
 
-    hostTime_.start();
     spanTriplesByObject(triples_.subjects(), triples_.predicates(),
                         triples_.objects(), results, rngTriples_, type_, true);
-    hostTime_.stop();
   }
 
   if (scTerms_.size()) {
     // compute rule 11 (subClassOf transitivity)
-    hostTime_.start();
     computeTransitiveClosure(scSuccessors_, scPredecessors_);
-    hostTime_.stop();
 
     // compute rule 9 (subClassOf inheritance)
     if (triples_.size()) {
@@ -174,7 +158,6 @@ void OpenCLReasoner::computeClosure() {
         schemaSubjects.push_back(subject);
       }
       hostTime_.stop();
-      deviceTime_.start();
       try {
         computeJoin(results, objects, schemaSubjects);
       } catch (cl::Error& err) {
@@ -182,12 +165,9 @@ void OpenCLReasoner::computeClosure() {
         str << err.what() << " (" << err.err() << ")";
         throw Error(str.str());
       }
-      deviceTime_.stop();
 
-      hostTime_.start();
       spanTriplesByObject(triples_.subjects(), triples_.predicates(),
                           triples_.objects(), results, scSuccessors_, type_);
-      hostTime_.stop();
     }
   }
 }
@@ -198,6 +178,7 @@ Reasoner::TimingMap OpenCLReasoner::timings() {
   TimingMap result;
   result.insert(std::make_pair("host", hostTime_.elapsed()));
   result.insert(std::make_pair("device", deviceTime_.elapsed()));
+  result.insert(std::make_pair("uniqueing", storeTimer_.elapsed()));
   return result;
 }
 
@@ -219,10 +200,13 @@ void OpenCLReasoner::spanTriplesByPredicate(const Store::KeyVector& subjects,
     KeyType object(objects[i]);
     KeyType predicateMapIndex(predicateMapIndexes[i]);
     if (predicateMapIndex) {
+      storeTimer_.start();
       try {
         for (auto predicate : predicateMap.at(predicateMapIndex)) {
           if (triples_.addTriple(Store::Triple(subject, predicate, object), Store::kFlagsEntailed)) {
             ++inferredTriplesCount_;
+          } else {
+            ++inferredDuplicatesCount_;
           }
         }
       } catch (std::out_of_range& oor) {
@@ -230,6 +214,7 @@ void OpenCLReasoner::spanTriplesByPredicate(const Store::KeyVector& subjects,
         str << " (" << predicateMapIndex << " not found).";
         throw Error(str.str());
       }
+      storeTimer_.stop();
     }
   }
 }
@@ -253,10 +238,13 @@ void OpenCLReasoner::spanTriplesByObject(const Store::KeyVector& subjects,
     if (!(subject & literalMask)) {
       KeyType objectMapIndex(objectMapIndexes[i]);
       if (objectMapIndex) {
+        storeTimer_.start();
         try {
           for (auto object : objectMap.at(objectMapIndex)) {
             if (triples_.addTriple(Store::Triple(subject, predicate, object), Store::kFlagsEntailed)) {
               ++inferredTriplesCount_;
+            } else {
+              ++inferredDuplicatesCount_;
             }
           }
         } catch (std::out_of_range& oor) {
@@ -264,6 +252,7 @@ void OpenCLReasoner::spanTriplesByObject(const Store::KeyVector& subjects,
           str << " (" << objectMapIndex << " not found).";
           throw Error(str.str());
         }
+        storeTimer_.stop();
       }
     }
   }
@@ -285,6 +274,8 @@ void OpenCLReasoner::spanTriplesByObject(const Store::KeyVector& subjects,
 void OpenCLReasoner::computeJoin(Store::KeyVector& target,
                                  const Store::KeyVector& source,
                                  Store::KeyVector& match) {
+  deviceTime_.start();
+
   cl::Kernel inheritanceKernel(*program(), "phase1");
   std::size_t globalSize = source.size();
 
@@ -322,12 +313,16 @@ void OpenCLReasoner::computeJoin(Store::KeyVector& target,
 
   /* block until done */
   queue_->finish();
+
+  deviceTime_.stop();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void OpenCLReasoner::computeTransitiveClosure(TermMap& successorMap,
                                               const TermMap& predecessorMap) {
+  hostTime_.start();
+
   TermQueue nodes;
   std::unordered_map<term_id, bool> finishedNodes;
 
@@ -377,6 +372,8 @@ void OpenCLReasoner::computeTransitiveClosure(TermMap& successorMap,
       }
     }
   }
+
+  hostTime_.stop();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
