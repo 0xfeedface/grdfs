@@ -24,8 +24,9 @@ typedef std::queue<term_id> TermQueue;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-OpenCLReasoner::OpenCLReasoner(Dictionary& dict) : Reasoner(dict) {
-  context_ = context();
+OpenCLReasoner::OpenCLReasoner(Dictionary& dict, cl_device_type deviceType)
+    : Reasoner(dict) {
+  context_ = context(deviceType);
   // query devices
   std::vector<cl::Device> devices = context_->getInfo<CL_CONTEXT_DEVICES>();
   device_ = &devices[0];

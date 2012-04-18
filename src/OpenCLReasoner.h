@@ -31,7 +31,7 @@
 
 class OpenCLReasoner : public Reasoner {
 public:
-  OpenCLReasoner(Dictionary& dict);
+  OpenCLReasoner(Dictionary& dict, cl_device_type deviceType = CL_DEVICE_TYPE_GPU);
   ~OpenCLReasoner();
   void computeClosure();
 private:
@@ -41,7 +41,7 @@ private:
   cl::Program* program_ = nullptr;
   const std::string programName_ = "src/grdfs_kernels.cl";
   
-  cl::Context* context(cl_device_type type = CL_DEVICE_TYPE_CPU);
+  cl::Context* context(cl_device_type type);
   cl::CommandQueue* commandQueue(bool enableProfiling = false);
   cl::Program* program();
   std::string loadSource(const std::string& filename);

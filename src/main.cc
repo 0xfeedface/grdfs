@@ -52,7 +52,7 @@ int main (int argc, const char* argv[]) {
   }
 
   Dictionary dictionary;
-  OpenCLReasoner reasoner(dictionary);
+  OpenCLReasoner reasoner(dictionary, CL_DEVICE_TYPE_CPU);
   // NativeReasoner reasoner(dictionary);
 
 #ifdef GRDFS_PROFILING
