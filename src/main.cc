@@ -122,10 +122,13 @@ int main (int argc, const char* argv[]) {
 #ifdef GRDFS_PROFILING
   std::clog.setf(std::ios::fixed, std::ios::floatfield);
   std::clog.precision(2);
-  std::clog << "Closure calculation took " << closure.elapsed() << " ms" << std::endl;
   std::clog << "Parsing: " << parsing.elapsed() << " ms\n";
   std::clog << "Dictionary lookup: " << lookup.elapsed() << " ms\n";
   std::clog << "Storage: " << storage.elapsed() << " ms\n";
+  std::clog << "Closure calculation took " << closure.elapsed() << " ms" << std::endl;
+  for (auto value : reasoner.timings()) {
+    std::clog << value.first << ": " << value.second << " ms\n";
+  }
 #endif
 
   return EXIT_SUCCESS;

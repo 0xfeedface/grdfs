@@ -38,12 +38,15 @@ public:
   OpenCLReasoner(Dictionary& dict, cl_device_type deviceType = CL_DEVICE_TYPE_GPU);
   ~OpenCLReasoner();
   void computeClosure();
+  Reasoner::TimingMap timings();
 private:
   cl::Context* context_ = nullptr;
   cl::CommandQueue* queue_ = nullptr;
   cl::Device* device_ = nullptr;
   cl::Program* program_ = nullptr;
   const std::string programName_ = "src/grdfs_kernels.cl";
+  Timer deviceTime_;
+  Timer hostTime_;
   
   cl::Context* context(cl_device_type type);
   cl::CommandQueue* commandQueue(bool enableProfiling = false);

@@ -7,7 +7,6 @@
 //
 
 #include "OpenCLReasoner.h"
-
 #include <vector>
 #include <algorithm>
 #include <map>
@@ -72,10 +71,13 @@ void OpenCLReasoner::createBuffer(cl::Buffer& buffer, cl_mem_flags flags,
 void OpenCLReasoner::computeClosure() {
   if (spTerms_.size()) {
     // 1) compute rule 5 (subPropertyOf transitivity)
+    hostTime_.start();
     computeTransitiveClosure(spSuccessors_, spPredecessors_);
+    hostTime_.stop();
 
     // 2) compute rule 7 (subPropertyOf inheritance)
     if (triples_.size()) {
+      hostTime_.start();
       const Store::KeyVector& predicates(triples_.predicates());
       Store::KeyVector results(predicates.size(), 0);
       Store::KeyVector schemaSubjects;
@@ -83,6 +85,8 @@ void OpenCLReasoner::computeClosure() {
         term_id subject(spSubject.first);
         schemaSubjects.push_back(subject);
       }
+      hostTime_.stop();
+      deviceTime_.start();
       try {
         computeJoin(results, predicates, schemaSubjects);
       } catch (cl::Error& err) {
@@ -90,14 +94,18 @@ void OpenCLReasoner::computeClosure() {
         str << err.what() << " (" << err.err() << ")";
         throw Error(str.str());
       }
+      deviceTime_.stop();
       
+      hostTime_.start();
       spanTriplesByPredicate(triples_.subjects(), triples_.predicates(),
                              triples_.objects(), results, spSuccessors_);
+      hostTime_.stop();
     }
   }
 
   if (domTriples_.size()) {
     // 3) compute rules 2, 3 (domain, range expansion)
+    hostTime_.start();
     const Store::KeyVector predicates(triples_.predicates());
     Store::KeyVector results(predicates.size(), 0);
     Store::KeyVector schemaSubjects;
@@ -105,6 +113,8 @@ void OpenCLReasoner::computeClosure() {
       term_id subject(domSubject.first);
       schemaSubjects.push_back(subject);
     }
+    hostTime_.stop();
+    deviceTime_.start();
     try {
       computeJoin(results, predicates, schemaSubjects);
     } catch (cl::Error& err) {
@@ -112,13 +122,17 @@ void OpenCLReasoner::computeClosure() {
       str << err.what() << " (" << err.err() << ")";
       throw Error(str.str());
     }
+    deviceTime_.stop();
 
+    hostTime_.start();
     spanTriplesByObject(triples_.subjects(), triples_.predicates(),
                         triples_.objects(), results, domTriples_, type_);
+    hostTime_.stop();
   }
 
   if (rngTriples_.size()) {
     // 3) compute rules 2, 3 (domain, range expansion)
+    hostTime_.start();
     const Store::KeyVector predicates(triples_.predicates());
     Store::KeyVector results(predicates.size(), 0);
     Store::KeyVector schemaSubjects;
@@ -126,6 +140,8 @@ void OpenCLReasoner::computeClosure() {
       term_id subject(rangeValue.first);
       schemaSubjects.push_back(subject);
     }
+    hostTime_.stop();
+    deviceTime_.start();
     try {
       computeJoin(results, predicates, schemaSubjects);
     } catch (cl::Error& err) {
@@ -133,17 +149,23 @@ void OpenCLReasoner::computeClosure() {
       str << err.what() << " (" << err.err() << ")";
       throw Error(str.str());
     }
+    deviceTime_.stop();
 
+    hostTime_.start();
     spanTriplesByObject(triples_.subjects(), triples_.predicates(),
                         triples_.objects(), results, rngTriples_, type_, true);
+    hostTime_.stop();
   }
 
   if (scTerms_.size()) {
     // compute rule 11 (subClassOf transitivity)
+    hostTime_.start();
     computeTransitiveClosure(scSuccessors_, scPredecessors_);
+    hostTime_.stop();
 
     // compute rule 9 (subClassOf inheritance)
     if (triples_.size()) {
+      hostTime_.start();
       const Store::KeyVector objects(triples_.objects());
       Store::KeyVector results(objects.size(), 0);
       Store::KeyVector schemaSubjects;
@@ -151,6 +173,8 @@ void OpenCLReasoner::computeClosure() {
         term_id subject(scSubject.first);
         schemaSubjects.push_back(subject);
       }
+      hostTime_.stop();
+      deviceTime_.start();
       try {
         computeJoin(results, objects, schemaSubjects);
       } catch (cl::Error& err) {
@@ -158,11 +182,23 @@ void OpenCLReasoner::computeClosure() {
         str << err.what() << " (" << err.err() << ")";
         throw Error(str.str());
       }
+      deviceTime_.stop();
 
+      hostTime_.start();
       spanTriplesByObject(triples_.subjects(), triples_.predicates(),
                           triples_.objects(), results, scSuccessors_, type_);
+      hostTime_.stop();
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+Reasoner::TimingMap OpenCLReasoner::timings() {
+  TimingMap result;
+  result.insert(std::make_pair("host", hostTime_.elapsed()));
+  result.insert(std::make_pair("device", deviceTime_.elapsed()));
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

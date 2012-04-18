@@ -16,6 +16,7 @@
 #include "types.h"
 #include "Store.h"
 #include "Dictionary.h"
+#include "Timer.h"
 
 // compare pairs by components
 bool operator<(const so_pair& p1, const so_pair& p2);
@@ -39,6 +40,8 @@ public:
   std::size_t inferredTriples() { return inferredTriplesCount_; }
   Store triples_;             // instance + rdf:type triples
   static const Dictionary::KeyType literalMask = (1UL << (sizeof(Dictionary::KeyType) * 8 - 1));
+  typedef std::map<std::string, double> TimingMap;
+  virtual TimingMap timings() = 0;
 protected:
   typedef std::vector<so_pair> PairVector;
   typedef std::unordered_set<term_id> TermSet;
