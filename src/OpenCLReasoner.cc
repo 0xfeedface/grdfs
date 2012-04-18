@@ -328,8 +328,10 @@ void OpenCLReasoner::computeTransitiveClosure(TermMap& successorMap,
 
   // initialize the queue with the leaf nodes
   auto it(std::begin(predecessorMap));
-  for (; it != std::end(predecessorMap); ++it) {
-    if (successorMap.find(it->first) == std::end(successorMap)) {
+  auto end(std::end(predecessorMap));
+  auto succEnd(std::end(successorMap));
+  for (; it != end; ++it) {
+    if (successorMap.find(it->first) == succEnd) {
       nodes.push(it->first);
     }
   }
@@ -344,10 +346,11 @@ void OpenCLReasoner::computeTransitiveClosure(TermMap& successorMap,
     term_id currentNode = nodes.front();
     nodes.pop();
 
-    auto pit = predecessorMap.find(currentNode);
+    auto pit(predecessorMap.find(currentNode));
     if (pit != std::end(predecessorMap)) {
-      auto parent_it = std::begin(pit->second);
-      for (; parent_it != std::end(pit->second); ++parent_it) {
+      auto parent_it(std::begin(pit->second));
+      auto parent_end(std::end(pit->second));
+      for (; parent_it != parent_end; ++parent_it) {
         if (!finishedNodes[*parent_it]) {
           nodes.push(*parent_it);
           finishedNodes[*parent_it] = true;
@@ -360,12 +363,14 @@ void OpenCLReasoner::computeTransitiveClosure(TermMap& successorMap,
     if (cit != std::end(successorMap)) {
       // go through all children of the current node
       auto children_it(std::begin(cit->second));
-      for (; children_it != std::end(cit->second); ++children_it) {
+      auto children_end(std::end(cit->second));
+      for (; children_it != children_end; ++children_it) {
         auto gcit(successorMap.find(*children_it));
         if (gcit != std::end(successorMap)) {
           // add all of the children's children as the current node's children
           auto grandchildren_it(std::begin(gcit->second));
-          for (; grandchildren_it != std::end(gcit->second); ++grandchildren_it) {
+          auto grandchildren_end(std::end(gcit->second));
+          for (; grandchildren_it != grandchildren_end; ++grandchildren_it) {
             successorMap[currentNode].insert(*grandchildren_it);
           }
         }
