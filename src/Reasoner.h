@@ -10,7 +10,7 @@
 #define Reasoner_h
 
 #include <vector>
-#include <unordered_set>
+#include <set>
 #include <unordered_map>
 
 #include "types.h"
@@ -45,7 +45,7 @@ public:
   virtual TimingMap timings() = 0;
 protected:
   typedef std::vector<so_pair> PairVector;
-  typedef std::unordered_set<term_id> TermSet;
+  typedef std::set<term_id> TermSet;
   typedef std::unordered_map<term_id, TermSet> TermMap;
   typedef Dictionary::KeyType KeyType;
   std::size_t inferredTriplesCount_ = 0;
