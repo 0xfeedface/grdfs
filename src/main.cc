@@ -54,6 +54,7 @@ int main (int argc, const char* argv[]) {
   Timer parsing, lookup, storage, closure;
   TurtleParser parser(file);
   LiteralModifier modifier;
+  std::size_t triplesParsed(0);
   std::string subject, predicate, object, subType;
   Type::ID type;
   while (true) {
@@ -63,6 +64,7 @@ int main (int argc, const char* argv[]) {
         break;
       }
       parsing.stop();
+      ++triplesParsed;
     } catch (TurtleParser::Exception& e) {
       std::cerr << e.message << std::endl;
 
@@ -118,16 +120,19 @@ int main (int argc, const char* argv[]) {
     exit(EXIT_FAILURE);
   }
   closure.stop();
+  std::clog << "Parsed triples: " << triplesParsed << std::endl;
   std::clog << "Inferred triples: " << reasoner.inferredTriples() << std::endl;
+  std::clog << "Inferred duplicates: " << reasoner.inferredDuplicates() << std::endl;
 #ifdef GRDFS_PROFILING
   std::clog.setf(std::ios::fixed, std::ios::floatfield);
   std::clog.precision(2);
   std::clog << "Parsing: " << parsing.elapsed() << " ms\n";
   std::clog << "Dictionary lookup: " << lookup.elapsed() << " ms\n";
   std::clog << "Storage: " << storage.elapsed() << " ms\n";
-  std::clog << "Closure calculation took " << closure.elapsed() << " ms" << std::endl;
+  std::clog << "Closure calculation: " << closure.elapsed() << " ms" << std::endl;
+  std::clog << "Detailed reasoner timings\n";
   for (auto value : reasoner.timings()) {
-    std::clog << value.first << ": " << value.second << " ms\n";
+    std::clog << "    " << value.first << ": " << value.second << " ms\n";
   }
 #endif
 
