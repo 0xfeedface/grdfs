@@ -34,15 +34,19 @@ public:
 
   Reasoner(Dictionary& dict);
   virtual ~Reasoner() {}
-  virtual void addTriple(const Store::Triple&);
+  virtual bool addTriple(const Store::Triple&, const Store::TripleFlags f = Store::kFlagsNone);
   virtual void computeClosure() = 0;
   virtual void printStatistics();
   std::size_t inferredTriples() { return inferredTriplesCount_; }
   std::size_t inferredDuplicates() { return inferredDuplicatesCount_; }
-  Store triples_;             // instance + rdf:type triples
   static const Dictionary::KeyType literalMask = (1UL << (sizeof(Dictionary::KeyType) * 8 - 1));
   typedef std::map<std::string, double> TimingMap;
   virtual TimingMap timings() = 0;
+
+  // TODO: should be private
+  Store triples_;       // instance + rdf:type triples
+  Store typeTriples_;   // instance + rdf:type triples
+  Store schemaTriples_; // instance + rdf:type triples
 protected:
   typedef std::vector<so_pair> PairVector;
   typedef std::set<term_id> TermSet;

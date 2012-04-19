@@ -18,27 +18,48 @@ Reasoner::Reasoner(Dictionary& dict) : dict_(dict) {
   type_          = dict.Lookup(kTypeURI);
 }
 
-void Reasoner::addTriple(const Store::Triple& t) {
+bool Reasoner::addTriple(const Store::Triple& t, Store::TripleFlags flags) {
+  bool result(false);
   if (isSchemaProperty(t.predicate)) {
-    if (t.predicate == subClassOf_) {
-      scSuccessors_[t.subject].insert(t.object);
-      scPredecessors_[t.object].insert(t.subject);
-      scTerms_.insert(t.subject);
-      scTerms_.insert(t.object);
-    } else if (t.predicate == subPropertyOf_) {
-      spSuccessors_[t.subject].insert(t.object);
-      spPredecessors_[t.object].insert(t.subject);
-      spTerms_.insert(t.subject);
-      spTerms_.insert(t.object);
-    } else if (t.predicate == domain_) {
-      domTriples_[t.subject].insert(t.object);
-    } else if (t.predicate == range_) {
-      rngTriples_[t.subject].insert(t.object);
+    if (schemaTriples_.addTriple(t, flags)) {
+      // triple is new, put it in the schema indexes
+      if (t.predicate == subClassOf_) {
+        scSuccessors_[t.subject].insert(t.object);
+        scPredecessors_[t.object].insert(t.subject);
+        scTerms_.insert(t.subject);
+        scTerms_.insert(t.object);
+      } else if (t.predicate == subPropertyOf_) {
+        spSuccessors_[t.subject].insert(t.object);
+        spPredecessors_[t.object].insert(t.subject);
+        spTerms_.insert(t.subject);
+        spTerms_.insert(t.object);
+      } else if (t.predicate == domain_) {
+        domTriples_[t.subject].insert(t.object);
+      } else if (t.predicate == range_) {
+        rngTriples_[t.subject].insert(t.object);
+      }
+      result = true;
     }
   } else {
     // store separate non-schema triples
-    triples_.addTriple(t);
+    if (t.predicate == type_) {
+      // index for rdf:type triples
+      result = typeTriples_.addTriple(t, flags);
+    } else {
+      // everything else
+      result = triples_.addTriple(t, flags);
+    }
   }
+
+  if (flags & Store::kFlagsEntailed) {
+    if (result) {
+      ++inferredTriplesCount_;
+    } else {
+      ++inferredDuplicatesCount_;
+    }
+  }
+
+  return result;
 }
 
 void Reasoner::printStatistics() {
