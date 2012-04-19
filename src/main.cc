@@ -23,6 +23,7 @@
 #define GRDFS_PROFILING 1
 
 void printUsage();
+void printTriple(const Store::Triple& t, Dictionary& d);
 
 // TODO: replace with lambda once clang 3.1 is out
 struct LiteralModifier {
@@ -100,20 +101,18 @@ int main (int argc, const char* argv[]) {
   try {
     reasoner.computeClosure();
 
-/*
- *     for (auto it(reasoner.triples_.ebegin()); it != reasoner.triples_.eend(); it++) {
- *       std::string subject(dictionary.Find(it->subject));
- *       std::string predicate(dictionary.Find(it->predicate));
- *       std::string object(dictionary.Find(it->object));
- * 
- *       if (it->object & Reasoner::literalMask) {
- *         std::cout << "<" << subject << "> <" << predicate << "> \"" << object << "\" .\n";
- *       } else {
- *         std::cout << "<" << subject << "> <" << predicate << "> <" << object << "> .\n";
- *       }
- *     }
- *     std::cout << std::endl;
- */
+    /*
+     * for (auto it(reasoner.triples_.ebegin()); it != reasoner.triples_.eend(); it++) {
+     *   printTriple(*it, dictionary);
+     * }
+     * for (auto it(reasoner.typeTriples_.ebegin()); it != reasoner.typeTriples_.eend(); it++) {
+     *   printTriple(*it, dictionary);
+     * }
+     * for (auto it(reasoner.schemaTriples_.ebegin()); it != reasoner.schemaTriples_.eend(); it++) {
+     *   printTriple(*it, dictionary);
+     * }
+     * std::cout << std::endl;
+     */
 
   } catch (Reasoner::Error& err) {
     std::cerr << err.message() << std::endl;
@@ -145,3 +144,14 @@ void printUsage() {
 //  std::cout <<  "       -p: print profiling information" << std::endl;
 }
 
+void printTriple(const Store::Triple& triple, Dictionary& dictionary) {
+  std::string subject(dictionary.Find(triple.subject));
+  std::string predicate(dictionary.Find(triple.predicate));
+  std::string object(dictionary.Find(triple.object));
+
+  if (triple.object & Reasoner::literalMask) {
+    std::cout << "<" << subject << "> <" << predicate << "> \"" << object << "\" .\n";
+  } else {
+    std::cout << "<" << subject << "> <" << predicate << "> <" << object << "> .\n";
+  }
+}
