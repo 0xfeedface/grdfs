@@ -40,6 +40,11 @@ bool Reasoner::addTriple(const Store::Triple& t, Store::TripleFlags flags) {
       }
       result = true;
     }
+  }
+
+  if (t.predicate == type_) {
+    // store rdf:type triples spearately
+    typeTriples_.addTriple(t);
   } else {
     // store separate non-schema triples
     if (t.predicate == type_) {

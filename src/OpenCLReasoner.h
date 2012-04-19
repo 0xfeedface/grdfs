@@ -55,7 +55,8 @@ private:
   cl::Program* program();
   std::string loadSource(const std::string& filename);
   
-  void createBuffer(cl::Buffer& buffer, cl_mem_flags, const Store::KeyVector& data);
+  template <typename T>
+  void createBuffer(cl::Buffer& buffer, cl_mem_flags, const std::vector<T>& data);
 
   void computeTransitiveClosure(TermMap& successorMap,
                                 const TermMap& predecessorMap,
@@ -63,6 +64,11 @@ private:
   
   // Join source against match and store the result in target.
   void computeJoin(Store::KeyVector& target, const Store::KeyVector& source, Store::KeyVector& match);
+  
+  void computeJoin2(std::vector<std::pair<cl_uint, cl_uint>>& target,
+                    const Store::KeyVector& source,
+                    const Store::KeyVector& schemaSubjects,
+                    const std::vector<cl_uint>& schemaSuccessorInfo);
   
   void spanTriplesByPredicate(const Store::KeyVector& subjects,
                               const Store::KeyVector& predicates,

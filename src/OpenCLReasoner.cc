@@ -48,17 +48,18 @@ OpenCLReasoner::~OpenCLReasoner() {
 ////////////////////////////////////////////////////////////////////////////////
 
 // Create an OpenCL buffer from STL vector
+template <typename T>
 void OpenCLReasoner::createBuffer(cl::Buffer& buffer, cl_mem_flags flags,
-                                  const Store::KeyVector& data) {
+                                  const std::vector<T>& data) {
   try {
     buffer = cl::Buffer(*context_,
                         flags,
-                        data.size() * sizeof(Dictionary::KeyType),
+                        data.size() * sizeof(T),
                         // FIXME:
                         // OpenCL C++ bindings do not provide a Buffer constructor
                         // with a const argument, even if the memory is CL_MEM_READ_ONLY,
                         // so we have to cast away the const. :(
-                        const_cast<Dictionary::KeyType*>(data.data()));
+                        const_cast<T*>(data.data()));
   } catch (cl::Error& err) {
     std::stringstream str(err.what());
     str << " (" << err.err() << ")";
@@ -69,7 +70,7 @@ void OpenCLReasoner::createBuffer(cl::Buffer& buffer, cl_mem_flags flags,
 ////////////////////////////////////////////////////////////////////////////////
 
 void OpenCLReasoner::computeClosure() {
-  if (spTerms_.size()) {
+  if (false && spTerms_.size()) {
     // 1) compute rule 5 (subPropertyOf transitivity)
     computeTransitiveClosure(spSuccessors_, spPredecessors_, subPropertyOf_);
 
@@ -99,7 +100,7 @@ void OpenCLReasoner::computeClosure() {
     }
   }
 
-  if (domTriples_.size() && triples_.size()) {
+  if (false && domTriples_.size() && triples_.size()) {
     // 3) compute rules 2, 3 (domain, range expansion)
     hostTime_.start();
     // We use plain non-type, non-schema triples only.
@@ -124,7 +125,7 @@ void OpenCLReasoner::computeClosure() {
                         triples_.objects(), results, domTriples_, type_);
   }
 
-  if (rngTriples_.size() && triples_.size()) {
+  if (false && rngTriples_.size() && triples_.size()) {
     // 3) compute rules 2, 3 (domain, range expansion)
     hostTime_.start();
     // We use plain non-type, non-schema triples only.
@@ -153,28 +154,63 @@ void OpenCLReasoner::computeClosure() {
     // compute rule 11 (subClassOf transitivity)
     computeTransitiveClosure(scSuccessors_, scPredecessors_, subClassOf_);
 
+    Timer copyTimer;
+    copyTimer.start();
+    Store::KeyVector subjects(typeTriples_.subjects());
+    copyTimer.stop();
+    std::cout << copyTimer.elapsed() << " ms\n";
+    
+    Timer sortTimer;
+    sortTimer.start();
+    std::sort(std::begin(subjects), std::end(subjects));
+    sortTimer.stop();
+    std::cout << sortTimer.elapsed() << " ms\n";
+
     // compute rule 9 (subClassOf inheritance)
     if (typeTriples_.size()) {
       hostTime_.start();
       // According to rule 9, we use rdf:type triples only
       const Store::KeyVector& objects(typeTriples_.objects());
-      Store::KeyVector results(objects.size(), 0);
+      std::vector<std::pair<cl_uint, cl_uint>> results(objects.size());
       Store::KeyVector schemaSubjects;
-      for (auto scSubject : scSuccessors_) {
-        term_id subject(scSubject.first);
-        schemaSubjects.push_back(subject);
+      std::vector<cl_uint> schemaSuccessorInfo;
+
+      for (auto svalue : scSuccessors_) {
+        schemaSubjects.push_back(svalue.first);
+        schemaSuccessorInfo.push_back(svalue.second.size());
       }
+
       hostTime_.stop();
       try {
-        computeJoin(results, objects, schemaSubjects);
+        computeJoin2(results, objects, schemaSubjects, schemaSuccessorInfo);
       } catch (cl::Error& err) {
         std::stringstream str;
         str << err.what() << " (" << err.err() << ")";
         throw Error(str.str());
       }
 
-      spanTriplesByObject(typeTriples_.subjects(), typeTriples_.predicates(),
-                          typeTriples_.objects(), results, scSuccessors_, type_);
+      /*
+       * spanTriplesByObject(typeTriples_.subjects(), typeTriples_.predicates(),
+       *                     typeTriples_.objects(), results, scSuccessors_, type_);
+       */
+      /*
+       * const Store::KeyVector& subjects(triples_.subjects());
+       * for (std::size_t i(0), max(subjects.size()); i < max; ++i) {
+       *   storeTimer_.start();
+       *   std::size_t resultIndex(resultIndices[i]);
+       *   std::size_t nextResultIndex((resultIndices.size() > (i + 1)) ? resultIndices[i + 1] : results.size());
+       *   for (std::size_t j(resultIndex); j < nextResultIndex; ++j) {
+       *     if (results[j]) {
+       *       if (triples_.addTriple(Store::Triple(subjects[i], type_, results[j]), Store::kFlagsEntailed)) {
+       *         ++inferredTriplesCount_;
+       *       } else {
+       *         ++inferredDuplicatesCount_;
+       *       }
+       *     }
+       *   }
+       *   storeTimer_.stop();
+       */
+
     }
   }
 }
@@ -283,6 +319,65 @@ void OpenCLReasoner::spanTriplesByObject(const Store::KeyVector& subjects,
                                          const TermMap& objectMap,
                                          const KeyType predicate) {
   spanTriplesByObject(subjects, predicates, objects, objectMapIndexes, objectMap, predicate, false);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void OpenCLReasoner::computeJoin2(std::vector<std::pair<cl_uint, cl_uint>>& target,
+                                  const Store::KeyVector& source,
+                                  const Store::KeyVector& schemaSubjects,
+                                  const std::vector<cl_uint>& schemaSuccessorInfo) {
+  deviceTime_.start();
+
+  cl::Kernel inheritanceKernel(*program(), "phase1b");
+  // std::size_t globalSize = source.size();
+  std::size_t globalSize = ((((source.size() - 1) >> 8) + 1) << 8);
+
+  /* input elements to match */
+  cl::Buffer inputBuffer;
+  createBuffer(inputBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, source);
+  inheritanceKernel.setArg(0, inputBuffer);
+
+  /* output with matching elements or 0 otherwise */
+  cl::Buffer outputBuffer;
+  createBuffer(outputBuffer, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, target);
+  inheritanceKernel.setArg(1, outputBuffer);
+
+  /* schema elements to be matched against */
+  cl::Buffer schemaSubjectBuffer;
+  createBuffer(schemaSubjectBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, schemaSubjects);
+  inheritanceKernel.setArg(2, schemaSubjectBuffer);
+
+  cl::Buffer schemaSuccessorInfoBuffer;
+  createBuffer(schemaSuccessorInfoBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, schemaSuccessorInfo);
+  inheritanceKernel.setArg(3, schemaSuccessorInfoBuffer);
+
+  inheritanceKernel.setArg<cl_uint>(4, static_cast<cl_uint>(schemaSubjects.size()));
+
+  /* enqueue */
+  queue_->enqueueNDRangeKernel(inheritanceKernel,
+                               cl::NullRange,
+                               cl::NDRange(globalSize),
+                               cl::NullRange,
+                               NULL,
+                               NULL);
+
+  /* read */
+  queue_->enqueueReadBuffer(outputBuffer,
+                            CL_TRUE,
+                            0,
+                            target.size() * sizeof(term_id),
+                            target.data());
+
+  std::size_t scan(0);
+  for (auto value : target) {
+    scan += value.second;
+  }
+
+  /* block until done */
+  queue_->finish();
+
+  deviceTime_.stop();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

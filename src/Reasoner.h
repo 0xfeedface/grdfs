@@ -11,7 +11,7 @@
 
 #include <vector>
 #include <set>
-#include <unordered_map>
+#include <map>
 
 #include "types.h"
 #include "Store.h"
@@ -50,7 +50,7 @@ public:
 protected:
   typedef std::vector<so_pair> PairVector;
   typedef std::set<term_id> TermSet;
-  typedef std::unordered_map<term_id, TermSet> TermMap;
+  typedef std::map<term_id, TermSet> TermMap;
   typedef Dictionary::KeyType KeyType;
   std::size_t inferredTriplesCount_ = 0;
   std::size_t inferredDuplicatesCount_ = 0;
