@@ -71,11 +71,13 @@ void OpenCLReasoner::createBuffer(cl::Buffer& buffer, cl_mem_flags flags,
 void OpenCLReasoner::computeClosure() {
   if (spTerms_.size()) {
     // 1) compute rule 5 (subPropertyOf transitivity)
-    computeTransitiveClosure(spSuccessors_, spPredecessors_);
+    computeTransitiveClosure(spSuccessors_, spPredecessors_, subPropertyOf_);
 
     // 2) compute rule 7 (subPropertyOf inheritance)
     if (triples_.size()) {
       hostTime_.start();
+      // We use plain non-type, non-schema triples only.
+      // Otherwise it would be non-authorative.
       const Store::KeyVector& predicates(triples_.predicates());
       Store::KeyVector results(predicates.size(), 0);
       Store::KeyVector schemaSubjects;
@@ -97,9 +99,11 @@ void OpenCLReasoner::computeClosure() {
     }
   }
 
-  if (domTriples_.size()) {
+  if (domTriples_.size() && triples_.size()) {
     // 3) compute rules 2, 3 (domain, range expansion)
     hostTime_.start();
+    // We use plain non-type, non-schema triples only.
+    // Otherwise it would be non-authorative.
     const Store::KeyVector predicates(triples_.predicates());
     Store::KeyVector results(predicates.size(), 0);
     Store::KeyVector schemaSubjects;
@@ -120,9 +124,11 @@ void OpenCLReasoner::computeClosure() {
                         triples_.objects(), results, domTriples_, type_);
   }
 
-  if (rngTriples_.size()) {
+  if (rngTriples_.size() && triples_.size()) {
     // 3) compute rules 2, 3 (domain, range expansion)
     hostTime_.start();
+    // We use plain non-type, non-schema triples only.
+    // Otherwise it would be non-authorative.
     const Store::KeyVector predicates(triples_.predicates());
     Store::KeyVector results(predicates.size(), 0);
     Store::KeyVector schemaSubjects;
@@ -145,12 +151,13 @@ void OpenCLReasoner::computeClosure() {
 
   if (scTerms_.size()) {
     // compute rule 11 (subClassOf transitivity)
-    computeTransitiveClosure(scSuccessors_, scPredecessors_);
+    computeTransitiveClosure(scSuccessors_, scPredecessors_, subClassOf_);
 
     // compute rule 9 (subClassOf inheritance)
-    if (triples_.size()) {
+    if (typeTriples_.size()) {
       hostTime_.start();
-      const Store::KeyVector objects(triples_.objects());
+      // According to rule 9, we use rdf:type triples only
+      const Store::KeyVector objects(typeTriples_.objects());
       Store::KeyVector results(objects.size(), 0);
       Store::KeyVector schemaSubjects;
       for (auto scSubject : scSuccessors_) {
@@ -166,8 +173,8 @@ void OpenCLReasoner::computeClosure() {
         throw Error(str.str());
       }
 
-      spanTriplesByObject(triples_.subjects(), triples_.predicates(),
-                          triples_.objects(), results, scSuccessors_, type_);
+      spanTriplesByObject(typeTriples_.subjects(), typeTriples_.predicates(),
+                          typeTriples_.objects(), results, scSuccessors_, type_);
     }
   }
 }
@@ -203,11 +210,7 @@ void OpenCLReasoner::spanTriplesByPredicate(const Store::KeyVector& subjects,
       storeTimer_.start();
       try {
         for (auto predicate : predicateMap.at(predicateMapIndex)) {
-          if (triples_.addTriple(Store::Triple(subject, predicate, object), Store::kFlagsEntailed)) {
-            ++inferredTriplesCount_;
-          } else {
-            ++inferredDuplicatesCount_;
-          }
+          addTriple(Store::Triple(subject, predicate, object), Store::kFlagsEntailed);
         }
       } catch (std::out_of_range& oor) {
         std::stringstream str(oor.what());
@@ -241,11 +244,7 @@ void OpenCLReasoner::spanTriplesByObject(const Store::KeyVector& subjects,
         storeTimer_.start();
         try {
           for (auto object : objectMap.at(objectMapIndex)) {
-            if (triples_.addTriple(Store::Triple(subject, predicate, object), Store::kFlagsEntailed)) {
-              ++inferredTriplesCount_;
-            } else {
-              ++inferredDuplicatesCount_;
-            }
+            addTriple(Store::Triple(subject, predicate, object), Store::kFlagsEntailed);
           }
         } catch (std::out_of_range& oor) {
           std::stringstream str(oor.what());
@@ -320,7 +319,8 @@ void OpenCLReasoner::computeJoin(Store::KeyVector& target,
 ////////////////////////////////////////////////////////////////////////////////
 
 void OpenCLReasoner::computeTransitiveClosure(TermMap& successorMap,
-                                              const TermMap& predecessorMap) {
+                                              const TermMap& predecessorMap,
+                                              const Dictionary::KeyType property) {
   hostTime_.start();
 
   TermQueue nodes;
@@ -371,7 +371,8 @@ void OpenCLReasoner::computeTransitiveClosure(TermMap& successorMap,
           auto grandchildren_it(std::begin(gcit->second));
           auto grandchildren_end(std::end(gcit->second));
           for (; grandchildren_it != grandchildren_end; ++grandchildren_it) {
-            successorMap[currentNode].insert(*grandchildren_it);
+            addTriple(Store::Triple(currentNode, property, *grandchildren_it), Store::kFlagsEntailed);
+            // successorMap[currentNode].insert(*grandchildren_it);
           }
         }
       }

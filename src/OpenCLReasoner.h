@@ -56,7 +56,9 @@ private:
   
   void createBuffer(cl::Buffer& buffer, cl_mem_flags, const Store::KeyVector& data);
 
-  void computeTransitiveClosure(TermMap& successorMap, const TermMap& predecessorMap);
+  void computeTransitiveClosure(TermMap& successorMap,
+                                const TermMap& predecessorMap,
+                                const Dictionary::KeyType predicate);
   
   // Join source against match and store the result in target.
   void computeJoin(Store::KeyVector& target, const Store::KeyVector& source, Store::KeyVector& match);
