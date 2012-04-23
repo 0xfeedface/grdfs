@@ -18,6 +18,17 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
+struct Dictionary::EntryHeader {
+  KeyType id;
+  KeyType next;
+  std::size_t lsize;
+  EntryHeader() : id(0), next(0), lsize(0) {};
+  EntryHeader(KeyType id_, KeyType next_, std::size_t lsize_)
+      : id(id_), next(next_), lsize(lsize_) {};
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
 Dictionary::Dictionary()
 {
   int openResult = ::fileno(::tmpfile());
@@ -55,17 +66,17 @@ Dictionary::~Dictionary()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-std::size_t Dictionary::writeHeader(const Entry& entry, std::size_t offset)
+std::size_t Dictionary::writeHeader(const EntryHeader& entry, std::size_t offset)
 {
   // prevent string from crossing page boundary,
   // moving it entirely to the next page
-  if ((offset >> LOG2_PAGE_SIZE) < (offset + sizeof(Entry) + entry.lsize) >> LOG2_PAGE_SIZE) {
+  if ((offset >> LOG2_PAGE_SIZE) < (offset + sizeof(EntryHeader) + entry.lsize) >> LOG2_PAGE_SIZE) {
     offset = PAGE_SIZE * ((offset >> LOG2_PAGE_SIZE) + 1);
     pos_ = map_ + offset;
   }
 
   // remap if necessary
-  if ((offset + sizeof(Entry) + entry.lsize) > size_) {
+  if ((offset + sizeof(EntryHeader) + entry.lsize) > size_) {
     unmap();
     map(floorf(GOLDEN_RATIO * numPages_));
     offset = pos_ - map_;
@@ -75,7 +86,7 @@ std::size_t Dictionary::writeHeader(const Entry& entry, std::size_t offset)
   writeValue(offset, entry);
 
   // advance pointer
-  pos_ += sizeof(Entry);
+  pos_ += sizeof(EntryHeader);
 
   return offset;
 }
@@ -97,9 +108,9 @@ std::size_t Dictionary::writeLiteral(const std::string& lit, std::size_t offset)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Dictionary::Entry Dictionary::readEntry(const KeyType offset)
+Dictionary::EntryHeader Dictionary::readEntry(const KeyType offset)
 {
-  return readValue<Entry>(offset);
+  return readValue<EntryHeader>(offset);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -128,39 +139,46 @@ Dictionary::KeyType Dictionary::Lookup(const std::string& lit)
   KeyModifier emptyModifier;
   return Lookup(lit, emptyModifier);
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 
 Dictionary::KeyType Dictionary::Lookup(const std::string& lit, const KeyModifier& keyModifier)
 {
-  std::size_t key = hasher_(lit);
-  auto it(ids_.find(key));
+  // hash the string an use the hash as an index into the id map
+  std::size_t hash = hasher_(lit);
+  auto it(ids_.find(hash));
   KeyType literalID;
 
   if (it != std::end(ids_)) {
+    // we found an id for hash but it could be a collision
+    // check the catual string values
     literalID = it->second;
     std::ptrdiff_t parentOffset = literals_[literalID - 1];
-    Entry entry(0, parentOffset, 0);
+    EntryHeader entry(0, parentOffset, 0);
 
+    // check an entry and all overflow buckets
+    // until there are no more entries or the strings match
     do {
       parentOffset = entry.next;
       entry = readEntry(parentOffset);
       if (entry.lsize == lit.size()) {
-        if (::memcmp(map_ + parentOffset + sizeof(Entry), lit.data(), entry.lsize) == 0) {
+        if (::memcmp(map_ + parentOffset + sizeof(EntryHeader), lit.data(), entry.lsize) == 0) {
+          // strings matched, return the actual id
           return entry.id;
         }
       }
     } while (entry.next);
 
-    // overflow entry
+    // no string did match, so we create a new overflow entry
     std::ptrdiff_t offset = pos_ - map_;
     writeValue(parentOffset + sizeof(KeyType), offset);
     return writeEntry(lit, offset, keyModifier);
   }
 
-  // new entry
+  // no id was found, so we just create a new entry
   std::ptrdiff_t offset = pos_ - map_;
   literalID = writeEntry(lit, offset, keyModifier);
-  ids_[key] = literalID;
+  ids_[hash] = literalID;
   return literalID;
 }
 
@@ -169,14 +187,16 @@ Dictionary::KeyType Dictionary::Lookup(const std::string& lit, const KeyModifier
 Dictionary::KeyType Dictionary::writeEntry(const std::string& lit, std::ptrdiff_t offset,
                                            const KeyModifier& keyModifier)
 {
-  // not found, create a new entry
   KeyType literalID = nextKey_++;
   if (static_cast<bool>(keyModifier)) {
     keyModifier(literalID);
   }
-  Entry newEntry(literalID, 0, lit.size());
+  EntryHeader newEntry(literalID, 0, lit.size());
+  // write the header
   offset = writeHeader(newEntry, offset);
-  writeLiteral(lit, offset + sizeof(Entry));
+  // write the character data
+  writeLiteral(lit, offset + sizeof(EntryHeader));
+  // save the new offset
   literals_.push_back(offset);
   return literalID;
 }
@@ -185,6 +205,8 @@ Dictionary::KeyType Dictionary::writeEntry(const std::string& lit, std::ptrdiff_
 
 std::string Dictionary::Find(KeyType key) const
 {
+  // we should read the complete entry header here,
+  // but we only need the size and the string data
   std::ptrdiff_t offset = literals_[key - 1] + 2 * sizeof(KeyType);
   char* pos = map_ + offset;
 
@@ -193,6 +215,7 @@ std::string Dictionary::Find(KeyType key) const
   ::memcpy(&size, pos, sizeof(size));
   pos += sizeof(size);
 
+  // instantiate string from byte pointer and size
   return std::string(pos, size);
 }
 
@@ -207,17 +230,24 @@ void Dictionary::unmap()
 
 void Dictionary::map(std::size_t numPages)
 {
+  // keep the current offset
   std::ptrdiff_t offset = pos_ - map_;
 
+  // resize the backing file to the new size
   if (::ftruncate(fd_, numPages * PAGE_SIZE - 1) != 0) {
     throw std::runtime_error("Could not change file size.");
   }
+  // map the file into memory
   void* map = ::mmap(0, numPages * PAGE_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd_, 0);
   if (map == MAP_FAILED) {
     throw std::runtime_error("Could not map file.");
   }
+  // the root pointer of the mapping
   map_ = static_cast<char*>(map);
+  // restore psoition pointer
   pos_ = map_ + offset;
+  // update size
   size_ = numPages * PAGE_SIZE;
+  // update number of mapped pages
   numPages_ = numPages;
 }
