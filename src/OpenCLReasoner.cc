@@ -371,8 +371,9 @@ void OpenCLReasoner::computeTransitiveClosure(TermMap& successorMap,
           auto grandchildren_it(std::begin(gcit->second));
           auto grandchildren_end(std::end(gcit->second));
           for (; grandchildren_it != grandchildren_end; ++grandchildren_it) {
+            storeTimer_.start();
             addTriple(Store::Triple(currentNode, property, *grandchildren_it), Store::kFlagsEntailed);
-            // successorMap[currentNode].insert(*grandchildren_it);
+            storeTimer_.stop();
           }
         }
       }
