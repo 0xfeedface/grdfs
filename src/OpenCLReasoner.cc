@@ -104,7 +104,7 @@ void OpenCLReasoner::computeClosure() {
     hostTime_.start();
     // We use plain non-type, non-schema triples only.
     // Otherwise it would be non-authorative.
-    const Store::KeyVector predicates(triples_.predicates());
+    const Store::KeyVector& predicates(triples_.predicates());
     Store::KeyVector results(predicates.size(), 0);
     Store::KeyVector schemaSubjects;
     for (auto domSubject : domTriples_) {
@@ -129,7 +129,7 @@ void OpenCLReasoner::computeClosure() {
     hostTime_.start();
     // We use plain non-type, non-schema triples only.
     // Otherwise it would be non-authorative.
-    const Store::KeyVector predicates(triples_.predicates());
+    const Store::KeyVector& predicates(triples_.predicates());
     Store::KeyVector results(predicates.size(), 0);
     Store::KeyVector schemaSubjects;
     for (auto rangeValue : rngTriples_) {
@@ -157,7 +157,7 @@ void OpenCLReasoner::computeClosure() {
     if (typeTriples_.size()) {
       hostTime_.start();
       // According to rule 9, we use rdf:type triples only
-      const Store::KeyVector objects(typeTriples_.objects());
+      const Store::KeyVector& objects(typeTriples_.objects());
       Store::KeyVector results(objects.size(), 0);
       Store::KeyVector schemaSubjects;
       for (auto scSubject : scSuccessors_) {
