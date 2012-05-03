@@ -81,8 +81,26 @@ TurtleParser::Lexer::Token TurtleParser::Lexer::lexNumber(std::string& token, ch
         if (!read(c)) return Integer;
       }
       if (issep(c)) {
-        unread();
-        return Integer;
+        if (c != '.') {
+          unread();
+          return Integer;
+        } else {
+          /*
+           * a dot is not always a separator.
+           * If we have read a number then a dot followed
+           * by a number is a decimal separator.
+           */
+          char c2;
+          if (!read(c2)) {
+            unread();
+            return Integer;
+          }
+          if ((c2 < '0' || c2 > '9')) {
+            unread(); // c2
+            unread(); // c
+            return Integer;
+          }
+        }
       }
     }
 
