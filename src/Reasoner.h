@@ -48,10 +48,10 @@ public:
   Store typeTriples_;   // instance + rdf:type triples
   Store schemaTriples_; // instance + rdf:type triples
 protected:
-  typedef std::vector<so_pair> PairVector;
   typedef std::set<term_id> TermSet;
   typedef std::map<term_id, TermSet> TermMap;
   typedef Dictionary::KeyType KeyType;
+  typedef std::vector<std::pair<Dictionary::KeyType, Dictionary::KeyType>> PairVector;
   std::size_t inferredTriplesCount_ = 0;
   std::size_t inferredDuplicatesCount_ = 0;
 

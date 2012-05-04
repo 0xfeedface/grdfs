@@ -65,10 +65,12 @@ private:
   // Join source against match and store the result in target.
   void computeJoin(Store::KeyVector& target, const Store::KeyVector& source, Store::KeyVector& match);
   
-  void computeJoin2(std::vector<std::pair<cl_uint, cl_uint>>& target,
+  void computeJoin2(Store::KeyVector& target,
+                    std::vector<std::pair<cl_uint, cl_uint>>& resultInfo,
                     const Store::KeyVector& source,
                     const Store::KeyVector& schemaSubjects,
-                    const std::vector<cl_uint>& schemaSuccessorInfo);
+                    const std::vector<std::pair<cl_uint, cl_uint>>& schemaSuccessorInfo,
+                    const Store::KeyVector& schemaSuccessors);
   
   void spanTriplesByPredicate(const Store::KeyVector& subjects,
                               const Store::KeyVector& predicates,

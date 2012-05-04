@@ -19,6 +19,8 @@
 #include <fstream>
 #include <iostream>
 
+#define MIN(x, y) (x < y ? x : y)
+
 typedef std::queue<term_id> TermQueue;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -154,63 +156,63 @@ void OpenCLReasoner::computeClosure() {
     // compute rule 11 (subClassOf transitivity)
     computeTransitiveClosure(scSuccessors_, scPredecessors_, subClassOf_);
 
-    Timer copyTimer;
-    copyTimer.start();
-    Store::KeyVector subjects(typeTriples_.subjects());
-    copyTimer.stop();
-    std::cout << copyTimer.elapsed() << " ms\n";
-    
-    Timer sortTimer;
-    sortTimer.start();
-    std::sort(std::begin(subjects), std::end(subjects));
-    sortTimer.stop();
-    std::cout << sortTimer.elapsed() << " ms\n";
-
     // compute rule 9 (subClassOf inheritance)
     if (typeTriples_.size()) {
       hostTime_.start();
       // According to rule 9, we use rdf:type triples only
       const Store::KeyVector& objects(typeTriples_.objects());
-      std::vector<std::pair<cl_uint, cl_uint>> results(objects.size());
+      Store::KeyVector results;
       Store::KeyVector schemaSubjects;
-      std::vector<cl_uint> schemaSuccessorInfo;
+      std::vector<std::pair<cl_uint, cl_uint>> schemaSuccessorInfo;
+      Store::KeyVector schemaSuccessors;
+      cl_uint successorSum(0);
 
-      for (auto svalue : scSuccessors_) {
+      for (auto& svalue : scSuccessors_) {
+        // the schema subjects
         schemaSubjects.push_back(svalue.first);
-        schemaSuccessorInfo.push_back(svalue.second.size());
+        // the actual successors
+        for (auto& successor : svalue.second) {
+          schemaSuccessors.push_back(successor);
+        }
+        // number of successors for each schema subject
+        schemaSuccessorInfo.push_back(std::make_pair(svalue.second.size(), successorSum));
+        // update successor sum
+        successorSum += svalue.second.size();
       }
+      std::vector<std::pair<cl_uint, cl_uint>> resultInfo(typeTriples_.size());
 
       hostTime_.stop();
       try {
-        computeJoin2(results, objects, schemaSubjects, schemaSuccessorInfo);
+        computeJoin2(results, resultInfo, objects, schemaSubjects, schemaSuccessorInfo, schemaSuccessors);
       } catch (cl::Error& err) {
         std::stringstream str;
         str << err.what() << " (" << err.err() << ")";
         throw Error(str.str());
       }
 
+      resultInfo.push_back(std::make_pair(CL_UINT_MAX, results.size()));
+
       /*
-       * spanTriplesByObject(typeTriples_.subjects(), typeTriples_.predicates(),
-       *                     typeTriples_.objects(), results, scSuccessors_, type_);
-       */
-      /*
-       * const Store::KeyVector& subjects(triples_.subjects());
-       * for (std::size_t i(0), max(subjects.size()); i < max; ++i) {
-       *   storeTimer_.start();
-       *   std::size_t resultIndex(resultIndices[i]);
-       *   std::size_t nextResultIndex((resultIndices.size() > (i + 1)) ? resultIndices[i + 1] : results.size());
-       *   for (std::size_t j(resultIndex); j < nextResultIndex; ++j) {
-       *     if (results[j]) {
-       *       if (triples_.addTriple(Store::Triple(subjects[i], type_, results[j]), Store::kFlagsEntailed)) {
-       *         ++inferredTriplesCount_;
-       *       } else {
-       *         ++inferredDuplicatesCount_;
-       *       }
-       *     }
-       *   }
-       *   storeTimer_.stop();
+       * for (auto& v : resultInfo) {
+       *   std::cout << v.first << " " << v.second << std::endl;
+       * }
        */
 
+      auto& subjects(typeTriples_.subjects());
+      std::size_t resultSize(results.size());
+      std::size_t resultInfoSize(resultInfo.size());
+      for (std::size_t i(0); i != resultInfoSize; ++i) {
+        if (resultInfo[i].first < CL_UINT_MAX) {
+          auto subject(subjects[i]);
+          auto objectIndex(resultInfo[i].second);
+          auto nextObjectIndex(resultInfo[i + 1].second);
+          for (std::size_t j(objectIndex); j != nextObjectIndex && j != resultSize; ++j) {
+            auto object(results[j]);
+            // std::cout << dict_.Find(subject) << " " << dict_.Find(object) << std::endl;
+            addTriple(Store::Triple(subject, type_, object), Store::kFlagsEntailed);
+          }
+        }
+      }
     }
   }
 }
@@ -323,15 +325,17 @@ void OpenCLReasoner::spanTriplesByObject(const Store::KeyVector& subjects,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void OpenCLReasoner::computeJoin2(std::vector<std::pair<cl_uint, cl_uint>>& target,
+void OpenCLReasoner::computeJoin2(Store::KeyVector& target,
+                                  std::vector<std::pair<cl_uint, cl_uint>>& resultInfo,
                                   const Store::KeyVector& source,
                                   const Store::KeyVector& schemaSubjects,
-                                  const std::vector<cl_uint>& schemaSuccessorInfo) {
+                                  const std::vector<std::pair<cl_uint, cl_uint>>& schemaSuccessorInfo,
+                                  const Store::KeyVector& schemaSuccessors) {
   deviceTime_.start();
 
   cl::Kernel inheritanceKernel(*program(), "phase1b");
-  // std::size_t globalSize = source.size();
-  std::size_t globalSize = ((((source.size() - 1) >> 8) + 1) << 8);
+  std::size_t globalSize = source.size();
+  // std::size_t globalSize = ((((source.size() - 1) >> 8) + 1) << 8);
 
   /* input elements to match */
   cl::Buffer inputBuffer;
@@ -340,7 +344,7 @@ void OpenCLReasoner::computeJoin2(std::vector<std::pair<cl_uint, cl_uint>>& targ
 
   /* output with matching elements or 0 otherwise */
   cl::Buffer outputBuffer;
-  createBuffer(outputBuffer, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, target);
+  createBuffer(outputBuffer, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, resultInfo);
   inheritanceKernel.setArg(1, outputBuffer);
 
   /* schema elements to be matched against */
@@ -366,18 +370,62 @@ void OpenCLReasoner::computeJoin2(std::vector<std::pair<cl_uint, cl_uint>>& targ
   queue_->enqueueReadBuffer(outputBuffer,
                             CL_TRUE,
                             0,
+                            resultInfo.size() * sizeof(term_id),
+                            resultInfo.data());
+
+  deviceTime_.stop();
+
+  // TODO: perform exclusive scan on device
+  std::size_t scan(0);
+  for (auto& value : resultInfo) {
+    cl_uint tmp = value.second;
+    value.second = scan;
+    scan += tmp;
+  }
+
+  deviceTime_.start();
+
+  cl::Kernel matKernel(*program(), "phase1c");
+
+  /* output with entailed objects */
+  cl::Buffer outputBuffer2;
+  target.resize(scan, 0);
+  createBuffer(outputBuffer2, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, target);
+  matKernel.setArg(0, outputBuffer2);
+
+  /* result from above from above */
+  cl::Buffer previousResultsBuffer;
+  createBuffer(previousResultsBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, resultInfo);
+  matKernel.setArg(1, previousResultsBuffer);
+
+  /* same as above */
+  matKernel.setArg(2, schemaSuccessorInfoBuffer);
+
+  /* schema successors */
+  cl::Buffer schemaSuccessorBuffer;
+  createBuffer(schemaSuccessorBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, schemaSuccessors);
+  matKernel.setArg(3, schemaSuccessorBuffer);
+
+  /* enqueue */
+  queue_->enqueueNDRangeKernel(matKernel,
+                               cl::NullRange,
+                               cl::NDRange(globalSize),
+                               cl::NullRange,
+                               NULL,
+                               NULL);
+
+  /* read */
+  queue_->enqueueReadBuffer(outputBuffer2,
+                            CL_TRUE,
+                            0,
                             target.size() * sizeof(term_id),
                             target.data());
 
-  std::size_t scan(0);
-  for (auto value : target) {
-    scan += value.second;
-  }
+  deviceTime_.stop();
 
   /* block until done */
   queue_->finish();
 
-  deviceTime_.stop();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
