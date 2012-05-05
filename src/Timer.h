@@ -11,6 +11,7 @@ public:
   Timer() : total_(0), time_(0) {};
   void start();
   void stop();
+  void addTimer(const Timer& other);
   double elapsed();
 private:
   NanoSeconds total_;

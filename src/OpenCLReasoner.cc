@@ -185,7 +185,8 @@ Reasoner::TimingMap OpenCLReasoner::timings() {
   TimingMap result;
   result.insert(std::make_pair("host", hostTime_.elapsed()));
   result.insert(std::make_pair("device", deviceTime_.elapsed()));
-  result.insert(std::make_pair("uniqueing", storeTimer_.elapsed()));
+  result.insert(std::make_pair("storage", storeTimer_.elapsed()));
+  result.insert(std::make_pair("uniqueing", uniqueingTimer_.elapsed()));
   return result;
 }
 
@@ -207,17 +208,25 @@ void OpenCLReasoner::spanTriplesByPredicate(const Store::KeyVector& subjects,
     KeyType object(objects[i]);
     KeyType predicateMapIndex(predicateMapIndexes[i]);
     if (predicateMapIndex) {
-      storeTimer_.start();
+      Timer t;
+      bool stored(false);
       try {
         for (auto predicate : predicateMap.at(predicateMapIndex)) {
-          addTriple(Store::Triple(subject, predicate, object), Store::kFlagsEntailed);
+          t.start();
+          stored = addTriple(Store::Triple(subject, predicate, object), Store::kFlagsEntailed);
+          t.stop();
         }
       } catch (std::out_of_range& oor) {
+        t.stop();
         std::stringstream str(oor.what());
         str << " (" << predicateMapIndex << " not found).";
         throw Error(str.str());
       }
-      storeTimer_.stop();
+      if (stored) {
+        storeTimer_.addTimer(t);
+      } else {
+        uniqueingTimer_.addTimer(t);
+      }
     }
   }
 }
@@ -241,17 +250,25 @@ void OpenCLReasoner::spanTriplesByObject(const Store::KeyVector& subjects,
     if (!(subject & literalMask)) {
       KeyType objectMapIndex(objectMapIndexes[i]);
       if (objectMapIndex) {
-        storeTimer_.start();
+        Timer t;
+        bool stored(false);
         try {
           for (auto object : objectMap.at(objectMapIndex)) {
-            addTriple(Store::Triple(subject, predicate, object), Store::kFlagsEntailed);
+            t.start();
+            stored = addTriple(Store::Triple(subject, predicate, object), Store::kFlagsEntailed);
+            t.stop();
           }
         } catch (std::out_of_range& oor) {
+          t.stop();
           std::stringstream str(oor.what());
           str << " (" << objectMapIndex << " not found).";
           throw Error(str.str());
         }
-        storeTimer_.stop();
+        if (stored) {
+          storeTimer_.addTimer(t);
+        } else {
+          uniqueingTimer_.addTimer(t);
+        }
       }
     }
   }
@@ -371,9 +388,18 @@ void OpenCLReasoner::computeTransitiveClosure(TermMap& successorMap,
           auto grandchildren_it(std::begin(gcit->second));
           auto grandchildren_end(std::end(gcit->second));
           for (; grandchildren_it != grandchildren_end; ++grandchildren_it) {
-            storeTimer_.start();
-            addTriple(Store::Triple(currentNode, property, *grandchildren_it), Store::kFlagsEntailed);
-            storeTimer_.stop();
+            hostTime_.stop();
+            Timer t;
+            t.start();
+            bool stored = addTriple(Store::Triple(currentNode, property, *grandchildren_it),
+                                    Store::kFlagsEntailed);
+            t.stop();
+            if (stored) {
+              storeTimer_.addTimer(t);
+            } else {
+              uniqueingTimer_.addTimer(t);
+            }
+            hostTime_.start();
           }
         }
       }

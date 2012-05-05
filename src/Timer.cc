@@ -18,6 +18,11 @@ void Timer::stop()
   time_ = 0;
 }
 
+void Timer::addTimer(const Timer& other)
+{
+  total_ += other.total_;
+}
+
 double Timer::elapsed()
 {
 #ifdef __APPLE__
