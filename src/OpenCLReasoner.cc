@@ -209,7 +209,16 @@ void OpenCLReasoner::computeClosure() {
           for (std::size_t j(objectIndex); j != nextObjectIndex && j != resultSize; ++j) {
             auto object(results[j]);
             // std::cout << dict_.Find(subject) << " " << dict_.Find(object) << std::endl;
-            addTriple(Store::Triple(subject, type_, object), Store::kFlagsEntailed);
+            Timer t;
+            t.start();
+            bool stored = addTriple(Store::Triple(subject, type_, object), Store::kFlagsEntailed);
+            t.stop();
+
+            if (stored) {
+              storeTimer_.addTimer(t);
+            } else {
+              uniqueingTimer_.addTimer(t);
+            }
           }
         }
       }
