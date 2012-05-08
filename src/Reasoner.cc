@@ -42,18 +42,13 @@ bool Reasoner::addTriple(const Store::Triple& t, Store::TripleFlags flags) {
     }
   }
 
+  // store separate non-schema triples
   if (t.predicate == type_) {
-    // store rdf:type triples spearately
-    typeTriples_.addTriple(t);
+    // index for rdf:type triples
+    result = typeTriples_.addTriple(t, flags);
   } else {
-    // store separate non-schema triples
-    if (t.predicate == type_) {
-      // index for rdf:type triples
-      result = typeTriples_.addTriple(t, flags);
-    } else {
-      // everything else
-      result = triples_.addTriple(t, flags);
-    }
+    // everything else
+    result = triples_.addTriple(t, flags);
   }
 
   if (flags & Store::kFlagsEntailed) {

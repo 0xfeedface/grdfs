@@ -33,6 +33,29 @@
 #include <map>
 #include <string>
 
+struct BucketInfo {
+  cl_uint start;
+  cl_uint size;
+  // default constuctor
+  BucketInfo() = default;
+  // value constuctor
+  BucketInfo(cl_uint start_, cl_uint size_)
+    : start(start_), size(size_) {};
+};
+
+struct BucketEntry {
+  cl_ulong subject;
+  cl_ulong object;
+  // default constructor
+  BucketEntry() = default;
+  // value constuctor
+  BucketEntry(cl_ulong subject_, cl_ulong object_)
+    : subject(subject_), object(object_) {};
+};
+
+typedef std::vector<BucketInfo> BucketInfoVector;
+typedef std::vector<BucketEntry> BucketVector;
+
 class OpenCLReasoner : public Reasoner {
 public:
   OpenCLReasoner(Dictionary& dict, cl_device_type deviceType = CL_DEVICE_TYPE_GPU);
@@ -65,13 +88,21 @@ private:
   // Join source against match and store the result in target.
   void computeJoin(Store::KeyVector& target, const Store::KeyVector& source, Store::KeyVector& match);
   
-  void computeJoin2(Store::KeyVector& target,
+  void computeJoin2(Store::KeyVector& objectTarget,
+                    Store::KeyVector& subjectTarget,
                     std::vector<std::pair<cl_uint, cl_uint>>& resultInfo,
                     const Store::KeyVector& source,
+                    const Store::KeyVector& subjectSource,
                     const Store::KeyVector& schemaSubjects,
                     const std::vector<std::pair<cl_uint, cl_uint>>& schemaSuccessorInfo,
                     const Store::KeyVector& schemaSuccessors);
-  
+
+  void buildHash(BucketInfoVector& bucketInfos,
+                 BucketVector& buckets,
+                 const Store::KeyVector& subjects,
+                 const Store::KeyVector& objects,
+                 cl_uint& size);
+
   void spanTriplesByPredicate(const Store::KeyVector& subjects,
                               const Store::KeyVector& predicates,
                               const Store::KeyVector& objects,
