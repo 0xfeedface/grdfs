@@ -36,11 +36,12 @@
 struct BucketInfo {
   cl_uint start;
   cl_uint size;
+  cl_uint free;
   // default constuctor
   BucketInfo() = default;
   // value constuctor
   BucketInfo(cl_uint start_, cl_uint size_)
-    : start(start_), size(size_) {};
+    : start(start_), size(size_), free(0) {};
 };
 
 struct BucketEntry {
@@ -96,6 +97,8 @@ private:
                     const Store::KeyVector& schemaSubjects,
                     const std::vector<std::pair<cl_uint, cl_uint>>& schemaSuccessorInfo,
                     const Store::KeyVector& schemaSuccessors);
+
+  std::size_t hashPair(uint64_t first, uint64_t second);
 
   void buildHash(BucketInfoVector& bucketInfos,
                  BucketVector& buckets,

@@ -3,6 +3,7 @@ typedef ulong term_id;
 typedef struct {
   uint start;
   uint size;
+  uint free;
 } bucket_info;
 
 typedef struct {
@@ -10,17 +11,13 @@ typedef struct {
   ulong object;
 } bucket_entry;
 
-__constant ulong k0   = 0xc3a5c85c97cb3127ULL;
-__constant ulong k1   = 0xb492b66fbe98f273ULL;
-__constant ulong k2   = 0x9ae16a3b2f90404fULL;
-__constant ulong k3   = 0xc949d7c7509e6557ULL;
 __constant ulong kMul = 0x9ddfea08eb382d69ULL;
 
-#define ROT(val, shift) (shift == 0 ? (val) : (((val) >> shift) | ((val) << (64 - shift))))
+#define ROT(val, shift) (((val) >> shift) | ((val) << (64 - shift)))
+/* #define ROT(val, shift) (rotate(val, shift)) */
 
-ulong hash_triple(ulong subject, ulong predicate, ulong object);
+ulong hash_triple(ulong subject, ulong object);
 bool should_entail_triple(ulong subject,
-                          ulong predicate,
                           ulong object,
                           const bucket_info* bucket_infos,
                           const bucket_entry* buckets,
@@ -96,33 +93,26 @@ void count_results(__constant term_id* input,
   results[globx] = result;
 }
 
-ulong hash_triple(ulong subject, ulong predicate, ulong object)
+ulong hash_triple(ulong subject, ulong object)
 {
-  ulong a = subject * k1;
-  ulong b = predicate;
-  ulong c = object * k2;
-  ulong d = predicate * k0;
+  ulong b = ROT(object + 16 /* len */, 16 /* len */);
+  ulong c = (subject ^ b) * kMul;
 
-  d = ROT(a - b, 43) + ROT(c, 30) + d;
-  b = a + ROT(b ^ k3, 20) - c + 24 /* len */;
-
-  c = (d ^ b) * kMul;
   c ^= (c >> 47);
   b = (b ^ c) * kMul;
   b ^= (b >> 47);
   b *= kMul;
 
-  return b;
+  return b ^ object;
 }
 
 bool should_entail_triple(ulong subject,
-                          ulong predicate,
                           ulong object,
                           const bucket_info* bucket_infos,
                           const bucket_entry* buckets,
                           const uint size)
 {
-  ulong hash = hash_triple(subject, predicate, object) % size;
+  ulong hash = hash_triple(subject, object) % size;
   uint index = bucket_infos[hash].start;
 
   if (index < UINT_MAX) {
@@ -179,8 +169,7 @@ void materialize_results(__global term_id* results,
                          __constant term_id* subjects,
                          __constant bucket_info* bucket_infos,
                          __constant bucket_entry* buckets,
-                         const uint size,
-                         const ulong predicate)
+                         const uint size)
 {
   size_t globx = get_global_id(0);
 
@@ -199,7 +188,6 @@ void materialize_results(__global term_id* results,
     for (uint i = 0; i < succ.s0; ++i) {
       ulong object = successors[succ.s1 + i];
       if (should_entail_triple(subject,
-                               predicate,
                                object,
                                (const bucket_info*)bucket_infos,
                                (const bucket_entry*)buckets,

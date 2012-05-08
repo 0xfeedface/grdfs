@@ -21,7 +21,7 @@
 #include <iostream>
 
 #define MIN(x, y) (x < y ? x : y)
-
+#define ROT(val, shift) (((val) >> shift) | ((val) << (64 - shift)))
 
 typedef std::queue<term_id> TermQueue;
 
@@ -208,6 +208,8 @@ void OpenCLReasoner::computeClosure() {
             storeTimer_.addTimer(t);
           } else {
             uniqueingTimer_.addTimer(t);
+            // print rejected s, p
+            // std::cout << triple.subject << " " << triple.object << std::endl;
           }
         }
       }
@@ -323,6 +325,22 @@ void OpenCLReasoner::spanTriplesByObject(const Store::KeyVector& subjects,
 
 ////////////////////////////////////////////////////////////////////////////////
 
+std::size_t OpenCLReasoner::hashPair(uint64_t first, uint64_t second)
+{
+  static uint64_t kMul = 0x9ddfea08eb382d69ULL;
+  uint64_t b = ROT(second + 16 /* len */, 16 /* len */);
+  uint64_t c = (first ^ b) * kMul;
+
+  c ^= (c >> 47);
+  b = (b ^ c) * kMul;
+  b ^= (b >> 47);
+  b *= kMul;
+
+  return b ^ second;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void OpenCLReasoner::buildHash(BucketInfoVector& bucketInfos,
                                BucketVector& buckets,
                                const Store::KeyVector& subjects,
@@ -335,20 +353,15 @@ void OpenCLReasoner::buildHash(BucketInfoVector& bucketInfos,
 
   size = globalSize;
 
-  Timer t1, t2, t3;
-
-  t1.start();
-  // hashed index => bucket size
+  // count number of entries for each bucket
   std::vector<cl_uint> bucketSizes(globalSize, 0);
   for (std::size_t i(0), end(subjects.size()); i != end; ++i) {
-    Store::Triple t(subjects[i], type_, objects[i]);
-    std::size_t index(t.hash() % globalSize);
+    std::size_t index(hashPair(subjects[i], objects[i]) & (globalSize - 1));
     ++bucketSizes[index];
     ++entries;
   }
-  t1.stop();
 
-  t2.start();
+  // determine index for each bucket
   std::size_t accumBucketSize(0);
   for (std::size_t i(0); i != globalSize; ++i) {
     if (bucketSizes[i]) {
@@ -358,32 +371,15 @@ void OpenCLReasoner::buildHash(BucketInfoVector& bucketInfos,
       bucketInfos.push_back(BucketInfo(CL_UINT_MAX, 0));
     }
   }
-  t2.stop();
 
-  t3.start();
+  // store bucket data
   buckets.resize(entries);
   for (std::size_t i(0), end(subjects.size()); i != end; ++i) {
-    Store::Triple t(subjects[i], type_, objects[i]);
-    // std::cerr << t.subject << " " << t.object << std::endl;
-    std::size_t hash(t.hash() & (globalSize - 1));
+    std::size_t hash(hashPair(subjects[i], objects[i]) & (globalSize - 1));
     BucketInfo& info(bucketInfos[hash]);
-    // search a free slot
-    for (cl_uint k(0); k != info.size; ++k) {
-      BucketEntry& e(buckets[info.start + k]);
-      if (!e.subject) {
-        e.subject = subjects[i];
-        e.object = objects[i];
-        break;
-      }
-    }
+    cl_uint bucketIndex = info.start + info.free++;
+    buckets[bucketIndex] = BucketEntry(subjects[i], objects[i]);
   }
-  t3.stop();
-
-  std::cerr << "building hash table\n"
-            << "    t1: " << t1.elapsed() << "ms\n"
-            << "    t2: " << t2.elapsed() << "ms\n"
-            << "    t3: " << t3.elapsed() << "ms\n";
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -501,9 +497,6 @@ void OpenCLReasoner::computeJoin2(Store::KeyVector& objectTarget,
 
   /* hash table size */
   matKernel.setArg<cl_uint>(8, static_cast<cl_uint>(size));
-
-  /* predicate */
-  matKernel.setArg<cl_ulong>(9, static_cast<cl_ulong>(type_));
 
   /* enqueue */
   queue_->enqueueNDRangeKernel(matKernel,
