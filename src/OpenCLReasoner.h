@@ -35,8 +35,8 @@
 
 struct BucketInfo {
   cl_uint start;
-  cl_uint size;
-  cl_uint free;
+  cl_ushort size;
+  cl_ushort free;
   // default constuctor
   BucketInfo() = default;
   // value constuctor

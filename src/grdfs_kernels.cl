@@ -2,8 +2,8 @@ typedef ulong term_id;
 
 typedef struct {
   uint start;
-  uint size;
-  uint free;
+  ushort size;
+  ushort free;
 } bucket_info;
 
 typedef struct {
