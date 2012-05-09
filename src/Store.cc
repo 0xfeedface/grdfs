@@ -1,7 +1,7 @@
 #include "Store.h"
 #include <iostream>
 
-#define ROT(val, shift) (shift == 0 ? (val) : (((val) >> shift) | ((val) << (64 - shift))))
+#define ROT(val, shift) (((val) >> shift) | ((val) << (64 - shift)))
 
 bool Store::Triple::operator==(const Triple& rhs) const
 {

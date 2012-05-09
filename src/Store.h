@@ -24,7 +24,8 @@ public:
     Dictionary::KeyType predicate;
     Dictionary::KeyType object;
     Triple() : subject(0), predicate(0), object(0) {};
-    Triple(Dictionary::KeyType s, Dictionary::KeyType p, Dictionary::KeyType o) : subject(s), predicate(p), object(o) {};
+    Triple(Dictionary::KeyType s, Dictionary::KeyType p, Dictionary::KeyType o)
+      : subject(s), predicate(p), object(o) {};
     std::size_t hash() const;
     bool operator==(const Triple& rhs) const;
     bool operator!=(const Triple& rhs) const;
