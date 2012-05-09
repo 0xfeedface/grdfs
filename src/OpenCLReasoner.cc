@@ -65,8 +65,9 @@ void OpenCLReasoner::createBuffer(cl::Buffer& buffer, cl_mem_flags flags,
                         // so we have to cast away the const. :(
                         const_cast<T*>(data.data()));
   } catch (cl::Error& err) {
-    std::stringstream str(err.what());
-    str << " (" << err.err() << ")";
+    std::stringstream str;
+    str << err.what()
+        << " (" << err.err() << ")";
     throw Error(str.str());
   }
 }
