@@ -91,7 +91,6 @@ private:
   
   void computeJoin2(Store::KeyVector& objectTarget,
                     Store::KeyVector& subjectTarget,
-                    std::vector<std::pair<cl_uint, cl_uint>>& resultInfo,
                     const Store::KeyVector& source,
                     const Store::KeyVector& subjectSource,
                     const Store::KeyVector& schemaSubjects,

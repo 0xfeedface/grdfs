@@ -165,7 +165,7 @@ void OpenCLReasoner::computeClosure() {
       // According to rule 9, we use rdf:type triples only
       const Store::KeyVector& objects(typeTriples_.objects());
       const Store::KeyVector& subjects(typeTriples_.subjects());
-      Store::KeyVector results;
+      Store::KeyVector objectResults;
       Store::KeyVector subjectResults;
       Store::KeyVector schemaSubjects;
       std::vector<std::pair<cl_uint, cl_uint>> schemaSuccessorInfo;
@@ -184,20 +184,19 @@ void OpenCLReasoner::computeClosure() {
         // update successor sum
         successorSum += svalue.second.size();
       }
-      std::vector<std::pair<cl_uint, cl_uint>> resultInfo(typeTriples_.size());
 
       hostTime_.stop();
       try {
-        computeJoin2(results, subjectResults, resultInfo, objects, subjects, schemaSubjects, schemaSuccessorInfo, schemaSuccessors);
+        computeJoin2(objectResults, subjectResults, objects, subjects, schemaSubjects, schemaSuccessorInfo, schemaSuccessors);
       } catch (cl::Error& err) {
         std::stringstream str;
         str << err.what() << " (" << err.err() << ")";
         throw Error(str.str());
       }
 
-      for (std::size_t i(0), max(results.size()); i != max; ++i) {
+      for (std::size_t i(0), max(objectResults.size()); i != max; ++i) {
         auto subject(subjectResults[i]);
-        auto object(results[i]);
+        auto object(objectResults[i]);
         if (subject) {
           // std::cout << dict_.Find(subject) << " " << dict_.Find(object) << std::endl;
           Timer t;
@@ -385,10 +384,9 @@ void OpenCLReasoner::buildHash(BucketInfoVector& bucketInfos,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void OpenCLReasoner::computeJoin2(Store::KeyVector& objectTarget,
-                                  Store::KeyVector& subjectTarget,
-                                  std::vector<std::pair<cl_uint, cl_uint>>& resultInfo,
-                                  const Store::KeyVector& source,
+void OpenCLReasoner::computeJoin2(Store::KeyVector& entailedObjects,
+                                  Store::KeyVector& entailedSubjects,
+                                  const Store::KeyVector& objectSource,
                                   const Store::KeyVector& subjectSource,
                                   const Store::KeyVector& schemaSubjects,
                                   const std::vector<std::pair<cl_uint, cl_uint>>& schemaSuccessorInfo,
@@ -396,15 +394,16 @@ void OpenCLReasoner::computeJoin2(Store::KeyVector& objectTarget,
   deviceTime_.start();
 
   cl::Kernel inheritanceKernel(*program(), "count_results");
-  std::size_t globalSize = source.size();
-  // std::size_t globalSize = ((((source.size() - 1) >> 8) + 1) << 8);
+  std::size_t globalSize = subjectSource.size();
+  // std::size_t globalSize = ((((objectSource.size() - 1) >> 8) + 1) << 8);
 
   /* input elements to match */
   cl::Buffer inputBuffer;
-  createBuffer(inputBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, source);
+  createBuffer(inputBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, objectSource);
   inheritanceKernel.setArg(0, inputBuffer);
 
   /* output with matching elements or 0 otherwise */
+  std::vector<std::pair<cl_uint, cl_uint>> resultInfo(globalSize);
   cl::Buffer outputBuffer;
   createBuffer(outputBuffer, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, resultInfo);
   inheritanceKernel.setArg(1, outputBuffer);
@@ -449,7 +448,7 @@ void OpenCLReasoner::computeJoin2(Store::KeyVector& objectTarget,
   BucketInfoVector bucketInfos;
   cl_uint size;
   hostTime_.start();
-  buildHash(bucketInfos, buckets, subjectSource, source, size);
+  buildHash(bucketInfos, buckets, subjectSource, objectSource, size);
   hostTime_.stop();
 
   deviceTime_.start();
@@ -458,14 +457,14 @@ void OpenCLReasoner::computeJoin2(Store::KeyVector& objectTarget,
 
   /* output with entailed objects */
   cl::Buffer objectOutputBuffer;
-  objectTarget.resize(accumResultSize, 0);
-  createBuffer(objectOutputBuffer, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, objectTarget);
+  entailedObjects.resize(accumResultSize, 0);
+  createBuffer(objectOutputBuffer, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, entailedObjects);
   matKernel.setArg(0, objectOutputBuffer);
 
   /* output with subjects for entailed triples */
   cl::Buffer subjectOutputBuffer;
-  subjectTarget.resize(accumResultSize, 0);
-  createBuffer(subjectOutputBuffer, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, subjectTarget);
+  entailedSubjects.resize(accumResultSize, 0);
+  createBuffer(subjectOutputBuffer, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, entailedSubjects);
   matKernel.setArg(1, subjectOutputBuffer);
 
   /* result from above from above */
@@ -511,14 +510,14 @@ void OpenCLReasoner::computeJoin2(Store::KeyVector& objectTarget,
   queue_->enqueueReadBuffer(objectOutputBuffer,
                             CL_FALSE,
                             0,
-                            objectTarget.size() * sizeof(Dictionary::KeyType),
-                            objectTarget.data());
+                            entailedObjects.size() * sizeof(Dictionary::KeyType),
+                            entailedObjects.data());
   /* read subjects */
   queue_->enqueueReadBuffer(subjectOutputBuffer,
                             CL_TRUE,
                             0,
-                            subjectTarget.size() * sizeof(Dictionary::KeyType),
-                            subjectTarget.data());
+                            entailedSubjects.size() * sizeof(Dictionary::KeyType),
+                            entailedSubjects.data());
 
   deviceTime_.stop();
 
