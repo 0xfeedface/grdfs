@@ -17,11 +17,6 @@ __constant ulong kMul = 0x9ddfea08eb382d69ULL;
 /* #define ROT(val, shift) (rotate(val, shift)) */
 
 ulong hash_triple(ulong subject, ulong object);
-bool should_entail_triple(ulong subject,
-                          ulong object,
-                          const bucket_info* bucket_infos,
-                          const bucket_entry* buckets,
-                          const uint size);
 
 __kernel
 void phase1(__constant term_id* input,   /* predicates */
@@ -95,7 +90,7 @@ void count_results(__constant term_id* input,
 
 ulong hash_triple(ulong subject, ulong object)
 {
-  ulong b = ROT(object + 16 /* len */, 16 /* len */);
+  ulong b = ROT(object + 16, 16);
   ulong c = (subject ^ b) * kMul;
 
   c ^= (c >> 47);
@@ -106,59 +101,38 @@ ulong hash_triple(ulong subject, ulong object)
   return b ^ object;
 }
 
-bool should_entail_triple(ulong subject,
-                          ulong object,
-                          const bucket_info* bucket_infos,
-                          const bucket_entry* buckets,
-                          const uint size)
-{
-  ulong hash = hash_triple(subject, object) % size;
-  uint index = bucket_infos[hash].start;
+/* [> __kernel <] */
+/* [> void check_duplicates(__constant ulong2* hashed_terms, <] */
+/* [> __constant ulong* subjects, <] */
+/* [> __constant ulong* objects, <] */
+/* [> __constant uint2* result_info, <] */
+/* [> __constant uint2* successor_info, <] */
+/* [> __constant term_id* successors, <] */
+/* [> const ulong predicate, <] */
+/* [> const uint size) <] */
+/* [> { <] */
+/* [> uint globx = get_global_id(0); <] */
 
-  if (index < UINT_MAX) {
-    uint size = bucket_infos[hash].size;
-    for (uint i = index; i < (index + size); ++i) {
-      bucket_entry e = buckets[i];
-      if (e.subject == subject && e.object == object) {
-        return false;
-      }
-    }
-  }
-  return true;
-}
-
-/* __kernel */
-/* void check_duplicates(__constant ulong2* hashed_terms, */
-/* __constant ulong* subjects, */
-/* __constant ulong* objects, */
-/* __constant uint2* result_info, */
-/* __constant uint2* successor_info, */
-/* __constant term_id* successors, */
-/* const ulong predicate, */
-/* const uint size) */
-/* { */
-/* uint globx = get_global_id(0); */
-
-/* const ulong subject = subjects[globx]; */
+/* [> const ulong subject = subjects[globx]; <] */
 
 /* result.s0 : index into successors or UINT_MAX
  * result.s1 : index into results */
-/* const uint2 result = result_info[globx]; */
+/* [> const uint2 result = result_info[globx]; <] */
 
-/* if (result.s0 < UINT_MAX) { */
+/* [> if (result.s0 < UINT_MAX) { <] */
 /* succ.s0 : number of successors
  * succ.s1 : accumulated number of successors (i.e. index into successors) */
-/* const uint2 succ = successor_info[result.s0]; */
+/* [> const uint2 succ = successor_info[result.s0]; <] */
 
-/* // construct entailed objects (i.e successors) */
-/* for (uint i = 0; i < succ.s0; ++i) { */
-/* // store entailed object */
-/* ulong object = successors[succ.s1 + i]; */
-/* ulong3 triple = { subject, predicate, object }; */
-/* ulong index = hash_triple(triple); */
-/* } */
-/* } */
-/* } */
+/* [> // construct entailed objects (i.e successors) <] */
+/* [> for (uint i = 0; i < succ.s0; ++i) { <] */
+/* [> // store entailed object <] */
+/* [> ulong object = successors[succ.s1 + i]; <] */
+/* [> ulong3 triple = { subject, predicate, object }; <] */
+/* [> ulong index = hash_triple(triple); <] */
+/* [> } <] */
+/* [> } <] */
+/* [> } <] */
 
 __kernel
 void materialize_results(__global term_id* results,
@@ -169,33 +143,40 @@ void materialize_results(__global term_id* results,
                          __constant term_id* subjects,
                          __constant bucket_info* bucket_infos,
                          __constant bucket_entry* buckets,
-                         const uint size)
+                         const uint tableSize)
 {
   size_t globx = get_global_id(0);
 
   const term_id subject = subjects[globx];
 
-  /* result.s0 : index into successors or UINT_MAX
-   * result.s1 : index into results */
+  /* result.s0 : index into successors or UINT_MAX */
+  /* result.s1 : index into results  */
   const uint2 result = result_info[globx];
 
   if (result.s0 < UINT_MAX) {
-    /* succ.s0 : number of successors
-     * succ.s1 : accumulated number of successors (i.e. index into successors) */
+    /* succ.s0 : number of successors */
+    /* succ.s1 : accumulated number of successors (i.e. index into successors)  */
     const uint2 succ = successor_info[result.s0];
 
     // construct entailed objects (i.e successors)
     for (uint i = 0; i < succ.s0; ++i) {
       ulong object = successors[succ.s1 + i];
-      if (should_entail_triple(subject,
-                               object,
-                               (const bucket_info*)bucket_infos,
-                               (const bucket_entry*)buckets,
-                               size)) {
+      ulong hash = hash_triple(subject, object) % tableSize;
+      uint index = bucket_infos[hash].start;
+      bool entail = true;
+      if (index < UINT_MAX) {
+        uint size = bucket_infos[hash].size;
+        for (uint i = index; i < (index + size); ++i) {
+          bucket_entry e = buckets[i];
+          if (e.subject == subject && e.object == object) {
+            entail = false;
+            break;
+          }
+        }
+      }
+      if (entail) {
         results[result.s1 + i] = object;
         subjectResults[result.s1 + i] = subject;
-
-        /* printf((const char*)"%lu %lu\n", subject, object); */
       }
     }
   }
