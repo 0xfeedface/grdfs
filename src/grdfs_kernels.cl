@@ -55,7 +55,7 @@ __kernel
 void count_results(__constant term_id* input,
                    __global uint2* results,
                    __constant term_id* schema,
-                   __constant uint2* successor_info,
+                   __constant uint2* schema_successor_info,
                    const uint schema_size)
 {
   size_t globx = get_global_id(0);
@@ -82,7 +82,7 @@ void count_results(__constant term_id* input,
   }
 
   if (result.s0 < UINT_MAX) {
-    result.s1 = successor_info[result.s0].s0;
+    result.s1 = schema_successor_info[result.s0].s0;
   }
 
   results[globx] = result;
