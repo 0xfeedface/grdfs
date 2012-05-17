@@ -101,39 +101,6 @@ ulong hash_triple(ulong subject, ulong object)
   return b ^ object;
 }
 
-/* [> __kernel <] */
-/* [> void check_duplicates(__constant ulong2* hashed_terms, <] */
-/* [> __constant ulong* subjects, <] */
-/* [> __constant ulong* objects, <] */
-/* [> __constant uint2* result_info, <] */
-/* [> __constant uint2* successor_info, <] */
-/* [> __constant term_id* successors, <] */
-/* [> const ulong predicate, <] */
-/* [> const uint size) <] */
-/* [> { <] */
-/* [> uint globx = get_global_id(0); <] */
-
-/* [> const ulong subject = subjects[globx]; <] */
-
-/* result.s0 : index into successors or UINT_MAX
- * result.s1 : index into results */
-/* [> const uint2 result = result_info[globx]; <] */
-
-/* [> if (result.s0 < UINT_MAX) { <] */
-/* succ.s0 : number of successors
- * succ.s1 : accumulated number of successors (i.e. index into successors) */
-/* [> const uint2 succ = successor_info[result.s0]; <] */
-
-/* [> // construct entailed objects (i.e successors) <] */
-/* [> for (uint i = 0; i < succ.s0; ++i) { <] */
-/* [> // store entailed object <] */
-/* [> ulong object = successors[succ.s1 + i]; <] */
-/* [> ulong3 triple = { subject, predicate, object }; <] */
-/* [> ulong index = hash_triple(triple); <] */
-/* [> } <] */
-/* [> } <] */
-/* [> } <] */
-
 __kernel
 void materialize_results(__global term_id* results,
                          __global term_id* subjectResults,
