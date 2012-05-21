@@ -372,26 +372,22 @@ void OpenCLReasoner::buildHash2(BucketInfoVector& bucketInfos,
     }
   }
 
-  // debug check
-  for (auto& v : successorMap) {
-    BucketInfo& i(bucketInfos[hashTerm(v.first)%size]);
-    bool found(false);
-    for (std::size_t j(0); j != i.size;) {
-      /*
-       * // ignore non-subject entry
-       * if (!((values[i.start + j] & 0xffff000000000000) >> 48)) {
-       *   continue;
-       * }
-       */
-      if ((values[i.start + j] & 0x0000ffffffffffff) == v.first) {
-        found = true;
-        break;
-      }
-      cl_uint size((values[i.start + j] & 0xffff000000000000) >> 48);
-      j += size + 1;
-    }
-    assert(found == true);
-  }
+  /*
+   * // debug check
+   * for (auto& v : successorMap) {
+   *   BucketInfo& i(bucketInfos[hashTerm(v.first)%size]);
+   *   bool found(false);
+   *   for (std::size_t j(0); j != i.size;) {
+   *     if ((values[i.start + j] & 0x0000ffffffffffff) == v.first) {
+   *       found = true;
+   *       break;
+   *     }
+   *     cl_uint size((values[i.start + j] & 0xffff000000000000) >> 48);
+   *     j += size + 1;
+   *   }
+   *   assert(found == true);
+   * }
+   */
 }
 
 void OpenCLReasoner::buildHash(BucketInfoVector& bucketInfos,
