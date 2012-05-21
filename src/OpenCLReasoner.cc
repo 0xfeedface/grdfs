@@ -354,38 +354,49 @@ void OpenCLReasoner::buildHash(BucketInfoVector& bucketInfos,
                                cl_uint& size)
 {
   std::size_t logSize(ceil(log2(subjects.size())));
-  std::size_t globalSize((1 << logSize));
   std::size_t entries(0);
+  size = (1 << logSize);
 
-  size = globalSize;
+  Timer t1, t2, t3, t4;
 
   // count number of entries for each bucket
-  std::vector<cl_uint> bucketSizes(globalSize, 0);
+  std::vector<cl_uint> bucketSizes(size, 0);
+  t1.start();
   for (std::size_t i(0), end(subjects.size()); i != end; ++i) {
-    std::size_t index(hashPair(subjects[i], objects[i]) & (globalSize - 1));
+    std::size_t index(hashPair(subjects[i], objects[i]) & (size - 1));
     ++bucketSizes[index];
     ++entries;
   }
+  t1.stop();
 
   // determine index for each bucket
   std::size_t accumBucketSize(0);
-  for (std::size_t i(0); i != globalSize; ++i) {
+  bucketInfos.reserve(size);
+  t2.start();
+  for (std::size_t i(0); i != size; ++i) {
     if (bucketSizes[i]) {
-      bucketInfos.push_back(BucketInfo(accumBucketSize, bucketSizes[i]));
+      bucketInfos.emplace_back(accumBucketSize, bucketSizes[i]);
       accumBucketSize += bucketSizes[i];
     } else {
-      bucketInfos.push_back(BucketInfo(CL_UINT_MAX, 0));
+      bucketInfos.emplace_back(CL_UINT_MAX, 0);
     }
   }
+  t2.stop();
 
   // store bucket data
   buckets.resize(entries);
+  t3.start();
   for (std::size_t i(0), end(subjects.size()); i != end; ++i) {
-    std::size_t hash(hashPair(subjects[i], objects[i]) & (globalSize - 1));
-    BucketInfo& info(bucketInfos[hash]);
-    cl_uint bucketIndex = info.start + info.free++;
-    buckets[bucketIndex] = BucketEntry(subjects[i], objects[i]);
+    std::size_t hash(hashPair(subjects[i], objects[i]) & (size - 1));
+    cl_uint bucketIndex = bucketInfos[hash].start + bucketInfos[hash].free++;
+    buckets[bucketIndex].subject = subjects[i];
+    buckets[bucketIndex].object = objects[i];
   }
+  t3.stop();
+
+  std::cout << "t1: " << t1.elapsed() << " ms\n"
+            << "t2: " << t2.elapsed() << " ms\n"
+            << "t3: " << t3.elapsed() << " ms\n\n";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
