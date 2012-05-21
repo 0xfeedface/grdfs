@@ -78,6 +78,8 @@ private:
   cl::CommandQueue* commandQueue(bool enableProfiling = false);
   cl::Program* program();
   std::string loadSource(const std::string& filename);
+
+  void computeClosureInternal();
   
   template <typename T>
   void createBuffer(cl::Buffer& buffer, cl_mem_flags, const std::vector<T>& data);
@@ -89,11 +91,13 @@ private:
   // Join source against match and store the result in target.
   void computeJoin(Store::KeyVector& target, const Store::KeyVector& source, Store::KeyVector& match);
   
-  void computeJoin2(Store::KeyVector& objectTarget,
-                    Store::KeyVector& subjectTarget,
-                    const Store::KeyVector& objectSource,
-                    const Store::KeyVector& subjectSource,
-                    const TermMap& schemaSuccessorMap);
+  void computeJoinRule(Store::KeyVector& objectTarget,
+                       Store::KeyVector& subjectTarget,
+                       const Store::KeyVector& objectSource,
+                       const Store::KeyVector& subjectSource,
+                       const TermMap& schemaSuccessorMap,
+                       const Store::KeyVector& indexSubjects,
+                       const Store::KeyVector& indexObjects);
 
   std::size_t hashTerm(uint64_t first);
   std::size_t hashPair(uint64_t first, uint64_t second);
@@ -108,6 +112,10 @@ private:
                   Store::KeyVector& values,
                   const TermMap& successorMap,
                   cl_uint& size);
+
+  void materializeWithProperty(const Store::KeyVector& subjects,
+                               const Store::KeyVector& objects,
+                               const KeyType property);
 
   void spanTriplesByPredicate(const Store::KeyVector& subjects,
                               const Store::KeyVector& predicates,

@@ -12,6 +12,7 @@ typedef struct {
 } bucket_entry;
 
 __constant ulong kMul = 0x9ddfea08eb382d69ULL;
+__constant ulong kLiteralMask = (1UL << 63);
 
 #define ROT(val, shift) (((val) >> shift) | ((val) << (64 - shift)))
 /* #define ROT(val, shift) (rotate(val, shift)) */
@@ -140,8 +141,8 @@ ulong hash_triple(ulong subject, ulong object)
 }
 
 __kernel
-void materialize_results(__global term_id* results,
-                         __global term_id* subjectResults,
+void materialize_results(__global term_id* result_objects,
+                         __global term_id* result_subjects,
                          __global uint2* result_info, /* const, but shared with other kernel */
                          __constant uint2* local_result_info,
                          __constant term_id* schema_buckets,
@@ -157,36 +158,34 @@ void materialize_results(__global term_id* results,
   const uint2 linfo = local_result_info[globx];
   const term_id subject = subjects[linfo.s0];
 
-  // result.s0 : index into schema buckets or UINT_MAX
-  // result.s1 : index into results
-  const uint2 result = result_info[linfo.s0];
+  // do not entail triples with literal subjects
+  if (!(subject & kLiteralMask)) {
+    // result.s0 : index into schema buckets or UINT_MAX
+    // result.s1 : index into results
+    const uint2 result = result_info[linfo.s0];
 
+    if (result.s0 < UINT_MAX) {
+      // construct entailed object (i.e successors)
+      bool entail = true;
+      ulong object = schema_buckets[result.s0 + linfo.s1 + 1];
+      ulong hash = hash_triple(subject, object) % tableSize;
+      uint index = bucket_infos[hash].start;
 
-  if (result.s0 < UINT_MAX) {
-    // term_id t = schema_buckets[result.s0];
-    // ushort size = (t & 0xffff000000000000) >> 48; 
-    // ulong value = t & 0x0000ffffffffffff; 
-
-    // construct entailed object (i.e successors)
-    bool entail = true;
-    ulong object = schema_buckets[result.s0 + linfo.s1 + 1];
-    ulong hash = hash_triple(subject, object) % tableSize;
-    uint index = bucket_infos[hash].start;
-
-    if (index < UINT_MAX) {
-      uint size = bucket_infos[hash].size;
-      for (uint j = index; j < (index + size); ++j) {
-        bucket_entry e = buckets[j];
-        if (e.subject == subject && e.object == object) {
-          entail = false;
-          break;
+      if (index < UINT_MAX) {
+        uint size = bucket_infos[hash].size;
+        for (uint j = index; j < (index + size); ++j) {
+          bucket_entry e = buckets[j];
+          if (e.subject == subject && e.object == object) {
+            entail = false;
+            break;
+          }
         }
       }
-    }
 
-    if (entail) {
-      results[globx] = object;
-      subjectResults[globx] = subject;
+      if (entail) {
+        result_objects[globx] = object;
+        result_subjects[globx] = subject;
+      }
     }
   }
 }

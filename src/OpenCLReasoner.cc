@@ -76,14 +76,28 @@ void OpenCLReasoner::createBuffer(cl::Buffer& buffer, cl_mem_flags flags,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void OpenCLReasoner::computeClosure() {
-  if (false && spTerms_.size()) {
+void OpenCLReasoner::computeClosure()
+{
+  try {
+    computeClosureInternal();
+  } catch (cl::Error& clerr) {
+    std::stringstream str;
+    str << "OpenCL error: " 
+        << clerr.what()
+        << " (" << clerr.err() << ")";
+    throw Error(str.str());
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void OpenCLReasoner::computeClosureInternal() {
+  if (spTerms_.size()) {
     // 1) compute rule 5 (subPropertyOf transitivity)
     computeTransitiveClosure(spSuccessors_, spPredecessors_, subPropertyOf_);
 
     // 2) compute rule 7 (subPropertyOf inheritance)
     if (triples_.size()) {
-      hostTime_.start();
       // We use plain non-type, non-schema triples only.
       // Otherwise it would be non-authorative.
       const Store::KeyVector& predicates(triples_.predicates());
@@ -93,68 +107,37 @@ void OpenCLReasoner::computeClosure() {
         term_id subject(spSubject.first);
         schemaSubjects.push_back(subject);
       }
-      hostTime_.stop();
-      try {
-        computeJoin(results, predicates, schemaSubjects);
-      } catch (cl::Error& err) {
-        std::stringstream str;
-        str << err.what() << " (" << err.err() << ")";
-        throw Error(str.str());
-      }
+      computeJoin(results, predicates, schemaSubjects);
       
       spanTriplesByPredicate(triples_.subjects(), triples_.predicates(),
                              triples_.objects(), results, spSuccessors_);
     }
   }
 
-  if (false && domTriples_.size() && triples_.size()) {
+  if (domTriples_.size() && triples_.size()) {
     // 3) compute rules 2, 3 (domain, range expansion)
-    hostTime_.start();
     // We use plain non-type, non-schema triples only.
     // Otherwise it would be non-authorative.
     const Store::KeyVector& predicates(triples_.predicates());
-    Store::KeyVector results(predicates.size(), 0);
-    Store::KeyVector schemaSubjects;
-    for (auto domSubject : domTriples_) {
-      term_id subject(domSubject.first);
-      schemaSubjects.push_back(subject);
-    }
-    hostTime_.stop();
-    try {
-      computeJoin(results, predicates, schemaSubjects);
-    } catch (cl::Error& err) {
-      std::stringstream str;
-      str << err.what() << " (" << err.err() << ")";
-      throw Error(str.str());
-    }
-
-    spanTriplesByObject(triples_.subjects(), triples_.predicates(),
-                        triples_.objects(), results, domTriples_, type_);
+    const Store::KeyVector& subjects(triples_.subjects());
+    Store::KeyVector objectResults;
+    Store::KeyVector subjectResults;
+    computeJoinRule(objectResults, subjectResults, predicates, subjects, domTriples_,
+                    typeTriples_.subjects(), typeTriples_.objects());
+    materializeWithProperty(subjectResults, objectResults, type_);
   }
 
-  if (false && rngTriples_.size() && triples_.size()) {
+  if (rngTriples_.size() && triples_.size()) {
     // 3) compute rules 2, 3 (domain, range expansion)
-    hostTime_.start();
     // We use plain non-type, non-schema triples only.
     // Otherwise it would be non-authorative.
     const Store::KeyVector& predicates(triples_.predicates());
-    Store::KeyVector results(predicates.size(), 0);
-    Store::KeyVector schemaSubjects;
-    for (auto rangeValue : rngTriples_) {
-      term_id subject(rangeValue.first);
-      schemaSubjects.push_back(subject);
-    }
-    hostTime_.stop();
-    try {
-      computeJoin(results, predicates, schemaSubjects);
-    } catch (cl::Error& err) {
-      std::stringstream str;
-      str << err.what() << " (" << err.err() << ")";
-      throw Error(str.str());
-    }
-
-    spanTriplesByObject(triples_.subjects(), triples_.predicates(),
-                        triples_.objects(), results, rngTriples_, type_, true);
+    const Store::KeyVector& objects(triples_.objects());
+    Store::KeyVector objectResults;
+    Store::KeyVector subjectResults;
+    computeJoinRule(objectResults, subjectResults, predicates, objects, rngTriples_,
+                    typeTriples_.subjects(), typeTriples_.objects());
+    materializeWithProperty(subjectResults, objectResults, type_);
   }
 
   if (scTerms_.size()) {
@@ -163,42 +146,14 @@ void OpenCLReasoner::computeClosure() {
     
     // compute rule 9 (subClassOf inheritance)
     if (typeTriples_.size()) {
-      hostTime_.start();
       // According to rule 9, we use rdf:type triples only
       const Store::KeyVector& objects(typeTriples_.objects());
       const Store::KeyVector& subjects(typeTriples_.subjects());
       Store::KeyVector objectResults;
       Store::KeyVector subjectResults;
-
-      hostTime_.stop();
-      try {
-        computeJoin2(objectResults, subjectResults, objects, subjects, scSuccessors_);
-      } catch (cl::Error& err) {
-        std::stringstream str;
-        str << err.what() << " (" << err.err() << ")";
-        throw Error(str.str());
-      }
-
-      for (std::size_t i(0), max(objectResults.size()); i != max; ++i) {
-        auto subject(subjectResults[i]);
-        auto object(objectResults[i]);
-        if (subject) {
-          // std::cout << subject << " " << object << std::endl;
-          // std::cout << dict_.Find(subject) << " " << dict_.Find(object) << std::endl;
-          Timer t;
-          t.start();
-          Store::Triple triple(subject, type_, object);
-          bool stored = addTriple(triple, Store::kFlagsEntailed);
-          t.stop();
-          if (stored) {
-            storeTimer_.addTimer(t);
-          } else {
-            uniqueingTimer_.addTimer(t);
-            // print rejected s, p
-            // std::cout << triple.subject << " " << triple.object << std::endl;
-          }
-        }
-      }
+      computeJoinRule(objectResults, subjectResults, objects, subjects, scSuccessors_,
+                      subjects, objects);
+      materializeWithProperty(subjectResults, objectResults, type_);
     }
   }
 }
@@ -212,6 +167,33 @@ Reasoner::TimingMap OpenCLReasoner::timings() {
   result.insert(std::make_pair("storage", storeTimer_.elapsed()));
   result.insert(std::make_pair("uniqueing", uniqueingTimer_.elapsed()));
   return result;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void OpenCLReasoner::materializeWithProperty(const Store::KeyVector& subjects,
+                                             const Store::KeyVector& objects,
+                                             const KeyType property) {
+  for (std::size_t i(0), end(subjects.size()); i != end; ++i) {
+    auto subject(subjects[i]);
+    auto object(objects[i]);
+    if (subject) {
+      // std::cout << subject << " " << object << std::endl;
+      // std::cout << dict_.Find(subject) << " " << dict_.Find(object) << std::endl;
+      Timer t;
+      t.start();
+      Store::Triple triple(subject, property, object);
+      bool stored = addTriple(triple, Store::kFlagsEntailed);
+      t.stop();
+      if (stored) {
+        storeTimer_.addTimer(t);
+      } else {
+        uniqueingTimer_.addTimer(t);
+        // print rejected s, p
+        // std::cout << triple.subject << " " << triple.object << std::endl;
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -449,11 +431,13 @@ void OpenCLReasoner::buildHash(BucketInfoVector& bucketInfos,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void OpenCLReasoner::computeJoin2(Store::KeyVector& entailedObjects,
-                                  Store::KeyVector& entailedSubjects,
-                                  const Store::KeyVector& objectSource,
-                                  const Store::KeyVector& subjectSource,
-                                  const TermMap& schemaSuccessorMap) {
+void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
+                                     Store::KeyVector& entailedSubjects,
+                                     const Store::KeyVector& objectSource,
+                                     const Store::KeyVector& subjectSource,
+                                     const TermMap& schemaSuccessorMap,
+                                     const Store::KeyVector& indexSubjects,
+                                     const Store::KeyVector& indexObjects) {
   deviceTime_.start();
 
   cl::Kernel inheritanceKernel(*program(), "count_results_hashed");
@@ -527,7 +511,7 @@ void OpenCLReasoner::computeJoin2(Store::KeyVector& entailedObjects,
   BucketInfoVector bucketInfos;
   cl_uint size;
   hostTime_.start();
-  buildHash(bucketInfos, buckets, subjectSource, objectSource, size);
+  buildHash(bucketInfos, buckets, indexSubjects, indexObjects, size);
   hostTime_.stop();
 
   deviceTime_.start();
