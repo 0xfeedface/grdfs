@@ -32,7 +32,8 @@ OpenCLReasoner::OpenCLReasoner(Dictionary& dict, cl_device_type deviceType)
   context_ = context(deviceType);
   // query devices
   std::vector<cl::Device> devices = context_->getInfo<CL_CONTEXT_DEVICES>();
-  device_ = &devices[0];
+  // we use the first device
+  device_ = new cl::Device(devices[0]);
   queue_ = commandQueue();
 }
 
@@ -40,6 +41,7 @@ OpenCLReasoner::OpenCLReasoner(Dictionary& dict, cl_device_type deviceType)
 
 OpenCLReasoner::~OpenCLReasoner() {
   delete context_;
+  delete device_;
   delete queue_;
 
   // program_ is created lazily, so at this point we don't know
