@@ -160,7 +160,7 @@ void OpenCLReasoner::computeClosure() {
   if (scTerms_.size()) {
     // compute rule 11 (subClassOf transitivity)
     computeTransitiveClosure(scSuccessors_, scPredecessors_, subClassOf_);
-
+    
     // compute rule 9 (subClassOf inheritance)
     if (typeTriples_.size()) {
       hostTime_.start();
@@ -169,27 +169,10 @@ void OpenCLReasoner::computeClosure() {
       const Store::KeyVector& subjects(typeTriples_.subjects());
       Store::KeyVector objectResults;
       Store::KeyVector subjectResults;
-      Store::KeyVector schemaSubjects;
-      std::vector<std::pair<cl_uint, cl_uint>> schemaSuccessorInfo;
-      Store::KeyVector schemaSuccessors;
-      cl_uint successorSum(0);
-
-      for (auto& svalue : scSuccessors_) {
-        // the schema subjects
-        schemaSubjects.push_back(svalue.first);
-        // the actual successors
-        for (auto& successor : svalue.second) {
-          schemaSuccessors.push_back(successor);
-        }
-        // number of successors for each schema subject
-        schemaSuccessorInfo.push_back(std::make_pair(svalue.second.size(), successorSum));
-        // update successor sum
-        successorSum += svalue.second.size();
-      }
 
       hostTime_.stop();
       try {
-        computeJoin2(objectResults, subjectResults, objects, subjects, schemaSubjects, schemaSuccessorInfo, schemaSuccessors);
+        computeJoin2(objectResults, subjectResults, objects, subjects, scSuccessors_);
       } catch (cl::Error& err) {
         std::stringstream str;
         str << err.what() << " (" << err.err() << ")";
@@ -200,6 +183,7 @@ void OpenCLReasoner::computeClosure() {
         auto subject(subjectResults[i]);
         auto object(objectResults[i]);
         if (subject) {
+          // std::cout << subject << " " << object << std::endl;
           // std::cout << dict_.Find(subject) << " " << dict_.Find(object) << std::endl;
           Timer t;
           t.start();
@@ -327,6 +311,14 @@ void OpenCLReasoner::spanTriplesByObject(const Store::KeyVector& subjects,
 
 ////////////////////////////////////////////////////////////////////////////////
 
+std::size_t OpenCLReasoner::hashTerm(uint64_t term)
+{
+  // TODO: real 8 byte hash
+  return hashPair(term, 0UL);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 std::size_t OpenCLReasoner::hashPair(uint64_t first, uint64_t second)
 {
   static uint64_t kMul = 0x9ddfea08eb382d69ULL;
@@ -342,6 +334,77 @@ std::size_t OpenCLReasoner::hashPair(uint64_t first, uint64_t second)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+void OpenCLReasoner::buildHash2(BucketInfoVector& bucketInfos,
+                                Store::KeyVector& values,
+                                const TermMap& successorMap,
+                                cl_uint& size)
+{
+  // round to next power of two for sizeo
+  std::size_t logSize(ceil(log2(successorMap.size())) + 1);
+  std::size_t entries(0);
+  size = (1 << logSize);
+
+  // count number of entries per bucket index
+  std::vector<cl_uint> bucketSizes(size, 0);
+  for (auto& v : successorMap) {
+    if (v.second.size()) {
+      std::size_t hash(hashTerm(v.first) % size);
+      // one new bucket entry
+      bucketSizes[hash] += 1 + v.second.size();
+      entries += 1 + v.second.size();
+    }
+  }
+
+  // determine index for each bucket
+  std::size_t accumBucketSize(0);
+  for (std::size_t i(0); i != size; ++i) {
+    cl_uint bucketSize(bucketSizes[i]);
+    if (bucketSize) {
+      bucketInfos.emplace_back(BucketInfo(accumBucketSize, bucketSize));
+      accumBucketSize += bucketSize;
+    } else {
+      bucketInfos.emplace_back(BucketInfo(CL_UINT_MAX, 0));
+    }
+  }
+
+  // store bucket data
+  values.resize(entries);
+  for (auto& v : successorMap) {
+    if (v.second.size()) {
+      std::size_t hash(hashTerm(v.first) % size);
+      BucketInfo& info(bucketInfos[hash]);
+      cl_uint bucketIndex = info.start + info.free;
+      values[bucketIndex] = v.first | (v.second.size() << 48);
+      unsigned i(0);
+      for (auto& w : v.second) {
+        values[bucketIndex + ++i] = w;
+      }
+      info.free += 1 + v.second.size();
+    }
+  }
+
+  // debug check
+  for (auto& v : successorMap) {
+    BucketInfo& i(bucketInfos[hashTerm(v.first)%size]);
+    bool found(false);
+    for (std::size_t j(0); j != i.size;) {
+      /*
+       * // ignore non-subject entry
+       * if (!((values[i.start + j] & 0xffff000000000000) >> 48)) {
+       *   continue;
+       * }
+       */
+      if ((values[i.start + j] & 0x0000ffffffffffff) == v.first) {
+        found = true;
+        break;
+      }
+      cl_uint size((values[i.start + j] & 0xffff000000000000) >> 48);
+      j += size + 1;
+    }
+    assert(found == true);
+  }
+}
 
 void OpenCLReasoner::buildHash(BucketInfoVector& bucketInfos,
                                BucketVector& buckets,
@@ -390,38 +453,43 @@ void OpenCLReasoner::computeJoin2(Store::KeyVector& entailedObjects,
                                   Store::KeyVector& entailedSubjects,
                                   const Store::KeyVector& objectSource,
                                   const Store::KeyVector& subjectSource,
-                                  const Store::KeyVector& schemaSubjects,
-                                  const std::vector<std::pair<cl_uint, cl_uint>>& schemaSuccessorInfo,
-                                  const Store::KeyVector& schemaSuccessors) {
+                                  const TermMap& schemaSuccessorMap) {
   deviceTime_.start();
 
-  cl::Kernel inheritanceKernel(*program(), "count_results");
+  cl::Kernel inheritanceKernel(*program(), "count_results_hashed");
   std::size_t globalSize = subjectSource.size();
-  // std::size_t globalSize = ((((objectSource.size() - 1) >> 8) + 1) << 8);
 
-  /* input elements to match */
-  cl::Buffer inputBuffer;
-  createBuffer(inputBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, objectSource);
-  inheritanceKernel.setArg(0, inputBuffer);
-
-  /* output with matching elements or 0 otherwise */
+  // output pairs with (matching element or CL_UINT_MAX, size)
   std::vector<std::pair<cl_uint, cl_uint>> resultInfo(globalSize);
   cl::Buffer outputBuffer;
   createBuffer(outputBuffer, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, resultInfo);
-  inheritanceKernel.setArg(1, outputBuffer);
+  inheritanceKernel.setArg(0, outputBuffer);
 
-  /* schema elements to be matched against */
-  cl::Buffer schemaSubjectBuffer;
-  createBuffer(schemaSubjectBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, schemaSubjects);
-  inheritanceKernel.setArg(2, schemaSubjectBuffer);
+  // input elements to join 
+  cl::Buffer inputBuffer;
+  createBuffer(inputBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, objectSource);
+  inheritanceKernel.setArg(1, inputBuffer);
 
-  cl::Buffer schemaSuccessorInfoBuffer;
-  createBuffer(schemaSuccessorInfoBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, schemaSuccessorInfo);
-  inheritanceKernel.setArg(3, schemaSuccessorInfoBuffer);
+  // build hash table for join
+  BucketInfoVector schemaBucketInfos;
+  Store::KeyVector schemaBuckets;
+  cl_uint schemaBucketHashTableSize;
+  buildHash2(schemaBucketInfos, schemaBuckets, schemaSuccessorMap, schemaBucketHashTableSize);
 
-  inheritanceKernel.setArg<cl_uint>(4, static_cast<cl_uint>(schemaSubjects.size()));
+  // schema bucket infos
+  cl::Buffer schemaBucketInfoBuffer;
+  createBuffer(schemaBucketInfoBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, schemaBucketInfos);
+  inheritanceKernel.setArg(2, schemaBucketInfoBuffer);
 
-  /* enqueue */
+  // schema buckets
+  cl::Buffer schemaBucketBuffer;
+  createBuffer(schemaBucketBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, schemaBuckets);
+  inheritanceKernel.setArg(3, schemaBucketBuffer);
+
+  // size of the hash table
+  inheritanceKernel.setArg<cl_uint>(4, schemaBucketHashTableSize);
+
+  // enqueue 
   queue_->enqueueNDRangeKernel(inheritanceKernel,
                                cl::NullRange,
                                cl::NDRange(globalSize),
@@ -429,7 +497,7 @@ void OpenCLReasoner::computeJoin2(Store::KeyVector& entailedObjects,
                                NULL,
                                NULL);
 
-  /* read */
+  // read 
   queue_->enqueueReadBuffer(outputBuffer,
                             CL_TRUE,
                             0,
@@ -440,9 +508,18 @@ void OpenCLReasoner::computeJoin2(Store::KeyVector& entailedObjects,
 
   // TODO: perform exclusive scan on device
   std::size_t accumResultSize(0);
-  for (auto& value : resultInfo) {
+  std::vector<std::pair<cl_uint, cl_uint>> localResultInfo;
+  std::size_t localResultSize(0);
+  for (std::size_t i(0), end(resultInfo.size()); i != end; ++i) {
+    auto& value(resultInfo[i]);
     cl_uint tmp = value.second;
     value.second = accumResultSize;
+    // create local mapping
+    // each thread can determine which successor of a given
+    // subject it operates on
+    for (int localSize(0); localSize != tmp; ++localSize) {
+      localResultInfo.push_back(std::make_pair(i, localSize));
+    }
     accumResultSize += tmp;
   }
 
@@ -457,73 +534,73 @@ void OpenCLReasoner::computeJoin2(Store::KeyVector& entailedObjects,
 
   cl::Kernel matKernel(*program(), "materialize_results");
 
-  /* output with entailed objects */
+  // output with entailed objects 
   cl::Buffer objectOutputBuffer;
   entailedObjects.resize(accumResultSize, 0);
   createBuffer(objectOutputBuffer, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, entailedObjects);
   matKernel.setArg(0, objectOutputBuffer);
 
-  /* output with subjects for entailed triples */
+  // output with subjects for entailed triples 
   cl::Buffer subjectOutputBuffer;
   entailedSubjects.resize(accumResultSize, 0);
   createBuffer(subjectOutputBuffer, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, entailedSubjects);
   matKernel.setArg(1, subjectOutputBuffer);
 
-  /* result from above from above */
+  // result from above
   cl::Buffer previousResultsBuffer;
   createBuffer(previousResultsBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, resultInfo);
   matKernel.setArg(2, previousResultsBuffer);
 
-  /* same as above */
-  matKernel.setArg(3, schemaSuccessorInfoBuffer);
+  // local result info
+  cl::Buffer localResultInfoBuffer;
+  createBuffer(localResultInfoBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, localResultInfo);
+  matKernel.setArg(3, localResultInfoBuffer);
+  
+  // schema buckets, same as above
+  matKernel.setArg(4, schemaBucketBuffer);
 
-  /* schema successors */
-  cl::Buffer schemaSuccessorBuffer;
-  createBuffer(schemaSuccessorBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, schemaSuccessors);
-  matKernel.setArg(4, schemaSuccessorBuffer);
-
-  /* input subjects */
+  // input subjects 
   cl::Buffer subjectBuffer;
   createBuffer(subjectBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, subjectSource);
   matKernel.setArg(5, subjectBuffer);
 
-  /* bucket info */
+  // bucket info 
   cl::Buffer bucketInfoBuffer;
   createBuffer(bucketInfoBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, bucketInfos);
   matKernel.setArg(6, bucketInfoBuffer);
 
-  /* buckets */
+  // buckets 
   cl::Buffer bucketBuffer;
   createBuffer(bucketBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, buckets);
   matKernel.setArg(7, bucketBuffer);
 
-  /* hash table size */
+  // hash table size 
   matKernel.setArg<cl_uint>(8, static_cast<cl_uint>(size));
 
-  /* enqueue */
+  // enqueue 
   queue_->enqueueNDRangeKernel(matKernel,
                                cl::NullRange,
-                               cl::NDRange(globalSize),
+                               cl::NDRange(accumResultSize),
                                cl::NullRange,
                                NULL,
                                NULL);
 
-  /* read objects */
+  // read objects 
   queue_->enqueueReadBuffer(objectOutputBuffer,
                             CL_FALSE,
                             0,
-                            entailedObjects.size() * sizeof(Dictionary::KeyType),
+                            accumResultSize * sizeof(Dictionary::KeyType),
                             entailedObjects.data());
-  /* read subjects */
+  // read subjects 
   queue_->enqueueReadBuffer(subjectOutputBuffer,
                             CL_TRUE,
                             0,
-                            entailedSubjects.size() * sizeof(Dictionary::KeyType),
+                            accumResultSize * sizeof(Dictionary::KeyType),
                             entailedSubjects.data());
 
   deviceTime_.stop();
 
-  /* block until done */
+  // block until done 
   queue_->finish();
 }
 

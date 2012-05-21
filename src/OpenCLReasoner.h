@@ -91,12 +91,11 @@ private:
   
   void computeJoin2(Store::KeyVector& objectTarget,
                     Store::KeyVector& subjectTarget,
-                    const Store::KeyVector& source,
+                    const Store::KeyVector& objectSource,
                     const Store::KeyVector& subjectSource,
-                    const Store::KeyVector& schemaSubjects,
-                    const std::vector<std::pair<cl_uint, cl_uint>>& schemaSuccessorInfo,
-                    const Store::KeyVector& schemaSuccessors);
+                    const TermMap& schemaSuccessorMap);
 
+  std::size_t hashTerm(uint64_t first);
   std::size_t hashPair(uint64_t first, uint64_t second);
 
   void buildHash(BucketInfoVector& bucketInfos,
@@ -104,6 +103,11 @@ private:
                  const Store::KeyVector& subjects,
                  const Store::KeyVector& objects,
                  cl_uint& size);
+
+  void buildHash2(BucketInfoVector& bucketInfos,
+                  Store::KeyVector& values,
+                  const TermMap& successorMap,
+                  cl_uint& size);
 
   void spanTriplesByPredicate(const Store::KeyVector& subjects,
                               const Store::KeyVector& predicates,
