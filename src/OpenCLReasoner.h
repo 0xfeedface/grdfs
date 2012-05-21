@@ -122,21 +122,6 @@ private:
                               const Store::KeyVector& objects,
                               const Store::KeyVector& predicateMapIndexes,
                               const TermMap& predicateMap);
-
-  void spanTriplesByObject(const Store::KeyVector& subjects,
-                           const Store::KeyVector& predicates,
-                           const Store::KeyVector& objects,
-                           const Store::KeyVector& objectMapIndexes,
-                           const TermMap& objectMap,
-                           const KeyType predicate,
-                           const bool iseObject);
-
-  void spanTriplesByObject(const Store::KeyVector& subjects,
-                           const Store::KeyVector& predicates,
-                           const Store::KeyVector& objects,
-                           const Store::KeyVector& objectMapIndexes,
-                           const TermMap& objectMap,
-                           const KeyType predicate);
 };
 
 #endif

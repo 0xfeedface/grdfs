@@ -245,60 +245,6 @@ void OpenCLReasoner::spanTriplesByPredicate(const Store::KeyVector& subjects,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/*!
- * Given a vector of triples (s, p, o), a map (o : o1, o2, o3 ...), 
- * and a vector of indexes into the map for each triple, constructs
- * the triples (s, p, o1), (s, p, o2), (s, p, o3), ...
- */
-void OpenCLReasoner::spanTriplesByObject(const Store::KeyVector& subjects,
-                                         const Store::KeyVector& predicates,
-                                         const Store::KeyVector& objects,
-                                         const Store::KeyVector& objectMapIndexes,
-                                         const TermMap& objectMap,
-                                         const KeyType predicate,
-                                         const bool useObject) {
-  for (std::size_t i(0), size(subjects.size()); i != size; ++i) {
-    KeyType subject(useObject ? objects[i] : subjects[i]);
-    if (!(subject & literalMask)) {
-      KeyType objectMapIndex(objectMapIndexes[i]);
-      if (objectMapIndex) {
-        Timer t;
-        bool stored(false);
-        try {
-          for (auto object : objectMap.at(objectMapIndex)) {
-            t.start();
-            stored = addTriple(Store::Triple(subject, predicate, object), Store::kFlagsEntailed);
-            t.stop();
-          }
-        } catch (std::out_of_range& oor) {
-          t.stop();
-          std::stringstream str(oor.what());
-          str << " (" << objectMapIndex << " not found).";
-          throw Error(str.str());
-        }
-        if (stored) {
-          storeTimer_.addTimer(t);
-        } else {
-          uniqueingTimer_.addTimer(t);
-        }
-      }
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-void OpenCLReasoner::spanTriplesByObject(const Store::KeyVector& subjects,
-                                         const Store::KeyVector& predicates,
-                                         const Store::KeyVector& objects,
-                                         const Store::KeyVector& objectMapIndexes,
-                                         const TermMap& objectMap,
-                                         const KeyType predicate) {
-  spanTriplesByObject(subjects, predicates, objects, objectMapIndexes, objectMap, predicate, false);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 std::size_t OpenCLReasoner::hashTerm(uint64_t term)
 {
   // TODO: real 8 byte hash
