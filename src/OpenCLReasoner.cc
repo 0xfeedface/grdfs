@@ -68,8 +68,19 @@ void OpenCLReasoner::createBuffer(cl::Buffer& buffer, cl_mem_flags flags,
                         const_cast<T*>(data.data()));
   } catch (cl::Error& err) {
     std::stringstream str;
-    str << err.what()
-        << " (" << err.err() << ")";
+    switch (err.err()) {
+    case CL_INVALID_BUFFER_SIZE:
+    case CL_MEM_OBJECT_ALLOCATION_FAILURE:
+      str << "Insufficient device memory (tried to allocate "
+          << data.size() * sizeof(T)
+          << " bytes).";
+      break;
+    case CL_OUT_OF_HOST_MEMORY:
+      str << "Insufficient host memory.";
+      break;
+    default:
+      throw;
+    }
     throw Error(str.str());
   }
 }
@@ -87,7 +98,7 @@ void OpenCLReasoner::computeClosure()
         str << "Insufficient device memory.";
         break;
       default:
-        str << "Unhandled OpenCL error "
+        str << "Unhandled OpenCL error: "
             << clerr.what();
         break;
     }
