@@ -82,9 +82,15 @@ void OpenCLReasoner::computeClosure()
     computeClosureInternal();
   } catch (cl::Error& clerr) {
     std::stringstream str;
-    str << "OpenCL error: " 
-        << clerr.what()
-        << " (" << clerr.err() << ")";
+    switch (clerr.err()) {
+      case CL_INVALID_BUFFER_SIZE:
+        str << "Insufficient device memory.";
+        break;
+      default:
+        str << "Unhandled OpenCL error "
+            << clerr.what();
+        break;
+    }
     throw Error(str.str());
   }
 }
