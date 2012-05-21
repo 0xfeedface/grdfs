@@ -452,7 +452,6 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
   // TODO: perform exclusive scan on device
   std::size_t accumResultSize(0);
   std::vector<std::pair<cl_uint, cl_uint>> localResultInfo;
-  std::size_t localResultSize(0);
   for (std::size_t i(0), end(resultInfo.size()); i != end; ++i) {
     auto& value(resultInfo[i]);
     cl_uint tmp = value.second;
@@ -541,10 +540,10 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
                             accumResultSize * sizeof(Dictionary::KeyType),
                             entailedSubjects.data());
 
-  deviceTime_.stop();
-
   // block until done 
   queue_->finish();
+
+  deviceTime_.stop();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
