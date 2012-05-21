@@ -15,7 +15,6 @@ __constant ulong kMul = 0x9ddfea08eb382d69ULL;
 __constant ulong kLiteralMask = (1UL << 63);
 
 #define ROT(val, shift) (((val) >> shift) | ((val) << (64 - shift)))
-/* #define ROT(val, shift) (rotate(val, shift)) */
 
 ulong hash_triple(ulong subject, ulong object);
 
@@ -61,7 +60,7 @@ void count_results_hashed(__global uint2* results,
   size_t globx = get_global_id(0);
   // the property to be searched for
   term_id p = input[globx];
-  uint bucket = (uint)hash_triple(p, 0UL) % hash_table_size;
+  uint bucket = (uint)hash_triple(p, 0UL) & (hash_table_size - 1);
 
   uint2 result = {UINT_MAX, 0};
 
@@ -168,7 +167,7 @@ void materialize_results(__global term_id* result_objects,
       // construct entailed object (i.e successors)
       bool entail = true;
       ulong object = schema_buckets[result.s0 + linfo.s1 + 1];
-      ulong hash = hash_triple(subject, object) % tableSize;
+      ulong hash = hash_triple(subject, object) & (tableSize - 1);
       uint index = bucket_infos[hash].start;
 
       if (index < UINT_MAX) {
