@@ -8,7 +8,8 @@
 #include <vector>
 #include <functional>
 
-class Dictionary {
+class Dictionary
+{
 public:
   // The type we return as keys (i.e. literal IDs).
   typedef std::size_t KeyType;
@@ -29,7 +30,9 @@ public:
   // Find a literal for key and return its value as an std::string
   std::string Find(KeyType key) const;
   // returns the current size (number of entries)
-  std::size_t Size() const { return nextKey_; }
+  std::size_t Size() const {
+    return nextKey_;
+  }
 private:
   // std::vector of keys
   typedef std::vector<KeyType> KeyVector;
@@ -71,11 +74,17 @@ private:
 
   // template method to write a value of type T
   template <typename T>
-  void writeValue(const KeyType offset, const T value) { ::memcpy(map_ + offset, &value, sizeof(T)); }
+  void writeValue(const KeyType offset, const T value) {
+    ::memcpy(map_ + offset, &value, sizeof(T));
+  }
 
   // template method to read a value of type T
   template <typename T>
-  T readValue(const KeyType offset) { T value; ::memcpy(&value, map_ + offset, sizeof(T)); return value; }
+  T readValue(const KeyType offset) {
+    T value;
+    ::memcpy(&value, map_ + offset, sizeof(T));
+    return value;
+  }
 
   // writes the entryHeader at offset
   std::size_t writeHeader(const EntryHeader& entryHeader, std::size_t offset);

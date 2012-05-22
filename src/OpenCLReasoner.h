@@ -58,7 +58,8 @@ struct BucketEntry {
 typedef std::vector<BucketInfo> BucketInfoVector;
 typedef std::vector<BucketEntry> BucketVector;
 
-class OpenCLReasoner : public Reasoner {
+class OpenCLReasoner : public Reasoner
+{
 public:
   OpenCLReasoner(Dictionary& dict, cl_device_type deviceType = CL_DEVICE_TYPE_GPU);
   ~OpenCLReasoner();
@@ -74,24 +75,24 @@ private:
   Timer hostTime_;
   Timer storeTimer_;
   Timer uniqueingTimer_;
-  
+
   cl::Context* context(cl_device_type type);
   cl::CommandQueue* commandQueue(bool enableProfiling = false);
   cl::Program* program();
   std::string loadSource(const std::string& filename);
 
   void computeClosureInternal();
-  
+
   template <typename T>
   void createBuffer(cl::Buffer& buffer, cl_mem_flags, const std::vector<T>& data);
 
   void computeTransitiveClosure(TermMap& successorMap,
                                 const TermMap& predecessorMap,
                                 const Dictionary::KeyType predicate);
-  
+
   // Join source against match and store the result in target.
   void computeJoin(Store::KeyVector& target, const Store::KeyVector& source, Store::KeyVector& match);
-  
+
   void computeJoinRule(Store::KeyVector& objectTarget,
                        Store::KeyVector& subjectTarget,
                        const Store::KeyVector& objectSource,

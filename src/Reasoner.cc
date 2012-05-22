@@ -10,7 +10,8 @@
 
 #include "Reasoner.h"
 
-Reasoner::Reasoner(Dictionary& dict) : dict_(dict) {
+Reasoner::Reasoner(Dictionary& dict) : dict_(dict)
+{
   subClassOf_    = dict.Lookup(kSubClassOfURI);
   subPropertyOf_ = dict.Lookup(kSubPropertyOfURI);
   domain_        = dict.Lookup(kDomainURI);
@@ -18,7 +19,8 @@ Reasoner::Reasoner(Dictionary& dict) : dict_(dict) {
   type_          = dict.Lookup(kTypeURI);
 }
 
-bool Reasoner::addTriple(const Store::Triple& t, Store::TripleFlags flags) {
+bool Reasoner::addTriple(const Store::Triple& t, Store::TripleFlags flags)
+{
   bool result(false);
   if (isSchemaProperty(t.predicate)) {
     if (schemaTriples_.addTriple(t, flags)) {
@@ -62,7 +64,8 @@ bool Reasoner::addTriple(const Store::Triple& t, Store::TripleFlags flags) {
   return result;
 }
 
-void Reasoner::printStatistics() {
+void Reasoner::printStatistics()
+{
   std::cout << "sc terms: " << scSuccessors_.size() << std::endl;
   std::cout << "sp terms: " << spSuccessors_.size() << std::endl;
   std::cout << "dom triples: " << domTriples_.size() << std::endl;
@@ -71,10 +74,11 @@ void Reasoner::printStatistics() {
   std::cout << std::endl;
 }
 
-bool operator<(const so_pair& p1, const so_pair& p2) {
+bool operator<(const so_pair& p1, const so_pair& p2)
+{
   if (p1.subject > p2.subject || p1.object > p2.object) {
     return false;
   }
-  
+
   return true;
 }

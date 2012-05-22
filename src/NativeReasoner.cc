@@ -16,14 +16,15 @@
 
 typedef std::queue<term_id> TermQueue;
 
-void NativeReasoner::computeClosure_Boost() {
+void NativeReasoner::computeClosure_Boost()
+{
   using namespace boost;
-  
+
   Store::KeyVector indexedTerms;
   std::map<term_id, Store::KeyVector::size_type> termsIndexes;
   // copy from the set to the vector so we get indices
   std::copy(std::begin(scTerms_), std::end(scTerms_), std::back_inserter(indexedTerms));
-  
+
   // transitive closure w/ boost
   typedef property <vertex_name_t, term_id> Name;
   typedef property <vertex_index_t, std::size_t, Name> Index;
@@ -31,14 +32,14 @@ void NativeReasoner::computeClosure_Boost() {
   typedef graph_traits <graph_t>::vertex_descriptor vertex_t;
   std::vector<vertex_t> verts;
   graph_t g;
-  
+
   // create vertex list
   for (std::vector<term_id>::size_type i(0); i != indexedTerms.size(); ++i) {
     term_id val(indexedTerms[i]);
     termsIndexes[val] = i;
     verts.push_back(add_vertex(Index(i, Name(val)), g));
   }
-  
+
   // create boost graph
   auto it(std::begin(scSuccessors_));
   for (; it != std::end(scSuccessors_); ++it) {
@@ -52,17 +53,18 @@ void NativeReasoner::computeClosure_Boost() {
       }
     }
   }
-  
+
   adjacency_list <> tc;
   transitive_closure(g, tc);
 }
 
 void NativeReasoner::computeClosure_InverseAdjacency(const TermMap& adjacentNodes,
-                                                     const TermMap& adjacentNodesInverse) {
+    const TermMap& adjacentNodesInverse)
+{
   TermMap closure;
   TermQueue nodes;
   std::unordered_map<term_id, bool> pendingNodes;
-  
+
   // determine leaf nodes
   auto it(std::begin(adjacentNodesInverse));
   for (; it != std::end(adjacentNodesInverse); ++it) {
@@ -70,21 +72,21 @@ void NativeReasoner::computeClosure_InverseAdjacency(const TermMap& adjacentNode
       nodes.push(it->first);
     }
   }
-  
+
   if (!nodes.size()) {
     // graph contains cycles
     std::cout << "Cannot calculate transitive closure on non-DAG.\n";
     return;
   }
-  
+
   std::cout << "Number of leaf nodes: " << nodes.size() << std::endl;
-  
+
   // process nodes, starting with leafs
   while (nodes.size()) {
     term_id currentNode = nodes.front();
 //    std::cout << "currentNode: " << dict_.Find(currentNode) << std::endl;
     nodes.pop();
-    
+
     pendingNodes[currentNode] = false;
 
     auto parents = adjacentNodesInverse.find(currentNode);
@@ -96,7 +98,7 @@ void NativeReasoner::computeClosure_InverseAdjacency(const TermMap& adjacentNode
       for (; children_it != std::end(closure[currentNode]); ++children_it) {
         closure[*parent_it].insert(*children_it);
       }
-      // push updated parent node to the queue, if it is not there already 
+      // push updated parent node to the queue, if it is not there already
       // and if it does have children
       auto parentsChildren(adjacentNodesInverse.find(*parent_it));
       if ((parentsChildren != std::end(adjacentNodesInverse))
@@ -107,15 +109,16 @@ void NativeReasoner::computeClosure_InverseAdjacency(const TermMap& adjacentNode
       }
     }
   }
-  
+
 //  printClosure(closure, true);
 }
 
 void NativeReasoner::computeClosure_InverseTopological(TermMap& successorMap,
-                                                       const TermMap& predecessorMap) {
+    const TermMap& predecessorMap)
+{
   TermQueue nodes;
   std::unordered_map<term_id, bool> finishedNodes;
-  
+
   // initialize the queue with the leaf nodes
   auto it(std::begin(predecessorMap));
   for (; it != std::end(predecessorMap); ++it) {
@@ -123,18 +126,18 @@ void NativeReasoner::computeClosure_InverseTopological(TermMap& successorMap,
       nodes.push(it->first);
     }
   }
-  
+
   // no leafs means, the graph contains cycles
   if (!nodes.size()) {
     std::cout << "Cannot calculate transitive closure on non-DAG.\n";
     return;
   }
-  
+
   while (nodes.size()) {
     term_id currentNode = nodes.front();
 //    std::cout << "currentNode: " << dict_.Find(currentNode) << std::endl;
     nodes.pop();
-    
+
     auto pit = predecessorMap.find(currentNode);
     if (pit != std::end(predecessorMap)) {
       auto parent_it = std::begin(pit->second);
@@ -163,24 +166,26 @@ void NativeReasoner::computeClosure_InverseTopological(TermMap& successorMap,
       }
     }
   }
-  
+
 //  printClosure(successorMap, true);
 }
 
-void NativeReasoner::computeClosure() {
+void NativeReasoner::computeClosure()
+{
 //  Reasoner::computeClosure();
   if (scTerms_.size()) {
 //    computeClosure_Boost();
 //    computeClosure_InverseAdjacency(scPairs_, scPairsInverse_);
     computeClosure_InverseTopological(scSuccessors_, scPredecessors_);
   }
-  
+
 //  if (spTerms_.size()) {
 //    computeClosure_InverseAdjacency(spPairs_, spPairsInverse_);
 //  }
 }
 
-void NativeReasoner::printClosure(const TermMap& closure, bool translate) {
+void NativeReasoner::printClosure(const TermMap& closure, bool translate)
+{
   auto closure_it(std::begin(closure));
   for (; closure_it != std::end(closure); ++closure_it) {
     if (translate) {

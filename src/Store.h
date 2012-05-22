@@ -10,7 +10,8 @@
 #include <memory>
 #include <boost/functional/hash.hpp>
 
-class Store {
+class Store
+{
 public:
   enum TripleFlags {
     kFlagsNone     = 0,
@@ -40,13 +41,19 @@ public:
   struct Iterator {
     Iterator(Store& s, std::size_t beginIndex) : store_(s), currentIndex_(beginIndex) {};
     Iterator(Store& s, std::size_t beginIndex, bool entailedOnly) :
-        store_(s), currentIndex_(beginIndex), entailedOnly_(entailedOnly) {};
+      store_(s), currentIndex_(beginIndex), entailedOnly_(entailedOnly) {};
     Iterator& operator++();
     Iterator operator++(int);
-    bool operator==(const Iterator& rhs) const { return (currentIndex_ == rhs.currentIndex_); };
-    bool operator!=(const Iterator& rhs) const { return (currentIndex_ != rhs.currentIndex_); };
+    bool operator==(const Iterator& rhs) const {
+      return (currentIndex_ == rhs.currentIndex_);
+    };
+    bool operator!=(const Iterator& rhs) const {
+      return (currentIndex_ != rhs.currentIndex_);
+    };
     Triple operator*() const;
-    std::shared_ptr<Triple> operator->() const { return std::make_shared<Triple>(**this); };
+    std::shared_ptr<Triple> operator->() const {
+      return std::make_shared<Triple>(**this);
+    };
 
   private:
     Store& store_;
@@ -58,21 +65,39 @@ public:
 
   bool addTriple(const Triple& t, TripleFlags flags = kFlagsNone);
 
-  Iterator begin() { return Iterator(*this, 0); };
-  Iterator end() { return Iterator(*this, size_); };
+  Iterator begin() {
+    return Iterator(*this, 0);
+  };
+  Iterator end() {
+    return Iterator(*this, size_);
+  };
 
-  Iterator ebegin() { return Iterator(*this, 0, true); };
-  Iterator eend() { return Iterator(*this, size_, true); };
-  
-  std::size_t size() { return size_; }
+  Iterator ebegin() {
+    return Iterator(*this, 0, true);
+  };
+  Iterator eend() {
+    return Iterator(*this, size_, true);
+  };
+
+  std::size_t size() {
+    return size_;
+  }
 
   typedef std::vector<Dictionary::KeyType> KeyVector;
 
   // Return the underlying vectors as const references
-  const KeyVector& subjects() const { return subjects_; };
-  const KeyVector& predicates() const { return predicates_; };
-  const KeyVector& objects() const { return objects_; };
-  const std::vector<TripleFlags>& flags() const { return flags_; };
+  const KeyVector& subjects() const {
+    return subjects_;
+  };
+  const KeyVector& predicates() const {
+    return predicates_;
+  };
+  const KeyVector& objects() const {
+    return objects_;
+  };
+  const std::vector<TripleFlags>& flags() const {
+    return flags_;
+  };
 
 private:
   KeyVector subjects_;

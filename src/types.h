@@ -25,7 +25,7 @@ const std::string kTypeURI          = "http://www.w3.org/1999/02/22-rdf-syntax-n
 struct so_pair {
   term_id subject;
   term_id object;
-  
+
   so_pair() : subject(0), object(0) {}
   so_pair(term_id s, term_id o) : subject(s), object(o) {}
 };
@@ -37,7 +37,7 @@ struct triple {
   term_id subject;
   term_id predicate;
   term_id object;
-  
+
   triple() : subject(0), predicate(0), object(0) {}
   triple(term_id s, term_id p, term_id o) : subject(s), predicate(p), object(o) {}
 };

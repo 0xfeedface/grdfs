@@ -24,7 +24,7 @@ struct Dictionary::EntryHeader {
   std::size_t lsize;
   EntryHeader() : id(0), next(0), lsize(0) {};
   EntryHeader(KeyType id_, KeyType next_, std::size_t lsize_)
-      : id(id_), next(next_), lsize(lsize_) {};
+    : id(id_), next(next_), lsize(lsize_) {};
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -185,7 +185,7 @@ Dictionary::KeyType Dictionary::Lookup(const std::string& lit, const KeyModifier
 ////////////////////////////////////////////////////////////////////////////////
 
 Dictionary::KeyType Dictionary::writeEntry(const std::string& lit, std::ptrdiff_t offset,
-                                           const KeyModifier& keyModifier)
+    const KeyModifier& keyModifier)
 {
   KeyType literalID = nextKey_++;
   if (static_cast<bool>(keyModifier)) {

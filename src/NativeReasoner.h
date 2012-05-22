@@ -13,7 +13,8 @@
 #include "Reasoner.h"
 #include "Store.h"
 
-class NativeReasoner : public Reasoner {
+class NativeReasoner : public Reasoner
+{
 public:
   NativeReasoner(Dictionary& dict) : Reasoner(dict) {}
   void computeClosure();

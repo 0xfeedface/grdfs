@@ -35,7 +35,8 @@ struct LiteralModifier {
   }
 };
 
-int main (int argc, const char* argv[]) {
+int main(int argc, const char* argv[])
+{
   if (argc < 2) {
     printUsage();
     return EXIT_FAILURE;
@@ -130,7 +131,7 @@ int main (int argc, const char* argv[]) {
   std::clog << "Storage: " << storage.elapsed() << " ms\n";
   std::clog << "Closure calculation: " << closure.elapsed() << " ms" << std::endl;
   std::clog << "Detailed reasoner timings\n";
-  for (auto value : reasoner.timings()) {
+for (auto value : reasoner.timings()) {
     std::clog << "    " << value.first << ": " << value.second << " ms\n";
   }
 #endif
@@ -138,13 +139,15 @@ int main (int argc, const char* argv[]) {
   return EXIT_SUCCESS;
 }
 
-void printUsage() {
+void printUsage()
+{
   std::cerr <<  "usage: grdfs <rdf_file.ttl>" << std::endl;
 //  std::cout <<  "usage: grdfs <rdf_file.ttl> [-p]" << std::endl;
 //  std::cout <<  "       -p: print profiling information" << std::endl;
 }
 
-void printTriple(const Store::Triple& triple, Dictionary& dictionary) {
+void printTriple(const Store::Triple& triple, Dictionary& dictionary)
+{
   std::string subject(dictionary.Find(triple.subject));
   std::string predicate(dictionary.Find(triple.predicate));
   std::string object(dictionary.Find(triple.object));

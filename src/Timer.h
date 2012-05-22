@@ -4,7 +4,8 @@
 #include <cstddef>
 #include <cstdint>
 
-class Timer {
+class Timer
+{
 public:
   typedef std::size_t TimerType;
   typedef uint64_t NanoSeconds;

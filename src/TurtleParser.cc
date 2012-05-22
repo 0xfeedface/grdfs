@@ -46,7 +46,9 @@ bool TurtleParser::Lexer::doRead(char& c)
   while (in) {
     readBufferStart = readBuffer;
     in.read(readBuffer, readBufferSize);
-    if (!in.gcount()) return false;
+    if (!in.gcount()) {
+      return false;
+    }
     readBufferEnd = readBufferStart + in.gcount();
 
     if (readBufferStart < readBufferEnd) {
@@ -57,7 +59,8 @@ bool TurtleParser::Lexer::doRead(char& c)
   return false;
 }
 //---------------------------------------------------------------------------
-static bool issep(char c) {
+static bool issep(char c)
+{
   return (c == ' ') || (c == '\t') || (c == '\n') || (c == '\r') || (c == '[') || (c == ']') || (c == '(') || (c == ')') || (c == ',') || (c == ';') || (c == ':') || (c == '.');
 }
 //---------------------------------------------------------------------------
@@ -70,15 +73,21 @@ TurtleParser::Lexer::Token TurtleParser::Lexer::lexNumber(std::string& token, ch
     // Sign?
     if ((c == '+') || (c == '-')) {
       token += c;
-      if (!read(c)) break;
+      if (!read(c)) {
+        break;
+      }
     }
 
     // First number block
     if (c != '.') {
-      if ((c < '0') || (c > '9')) break;
+      if ((c < '0') || (c > '9')) {
+        break;
+      }
       while ((c >= '0') && (c <= '9')) {
         token += c;
-        if (!read(c)) return Integer;
+        if (!read(c)) {
+          return Integer;
+        }
       }
       if (issep(c)) {
         if (c != '.') {
@@ -107,11 +116,15 @@ TurtleParser::Lexer::Token TurtleParser::Lexer::lexNumber(std::string& token, ch
     // Dot?
     if (c == '.') {
       token += c;
-      if (!read(c)) break;
+      if (!read(c)) {
+        break;
+      }
       // Second number block
       while ((c >= '0') && (c <= '9')) {
         token += c;
-        if (!read(c)) return Decimal;
+        if (!read(c)) {
+          return Decimal;
+        }
       }
       if (issep(c)) {
         unread();
@@ -120,17 +133,27 @@ TurtleParser::Lexer::Token TurtleParser::Lexer::lexNumber(std::string& token, ch
     }
 
     // Exponent
-    if ((c != 'e') && (c != 'E')) break;
+    if ((c != 'e') && (c != 'E')) {
+      break;
+    }
     token += c;
-    if (!read(c)) break;
+    if (!read(c)) {
+      break;
+    }
     if ((c == '-') || (c == '+')) {
       token += c;
-      if (!read(c)) break;
+      if (!read(c)) {
+        break;
+      }
     }
-    if ((c < '0') || (c > '9')) break;
+    if ((c < '0') || (c > '9')) {
+      break;
+    }
     while ((c >= '0') && (c <= '9')) {
       token += c;
-      if (!read(c)) return Double;
+      if (!read(c)) {
+        return Double;
+      }
     }
     if (issep(c)) {
       unread();
@@ -149,18 +172,26 @@ unsigned TurtleParser::Lexer::lexHexCode(unsigned len)
   unsigned result = 0;
   for (unsigned index = 0;; index++) {
     // Done?
-    if (index == len) return result;
+    if (index == len) {
+      return result;
+    }
 
     // Read the next char
     char c;
-    if (!read(c)) break;
+    if (!read(c)) {
+      break;
+    }
 
     // Interpret it
-    if ((c >= '0') && (c <= '9')) result = (result << 4) | (c - '0');
-    else if ((c >= 'A') && (c <= 'F')) result = (result << 4) | (c - 'A' + 10);
-    else if ((c >= 'a') && (c <= 'f')) result = (result << 4) | (c - 'a' + 10);
-    else
+    if ((c >= '0') && (c <= '9')) {
+      result = (result << 4) | (c - '0');
+    } else if ((c >= 'A') && (c <= 'F')) {
+      result = (result << 4) | (c - 'A' + 10);
+    } else if ((c >= 'a') && (c <= 'f')) {
+      result = (result << 4) | (c - 'a' + 10);
+    } else {
       break;
+    }
   }
   stringstream msg;
   msg << "lexer error in line " << line << ": invalid unicode escape";
@@ -189,7 +220,9 @@ void TurtleParser::Lexer::lexEscape(std::string& token)
 {
   while (true) {
     char c;
-    if (!read(c)) break;
+    if (!read(c)) {
+      break;
+    }
     // Standard escapes?
     if (c == 't') {
       token += '\t';
@@ -242,12 +275,16 @@ TurtleParser::Lexer::Token TurtleParser::Lexer::lexLongString(std::string& token
   char c;
   while (read(c)) {
     if (c == '\"') {
-      if (!read(c)) break;
+      if (!read(c)) {
+        break;
+      }
       if (c != '\"') {
         token += '\"';
         continue;
       }
-      if (!read(c)) break;
+      if (!read(c)) {
+        break;
+      }
       if (c != '\"') {
         token += "\"\"";
         continue;
@@ -258,7 +295,9 @@ TurtleParser::Lexer::Token TurtleParser::Lexer::lexLongString(std::string& token
       lexEscape(token);
     } else {
       token += c;
-      if (c == '\n') line++;
+      if (c == '\n') {
+        line++;
+      }
     }
   }
   stringstream msg;
@@ -280,22 +319,28 @@ TurtleParser::Lexer::Token TurtleParser::Lexer::lexString(std::string& token, ch
 
   // Another quote?
   if (c == '\"') {
-    if (!read(c))
+    if (!read(c)) {
       return String;
-    if (c == '\"')
+    }
+    if (c == '\"') {
       return lexLongString(token);
+    }
     unread();
     return String;
   }
 
   // Process normally
   while (true) {
-    if (c == '\"') return String;
+    if (c == '\"') {
+      return String;
+    }
     if (c == '\\') {
       lexEscape(token);
     } else {
       token += c;
-      if (c == '\n') line++;
+      if (c == '\n') {
+        line++;
+      }
     }
     if (!read(c)) {
       stringstream msg;
@@ -319,12 +364,16 @@ TurtleParser::Lexer::Token TurtleParser::Lexer::lexURI(std::string& token, char 
 
   // Process normally
   while (true) {
-    if (c == '>') return URI;
+    if (c == '>') {
+      return URI;
+    }
     if (c == '\\') {
       lexEscape(token);
     } else {
       token += c;
-      if (c == '\n') line++;
+      if (c == '\n') {
+        line++;
+      }
     }
     if (!read(c)) {
       stringstream msg;
@@ -357,13 +406,21 @@ TurtleParser::Lexer::Token TurtleParser::Lexer::next(std::string& token)
       line++;
       continue;
     case '#':
-      while (read(c)) if ((c == '\n') || (c == '\r')) break;
-      if (c == '\n') ++line;
+      while (read(c)) if ((c == '\n') || (c == '\r')) {
+          break;
+        }
+      if (c == '\n') {
+        ++line;
+      }
       continue;
     case '.':
-      if (!read(c)) return Dot;
+      if (!read(c)) {
+        return Dot;
+      }
       unread();
-      if ((c >= '0') && (c <= '9')) return lexNumber(token, '.');
+      if ((c >= '0') && (c <= '9')) {
+        return lexNumber(token, '.');
+      }
       return Dot;
     case ':':
       return Colon;
@@ -415,9 +472,15 @@ TurtleParser::Lexer::Token TurtleParser::Lexer::next(std::string& token)
           }
           token += c;
         }
-        if (token == "a") return A;
-        if (token == "true") return True;
-        if (token == "false") return False;
+        if (token == "a") {
+          return A;
+        }
+        if (token == "true") {
+          return True;
+        }
+        if (token == "false") {
+          return False;
+        }
         return Name;
       } else {
         stringstream msg;
@@ -461,12 +524,14 @@ void TurtleParser::constructAbsoluteURI(std::string& uri)
 // Convert a relative URI into an absolute one
 {
   // No base?
-  if (base.empty())
+  if (base.empty()) {
     return;
+  }
 
   // Already absolute? XXX fix the check!
-  if (uri.find("://") < 10)
+  if (uri.find("://") < 10) {
     return;
+  }
 
   // Put the base in front
   uri = base + uri;
@@ -476,34 +541,41 @@ void TurtleParser::parseDirective()
 // Parse a directive
 {
   std::string value;
-  if (lexer.next(value) != Lexer::Name)
+  if (lexer.next(value) != Lexer::Name) {
     parseError("directive name expected after '@'");
+  }
 
   if (value == "base") {
-    if (lexer.next(base) != Lexer::URI)
+    if (lexer.next(base) != Lexer::URI) {
       parseError("URI expected after @base");
+    }
   } else if (value == "prefix") {
     std::string prefixName;
     Lexer::Token token = lexer.next(prefixName);
     // A prefix name?
     if (token == Lexer::Name) {
       token = lexer.next();
-    } else prefixName.resize(0);
+    } else {
+      prefixName.resize(0);
+    }
     // Colon
-    if (token != Lexer::Colon)
+    if (token != Lexer::Colon) {
       parseError("':' expected after @prefix");
+    }
     // URI
     std::string uri;
-    if (lexer.next(uri) != Lexer::URI)
+    if (lexer.next(uri) != Lexer::URI) {
       parseError("URI expected after @prefix");
+    }
     prefixes[prefixName] = uri;
   } else {
     parseError("unknown directive @" + value);
   }
 
   // Final dot
-  if (lexer.next() != Lexer::Dot)
+  if (lexer.next() != Lexer::Dot) {
     parseError("'.' expected after directive");
+  }
 }
 //---------------------------------------------------------------------------
 inline bool TurtleParser::isName(Lexer::Token token)
@@ -515,10 +587,12 @@ inline bool TurtleParser::isName(Lexer::Token token)
 void TurtleParser::parseQualifiedName(const string& prefix, string& name)
 // Parse a qualified name
 {
-  if (lexer.next() != Lexer::Colon)
+  if (lexer.next() != Lexer::Colon) {
     parseError("':' expected in qualified name");
-  if (!prefixes.count(prefix))
+  }
+  if (!prefixes.count(prefix)) {
     parseError("unknown prefix '" + prefix + "'");
+  }
   string expandedPrefix = prefixes[prefix];
 
   Lexer::Token token = lexer.next(name);
@@ -536,12 +610,12 @@ void TurtleParser::parseBlank(std::string& entry)
   Lexer::Token token = lexer.next(entry);
   switch (token) {
   case Lexer::Name:
-    if ((entry != "_") || (lexer.next() != Lexer::Colon) || (!isName(lexer.next(entry))))
+    if ((entry != "_") || (lexer.next() != Lexer::Colon) || (!isName(lexer.next(entry)))) {
       parseError("blank nodes must start with '_:'");
+    }
     entry = "_:" + entry;
     return;
-  case Lexer::LBracket:
-  {
+  case Lexer::LBracket: {
     newBlankNode(entry);
     token = lexer.next();
     if (token != Lexer::RBracket) {
@@ -550,13 +624,13 @@ void TurtleParser::parseBlank(std::string& entry)
       Type::ID objectType;
       parsePredicateObjectList(entry, predicate, object, objectType, objectSubType);
       triples.push_back(Triple(entry, predicate, object, objectType, objectSubType));
-      if (lexer.next() != Lexer::RBracket)
+      if (lexer.next() != Lexer::RBracket) {
         parseError("']' expected");
+      }
     }
     return;
   }
-  case Lexer::LParen:
-  {
+  case Lexer::LParen: {
     // Collection
     vector<string> entries, entrySubTypes;
     vector<Type::ID> entryTypes;
@@ -577,8 +651,9 @@ void TurtleParser::parseBlank(std::string& entry)
     // Build blank nodes
     vector<string> nodes;
     nodes.resize(entries.size());
-    for (unsigned index = 0; index < entries.size(); index++)
+    for (unsigned index = 0; index < entries.size(); index++) {
       newBlankNode(nodes[index]);
+    }
     nodes.push_back("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
 
     // Derive triples
@@ -701,8 +776,9 @@ void TurtleParser::parseObject(std::string& object, Type::ID& objectType, std::s
     token = lexer.next();
     objectType = Type::Literal;
     if (token == Lexer::At) {
-      if (lexer.next(objectSubType) != Lexer::Name)
+      if (lexer.next(objectSubType) != Lexer::Name) {
         parseError("language tag expected");
+      }
       objectType = Type::CustomLanguage;
     } else if (token == Lexer::Type) {
       string type;
@@ -755,7 +831,9 @@ void TurtleParser::parsePredicateObjectList(const string& subject, string& predi
     parseQualifiedName("", predicate);
     break;
   case Lexer::Name:
-    if (predicate == "_") parseError("blank nodes not allowed as predicate");
+    if (predicate == "_") {
+      parseError("blank nodes not allowed as predicate");
+    }
     parseQualifiedName(predicate, predicate);
     break;
   default:
@@ -791,7 +869,9 @@ void TurtleParser::parsePredicateObjectList(const string& subject, string& predi
       parseQualifiedName("", additionalPredicate);
       break;
     case Lexer::Name:
-      if (additionalPredicate == "_") parseError("blank nodes not allowed as predicate");
+      if (additionalPredicate == "_") {
+        parseError("blank nodes not allowed as predicate");
+      }
       parseQualifiedName(additionalPredicate, additionalPredicate);
       break;
     default:
@@ -821,8 +901,9 @@ void TurtleParser::parseTriple(Lexer::Token token, std::string& subject, std::st
 {
   parseSubject(token, subject);
   parsePredicateObjectList(subject, predicate, object, objectType, objectSubType);
-  if (lexer.next() != Lexer::Dot)
+  if (lexer.next() != Lexer::Dot) {
     parseError("'.' expected after triple");
+  }
 }
 //---------------------------------------------------------------------------
 bool TurtleParser::parse(std::string& subject, std::string& predicate, std::string& object, Type::ID& objectType, std::string& objectSubType)
@@ -846,13 +927,17 @@ bool TurtleParser::parse(std::string& subject, std::string& predicate, std::stri
   Lexer::Token token;
   while (true) {
     token = lexer.next(subject);
-    if (token == Lexer::Eof) return false;
+    if (token == Lexer::Eof) {
+      return false;
+    }
 
     // A directive?
     if (token == Lexer::At) {
       parseDirective();
       continue;
-    } else break;
+    } else {
+      break;
+    }
   }
 
   // No, parse a triple

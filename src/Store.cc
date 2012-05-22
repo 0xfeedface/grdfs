@@ -62,9 +62,9 @@ Store::Iterator Store::Iterator::operator++(int)
 Store::Triple Store::Iterator::operator*() const
 {
   return Triple(
-      store_.subjects()[currentIndex_],
-      store_.predicates()[currentIndex_],
-      store_.objects()[currentIndex_]);
+           store_.subjects()[currentIndex_],
+           store_.predicates()[currentIndex_],
+           store_.objects()[currentIndex_]);
 }
 
 bool Store::addTriple(const Triple& t, TripleFlags flags)

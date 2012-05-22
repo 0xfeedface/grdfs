@@ -28,7 +28,8 @@ typedef std::queue<term_id> TermQueue;
 ////////////////////////////////////////////////////////////////////////////////
 
 OpenCLReasoner::OpenCLReasoner(Dictionary& dict, cl_device_type deviceType)
-    : Reasoner(dict) {
+  : Reasoner(dict)
+{
   context_ = context(deviceType);
   // query devices
   std::vector<cl::Device> devices = context_->getInfo<CL_CONTEXT_DEVICES>();
@@ -39,7 +40,8 @@ OpenCLReasoner::OpenCLReasoner(Dictionary& dict, cl_device_type deviceType)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-OpenCLReasoner::~OpenCLReasoner() {
+OpenCLReasoner::~OpenCLReasoner()
+{
   delete context_;
   delete device_;
   delete queue_;
@@ -56,7 +58,8 @@ OpenCLReasoner::~OpenCLReasoner() {
 // Create an OpenCL buffer from STL vector
 template <typename T>
 void OpenCLReasoner::createBuffer(cl::Buffer& buffer, cl_mem_flags flags,
-                                  const std::vector<T>& data) {
+                                  const std::vector<T>& data)
+{
   try {
     buffer = cl::Buffer(*context_,
                         flags,
@@ -94,13 +97,13 @@ void OpenCLReasoner::computeClosure()
   } catch (cl::Error& clerr) {
     std::stringstream str;
     switch (clerr.err()) {
-      case CL_INVALID_BUFFER_SIZE:
-        str << "Insufficient device memory.";
-        break;
-      default:
-        str << "Unhandled OpenCL error: "
-            << clerr.what();
-        break;
+    case CL_INVALID_BUFFER_SIZE:
+      str << "Insufficient device memory.";
+      break;
+    default:
+      str << "Unhandled OpenCL error: "
+          << clerr.what();
+      break;
     }
     throw Error(str.str());
   }
@@ -108,7 +111,8 @@ void OpenCLReasoner::computeClosure()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void OpenCLReasoner::computeClosureInternal() {
+void OpenCLReasoner::computeClosureInternal()
+{
   if (spTerms_.size()) {
     // 1) compute rule 5 (subPropertyOf transitivity)
     computeTransitiveClosure(spSuccessors_, spPredecessors_, subPropertyOf_);
@@ -125,7 +129,7 @@ void OpenCLReasoner::computeClosureInternal() {
         schemaSubjects.push_back(subject);
       }
       computeJoin(results, predicates, schemaSubjects);
-      
+
       spanTriplesByPredicate(triples_.subjects(), triples_.predicates(),
                              triples_.objects(), results, spSuccessors_);
     }
@@ -160,7 +164,7 @@ void OpenCLReasoner::computeClosureInternal() {
   if (scTerms_.size()) {
     // compute rule 11 (subClassOf transitivity)
     computeTransitiveClosure(scSuccessors_, scPredecessors_, subClassOf_);
-    
+
     // compute rule 9 (subClassOf inheritance)
     if (typeTriples_.size()) {
       // According to rule 9, we use rdf:type triples only
@@ -177,7 +181,8 @@ void OpenCLReasoner::computeClosureInternal() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Reasoner::TimingMap OpenCLReasoner::timings() {
+Reasoner::TimingMap OpenCLReasoner::timings()
+{
   TimingMap result;
   result.insert(std::make_pair("host", hostTime_.elapsed()));
   result.insert(std::make_pair("device", deviceTime_.elapsed()));
@@ -189,8 +194,9 @@ Reasoner::TimingMap OpenCLReasoner::timings() {
 ////////////////////////////////////////////////////////////////////////////////
 
 void OpenCLReasoner::materializeWithProperty(const Store::KeyVector& subjects,
-                                             const Store::KeyVector& objects,
-                                             const KeyType property) {
+    const Store::KeyVector& objects,
+    const KeyType property)
+{
   for (std::size_t i(0), end(subjects.size()); i != end; ++i) {
     auto subject(subjects[i]);
     auto object(objects[i]);
@@ -216,15 +222,16 @@ void OpenCLReasoner::materializeWithProperty(const Store::KeyVector& subjects,
 ////////////////////////////////////////////////////////////////////////////////
 
 /*!
- * Given a vector of triples (s, p, o), a map (p : p1, p2, p3 ...), 
+ * Given a vector of triples (s, p, o), a map (p : p1, p2, p3 ...),
  * and a vector of indexes into the map for each triple, comstructs
  * the triples (s, p1, o), (s, p2, o), (s, p3, o), ...
  */
 void OpenCLReasoner::spanTriplesByPredicate(const Store::KeyVector& subjects,
-                                            const Store::KeyVector& predicates,
-                                            const Store::KeyVector& objects,
-                                            const Store::KeyVector& predicateMapIndexes,
-                                            const TermMap& predicateMap) {
+    const Store::KeyVector& predicates,
+    const Store::KeyVector& objects,
+    const Store::KeyVector& predicateMapIndexes,
+    const TermMap& predicateMap)
+{
   // We iterate over subjects but all vectors should have the same size
   for (std::size_t i(0), size(subjects.size()); i != size; ++i) {
     KeyType subject(subjects[i]);
@@ -292,7 +299,7 @@ void OpenCLReasoner::buildHash2(BucketInfoVector& bucketInfos,
 
   // count number of entries per bucket index
   std::vector<cl_uint> bucketSizes(size, 0);
-  for (auto& v : successorMap) {
+  for (auto & v : successorMap) {
     if (v.second.size()) {
       std::size_t hash(hashTerm(v.first) % size);
       // one new bucket entry
@@ -315,14 +322,14 @@ void OpenCLReasoner::buildHash2(BucketInfoVector& bucketInfos,
 
   // store bucket data
   values.resize(entries);
-  for (auto& v : successorMap) {
+  for (auto & v : successorMap) {
     if (v.second.size()) {
       std::size_t hash(hashTerm(v.first) % size);
       BucketInfo& info(bucketInfos[hash]);
       cl_uint bucketIndex = info.start + info.free;
       values[bucketIndex] = v.first | (v.second.size() << 48);
       unsigned i(0);
-      for (auto& w : v.second) {
+      for (auto & w : v.second) {
         values[bucketIndex + ++i] = w;
       }
       info.free += 1 + v.second.size();
@@ -409,7 +416,8 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
                                      const Store::KeyVector& subjectSource,
                                      const TermMap& schemaSuccessorMap,
                                      const Store::KeyVector& indexSubjects,
-                                     const Store::KeyVector& indexObjects) {
+                                     const Store::KeyVector& indexObjects)
+{
   deviceTime_.start();
 
   cl::Kernel inheritanceKernel(*program(), "count_results_hashed");
@@ -421,7 +429,7 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
   createBuffer(outputBuffer, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, resultInfo);
   inheritanceKernel.setArg(0, outputBuffer);
 
-  // input elements to join 
+  // input elements to join
   cl::Buffer inputBuffer;
   createBuffer(inputBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, objectSource);
   inheritanceKernel.setArg(1, inputBuffer);
@@ -445,7 +453,7 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
   // size of the hash table
   inheritanceKernel.setArg<cl_uint>(4, schemaBucketHashTableSize);
 
-  // enqueue 
+  // enqueue
   queue_->enqueueNDRangeKernel(inheritanceKernel,
                                cl::NullRange,
                                cl::NDRange(globalSize),
@@ -453,7 +461,7 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
                                NULL,
                                NULL);
 
-  // read 
+  // read
   queue_->enqueueReadBuffer(outputBuffer,
                             CL_TRUE,
                             0,
@@ -489,13 +497,13 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
 
   cl::Kernel matKernel(*program(), "materialize_results");
 
-  // output with entailed objects 
+  // output with entailed objects
   cl::Buffer objectOutputBuffer;
   entailedObjects.resize(accumResultSize, 0);
   createBuffer(objectOutputBuffer, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, entailedObjects);
   matKernel.setArg(0, objectOutputBuffer);
 
-  // output with subjects for entailed triples 
+  // output with subjects for entailed triples
   cl::Buffer subjectOutputBuffer;
   entailedSubjects.resize(accumResultSize, 0);
   createBuffer(subjectOutputBuffer, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, entailedSubjects);
@@ -510,29 +518,29 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
   cl::Buffer localResultInfoBuffer;
   createBuffer(localResultInfoBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, localResultInfo);
   matKernel.setArg(3, localResultInfoBuffer);
-  
+
   // schema buckets, same as above
   matKernel.setArg(4, schemaBucketBuffer);
 
-  // input subjects 
+  // input subjects
   cl::Buffer subjectBuffer;
   createBuffer(subjectBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, subjectSource);
   matKernel.setArg(5, subjectBuffer);
 
-  // bucket info 
+  // bucket info
   cl::Buffer bucketInfoBuffer;
   createBuffer(bucketInfoBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, bucketInfos);
   matKernel.setArg(6, bucketInfoBuffer);
 
-  // buckets 
+  // buckets
   cl::Buffer bucketBuffer;
   createBuffer(bucketBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, buckets);
   matKernel.setArg(7, bucketBuffer);
 
-  // hash table size 
+  // hash table size
   matKernel.setArg<cl_uint>(8, static_cast<cl_uint>(size));
 
-  // enqueue 
+  // enqueue
   queue_->enqueueNDRangeKernel(matKernel,
                                cl::NullRange,
                                cl::NDRange(accumResultSize),
@@ -540,20 +548,20 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
                                NULL,
                                NULL);
 
-  // read objects 
+  // read objects
   queue_->enqueueReadBuffer(objectOutputBuffer,
                             CL_FALSE,
                             0,
                             accumResultSize * sizeof(Dictionary::KeyType),
                             entailedObjects.data());
-  // read subjects 
+  // read subjects
   queue_->enqueueReadBuffer(subjectOutputBuffer,
                             CL_TRUE,
                             0,
                             accumResultSize * sizeof(Dictionary::KeyType),
                             entailedSubjects.data());
 
-  // block until done 
+  // block until done
   queue_->finish();
 
   deviceTime_.stop();
@@ -563,7 +571,8 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
 
 void OpenCLReasoner::computeJoin(Store::KeyVector& target,
                                  const Store::KeyVector& source,
-                                 Store::KeyVector& match) {
+                                 Store::KeyVector& match)
+{
   deviceTime_.start();
 
   cl::Kernel inheritanceKernel(*program(), "phase1");
@@ -610,8 +619,9 @@ void OpenCLReasoner::computeJoin(Store::KeyVector& target,
 ////////////////////////////////////////////////////////////////////////////////
 
 void OpenCLReasoner::computeTransitiveClosure(TermMap& successorMap,
-                                              const TermMap& predecessorMap,
-                                              const Dictionary::KeyType property) {
+    const TermMap& predecessorMap,
+    const Dictionary::KeyType property)
+{
   hostTime_.start();
 
   TermQueue nodes;
@@ -685,7 +695,8 @@ void OpenCLReasoner::computeTransitiveClosure(TermMap& successorMap,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-cl::Context* OpenCLReasoner::context(cl_device_type type) {
+cl::Context* OpenCLReasoner::context(cl_device_type type)
+{
   // query platforms
   std::vector<cl::Platform> platforms;
   cl::Platform::get(&platforms);
@@ -701,17 +712,19 @@ cl::Context* OpenCLReasoner::context(cl_device_type type) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-cl::CommandQueue* OpenCLReasoner::commandQueue(bool enableProfiling) {
+cl::CommandQueue* OpenCLReasoner::commandQueue(bool enableProfiling)
+{
   // create command queue
   cl::CommandQueue* queue = new cl::CommandQueue(*context_,
-                                                 *device_,
-                                                 enableProfiling ? CL_QUEUE_PROFILING_ENABLE : 0);
+      *device_,
+      enableProfiling ? CL_QUEUE_PROFILING_ENABLE : 0);
   return queue;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-cl::Program* OpenCLReasoner::program() {
+cl::Program* OpenCLReasoner::program()
+{
   if (nullptr != program_) {
     return program_;
   }
@@ -733,7 +746,8 @@ cl::Program* OpenCLReasoner::program() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-std::string OpenCLReasoner::loadSource(const std::string& filename) {
+std::string OpenCLReasoner::loadSource(const std::string& filename)
+{
   std::ifstream fin(filename, std::ios_base::in);
   if (!fin.is_open()) {
     throw Error("could not read kernel source file.");
