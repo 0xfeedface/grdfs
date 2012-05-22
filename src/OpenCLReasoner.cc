@@ -136,7 +136,7 @@ void OpenCLReasoner::computeClosureInternal()
   }
 
   if (domTriples_.size() && triples_.size()) {
-    // 3) compute rules 2, 3 (domain, range expansion)
+    // 3) compute rule 2 (domain expansion)
     // We use plain non-type, non-schema triples only.
     // Otherwise it would be non-authorative.
     const Store::KeyVector& predicates(triples_.predicates());
@@ -149,7 +149,7 @@ void OpenCLReasoner::computeClosureInternal()
   }
 
   if (rngTriples_.size() && triples_.size()) {
-    // 3) compute rules 2, 3 (domain, range expansion)
+    // 4) compute rule 3 (range expansion)
     // We use plain non-type, non-schema triples only.
     // Otherwise it would be non-authorative.
     const Store::KeyVector& predicates(triples_.predicates());
