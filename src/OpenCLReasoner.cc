@@ -361,36 +361,34 @@ void OpenCLReasoner::buildHash(BucketInfoVector& bucketInfos,
                                cl_uint& size)
 {
   std::size_t logSize(ceil(log2(subjects.size())));
-  std::size_t entries(0);
   size = (1 << logSize);
 
   // count number of entries for each bucket
-  std::vector<unsigned> bucketSizes(size, 0);
+  std::vector<cl_ushort> bucketSizes(size, 0);
   for (std::size_t i(0), end(subjects.size()); i != end; ++i) {
-    std::size_t index(hashPair(subjects[i], objects[i]) & (size - 1));
+    KeyType s(subjects[i]), o(objects[i]);
+    std::size_t index(hashPair(s, o) & (size - 1));
     ++bucketSizes[index];
-    ++entries;
   }
 
   // Timer t1;
 
   // determine index for each bucket
-  // std::size_t accumBucketSize(0);
   bucketInfos.resize(size, BucketInfo());
   // t1.start();
   for (std::size_t i(0), end(subjects.size()); i != end; ++i) {
     KeyType s(subjects[i]), o(objects[i]);
-    unsigned hash(static_cast<unsigned>(hashPair(s, o) & (size - 1)));
-    unsigned bucketSize = bucketSizes[hash];
+    std::size_t hash(hashPair(s, o) & (size - 1));
+    cl_ushort bucketSize(bucketSizes[hash]);
     if (bucketSize == 1) {
-      // new and only entry
-      BucketInfo info(buckets.size(), 1);
+      // overflow-free bucket
+      BucketInfo info(buckets.size(), 1, 1);
       bucketInfos[hash] = info;
       buckets.emplace_back(s, o);
     } else if (bucketSize > 1) {
-      // overflow entry
+      // bucket with overflows entry
       BucketInfo& info(bucketInfos[hash]);
-      if (!info.start) {
+      if (!info.size) {
         info.start = buckets.size();
         info.size = bucketSize;
         buckets.resize(buckets.size() + bucketSize);
@@ -405,6 +403,24 @@ void OpenCLReasoner::buildHash(BucketInfoVector& bucketInfos,
 
   /*
    * std::cout << "t1: " << t1.elapsed() << " ms\n\n";
+   */
+
+  /*
+   * // debug check
+   * for (std::size_t i(0), end(subjects.size()); i != end; ++i) {
+   *   KeyType s(subjects[i]), o(objects[i]);
+   *   std::size_t hash(hashPair(s, o) & (size - 1));
+   *   BucketInfo info(bucketInfos[hash]);
+   *   // make sure buckets are full
+   *   assert(info.size == info.free);
+   *   bool found(false);
+   *   for (cl_uint i(info.start), end(info.start + info.size); i != end; ++i) {
+   *     if (buckets[i].subject == s && buckets[i].object == o) {
+   *       found = true;
+   *     }
+   *   }
+   *   assert(found == true);
+   * }
    */
 }
 
@@ -480,7 +496,7 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
     // create local mapping
     // each thread can determine which successor of a given
     // subject it operates on
-    for (int localSize(0); localSize != tmp; ++localSize) {
+    for (std::size_t localSize(0); localSize != tmp; ++localSize) {
       localResultInfo.push_back(std::make_pair(i, localSize));
     }
     accumResultSize += tmp;
