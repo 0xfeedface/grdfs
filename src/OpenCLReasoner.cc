@@ -357,46 +357,48 @@ void OpenCLReasoner::buildHash(BucketInfoVector& bucketInfos,
   std::size_t entries(0);
   size = (1 << logSize);
 
-  Timer t1, t2, t3, t4;
-
   // count number of entries for each bucket
-  std::vector<cl_uint> bucketSizes(size, 0);
-  t1.start();
+  std::vector<unsigned> bucketSizes(size, 0);
   for (std::size_t i(0), end(subjects.size()); i != end; ++i) {
     std::size_t index(hashPair(subjects[i], objects[i]) & (size - 1));
     ++bucketSizes[index];
     ++entries;
   }
-  t1.stop();
+
+  // Timer t1;
 
   // determine index for each bucket
-  std::size_t accumBucketSize(0);
-  bucketInfos.reserve(size);
-  t2.start();
-  for (std::size_t i(0); i != size; ++i) {
-    if (bucketSizes[i]) {
-      bucketInfos.emplace_back(accumBucketSize, bucketSizes[i]);
-      accumBucketSize += bucketSizes[i];
-    } else {
-      bucketInfos.emplace_back(CL_UINT_MAX, 0);
+  // std::size_t accumBucketSize(0);
+  bucketInfos.resize(size, BucketInfo());
+  // t1.start();
+  for (std::size_t i(0), end(subjects.size()); i != end; ++i) {
+    KeyType s(subjects[i]), o(objects[i]);
+    unsigned hash(static_cast<unsigned>(hashPair(s, o) & (size - 1)));
+    unsigned bucketSize = bucketSizes[hash];
+    if (bucketSize == 1) {
+      // new and only entry
+      BucketInfo info(buckets.size(), 1);
+      bucketInfos[hash] = info;
+      buckets.emplace_back(s, o);
+    } else if (bucketSize > 1) {
+      // overflow entry
+      BucketInfo& info(bucketInfos[hash]);
+      if (!info.start) {
+        info.start = buckets.size();
+        info.size = bucketSize;
+        buckets.resize(buckets.size() + bucketSize);
+        buckets[info.start] = BucketEntry(s, o);
+      } else {
+        buckets[info.start + info.free] = BucketEntry(s, o);
+      }
+      ++info.free;
     }
   }
-  t2.stop();
+  // t1.stop();
 
-  // store bucket data
-  buckets.resize(entries);
-  t3.start();
-  for (std::size_t i(0), end(subjects.size()); i != end; ++i) {
-    std::size_t hash(hashPair(subjects[i], objects[i]) & (size - 1));
-    cl_uint bucketIndex = bucketInfos[hash].start + bucketInfos[hash].free++;
-    buckets[bucketIndex].subject = subjects[i];
-    buckets[bucketIndex].object = objects[i];
-  }
-  t3.stop();
-
-  std::cout << "t1: " << t1.elapsed() << " ms\n"
-            << "t2: " << t2.elapsed() << " ms\n"
-            << "t3: " << t3.elapsed() << " ms\n\n";
+  /*
+   * std::cout << "t1: " << t1.elapsed() << " ms\n\n";
+   */
 }
 
 ////////////////////////////////////////////////////////////////////////////////
