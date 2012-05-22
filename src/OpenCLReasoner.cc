@@ -287,10 +287,10 @@ std::size_t OpenCLReasoner::hashPair(uint64_t first, uint64_t second)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void OpenCLReasoner::buildHash2(BucketInfoVector& bucketInfos,
-                                Store::KeyVector& values,
-                                const TermMap& successorMap,
-                                cl_uint& size)
+void OpenCLReasoner::buildSchemaHash(BucketInfoVector& bucketInfos,
+                                     Store::KeyVector& values,
+                                     const TermMap& successorMap,
+                                     cl_uint& size)
 {
   // round to next power of two for sizeo
   std::size_t logSize(ceil(log2(successorMap.size())) + 1);
@@ -454,7 +454,7 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
   BucketInfoVector schemaBucketInfos;
   Store::KeyVector schemaBuckets;
   cl_uint schemaBucketHashTableSize;
-  buildHash2(schemaBucketInfos, schemaBuckets, schemaSuccessorMap, schemaBucketHashTableSize);
+  buildSchemaHash(schemaBucketInfos, schemaBuckets, schemaSuccessorMap, schemaBucketHashTableSize);
 
   // schema bucket infos
   cl::Buffer schemaBucketInfoBuffer;
@@ -635,8 +635,8 @@ void OpenCLReasoner::computeJoin(Store::KeyVector& target,
 ////////////////////////////////////////////////////////////////////////////////
 
 void OpenCLReasoner::computeTransitiveClosure(TermMap& successorMap,
-    const TermMap& predecessorMap,
-    const Dictionary::KeyType property)
+                                              const TermMap& predecessorMap,
+                                              const Dictionary::KeyType property)
 {
   hostTime_.start();
 

@@ -112,10 +112,10 @@ private:
                  const Store::KeyVector& objects,
                  cl_uint& size);
 
-  void buildHash2(BucketInfoVector& bucketInfos,
-                  Store::KeyVector& values,
-                  const TermMap& successorMap,
-                  cl_uint& size);
+  void buildSchemaHash(BucketInfoVector& bucketInfos,
+                       Store::KeyVector& values,
+                       const TermMap& successorMap,
+                       cl_uint& size);
 
   void materializeWithProperty(const Store::KeyVector& subjects,
                                const Store::KeyVector& objects,
