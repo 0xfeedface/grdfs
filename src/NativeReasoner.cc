@@ -8,55 +8,9 @@
 
 #include "NativeReasoner.h"
 
-#include <boost/graph/transitive_closure.hpp>
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/graph_utility.hpp>
-
 #include <queue>
 
 typedef std::queue<term_id> TermQueue;
-
-void NativeReasoner::computeClosure_Boost()
-{
-  using namespace boost;
-
-  Store::KeyVector indexedTerms;
-  std::map<term_id, Store::KeyVector::size_type> termsIndexes;
-  // copy from the set to the vector so we get indices
-  std::copy(std::begin(scTerms_), std::end(scTerms_), std::back_inserter(indexedTerms));
-
-  // transitive closure w/ boost
-  typedef property <vertex_name_t, term_id> Name;
-  typedef property <vertex_index_t, std::size_t, Name> Index;
-  typedef adjacency_list <listS, listS, directedS, Index> graph_t;
-  typedef graph_traits <graph_t>::vertex_descriptor vertex_t;
-  std::vector<vertex_t> verts;
-  graph_t g;
-
-  // create vertex list
-  for (std::vector<term_id>::size_type i(0); i != indexedTerms.size(); ++i) {
-    term_id val(indexedTerms[i]);
-    termsIndexes[val] = i;
-    verts.push_back(add_vertex(Index(i, Name(val)), g));
-  }
-
-  // create boost graph
-  auto it(std::begin(scSuccessors_));
-  for (; it != std::end(scSuccessors_); ++it) {
-    auto sit(std::begin(it->second));
-    if (sit != std::end(it->second)) {
-      size_t sidx = termsIndexes[it->first];
-      for (; sit != std::end(it->second); ++sit) {
-        size_t oidx = termsIndexes[*sit];
-        // add to boost graph
-        add_edge(verts[sidx], verts[oidx], g);
-      }
-    }
-  }
-
-  adjacency_list <> tc;
-  transitive_closure(g, tc);
-}
 
 void NativeReasoner::computeClosure_InverseAdjacency(const TermMap& adjacentNodes,
     const TermMap& adjacentNodesInverse)
@@ -174,7 +128,6 @@ void NativeReasoner::computeClosure()
 {
 //  Reasoner::computeClosure();
   if (scTerms_.size()) {
-//    computeClosure_Boost();
 //    computeClosure_InverseAdjacency(scPairs_, scPairsInverse_);
     computeClosure_InverseTopological(scSuccessors_, scPredecessors_);
   }

@@ -8,7 +8,6 @@
 #include <utility>
 #include <string>
 #include <memory>
-#include <boost/functional/hash.hpp>
 
 class Store
 {

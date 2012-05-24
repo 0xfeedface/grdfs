@@ -18,7 +18,6 @@ class NativeReasoner : public Reasoner
 public:
   NativeReasoner(Dictionary& dict) : Reasoner(dict) {}
   void computeClosure();
-  void computeClosure_Boost();
   void computeClosure_InverseAdjacency(const TermMap&, const TermMap&);
   void computeClosure_InverseTopological(TermMap&, const TermMap&);
   void printClosure(const TermMap&, bool);
