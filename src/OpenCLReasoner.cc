@@ -102,7 +102,8 @@ void OpenCLReasoner::computeClosure()
       break;
     default:
       str << "Unhandled OpenCL error: "
-          << clerr.what();
+          << clerr.what()
+          << " (" << clerr.err() << ").";
       break;
     }
     throw Error(str.str());
@@ -273,7 +274,7 @@ std::size_t OpenCLReasoner::hashTerm(uint64_t term)
 
 std::size_t OpenCLReasoner::hashPair(uint64_t first, uint64_t second)
 {
-  static uint64_t kMul = 0x9ddfea08eb382d69ULL;
+  static uint64_t kMul = 0x9ddfea08eb382d69UL;
   uint64_t b = ROT(second + 16 /* len */, 16 /* len */);
   uint64_t c = (first ^ b) * kMul;
 
