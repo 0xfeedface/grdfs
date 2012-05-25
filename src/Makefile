@@ -28,7 +28,7 @@ CXXFLAGS+=-I../include
 LDFLAGS+=-framework OpenCL
 else
 CXXFLAGS+=-I../include -I$(AMDAPPSDKROOT)/include
-LDFLAGS+=-L$(AMDAPPSDKROOT)/lib -lOpenCL
+LDFLAGS+=-lOpenCL
 endif
 
 all: $(BUILD)/grdfs
