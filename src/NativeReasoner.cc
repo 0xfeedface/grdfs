@@ -9,6 +9,7 @@
 #include "NativeReasoner.h"
 
 #include <queue>
+#include <iostream>
 
 typedef std::queue<term_id> TermQueue;
 

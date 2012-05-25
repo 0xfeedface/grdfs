@@ -15,8 +15,8 @@ CXX=/opt/llvm-git/bin/clang++
 # CXX=/opt/gcc-4.7/bin/g++
 CXXFLAGS+=-std=c++11 $(if $(findstring clang,$(CXX)),-stdlib=libc++,)
 else
-CXX=/opt/llvm-3.0/bin/clang++
-CXXFLAGS+=-std=c++0x
+CXX=/opt/llvm-3.1/bin/clang++
+CXXFLAGS+=-std=c++11
 LDFLAGS+=-lrt
 endif
 

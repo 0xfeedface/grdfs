@@ -1,5 +1,6 @@
 #include "Store.h"
 #include <iostream>
+#include <cassert>
 
 #define ROT(val, shift) (((val) >> shift) | ((val) << (64 - shift)))
 
