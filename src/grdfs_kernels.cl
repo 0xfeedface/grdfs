@@ -139,7 +139,6 @@ void count_results(__constant term_id* input,
 
 __kernel
 void materialize_results(__global term_id* result_objects,
-                         __global term_id* result_subjects,
                          __global uint2* result_info, // const, but shared with other kernel
                          __global uint2* local_result_info,
                          __constant term_id* schema_buckets,
@@ -182,7 +181,6 @@ void materialize_results(__global term_id* result_objects,
 
         if (entail) {
           result_objects[globx] = object;
-          result_subjects[globx] = subject;
         }
       }
     }
