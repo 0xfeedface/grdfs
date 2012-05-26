@@ -1,5 +1,6 @@
 # Xcode
 build/*
+profiling
 data/dbpedia.ttl
 data/yago2core.ttl
 *.pbxuser
