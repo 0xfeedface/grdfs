@@ -440,7 +440,7 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
   cl::Kernel inheritanceKernel(*program(), "count_results_hashed");
   std::size_t globalSize = subjectSource.size();
 
-  // output pairs with (matching element or CL_UINT_MAX, size)
+  // output with pair of matched element or CL_UINT_MAX, successor size
   std::vector<std::pair<cl_uint, cl_uint>> resultInfo(globalSize);
   cl::Buffer outputBuffer;
   createBuffer(outputBuffer, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, resultInfo);
@@ -451,6 +451,9 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
   createBuffer(inputBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, objectSource);
   inheritanceKernel.setArg(1, inputBuffer);
 
+  // actual number of elements
+  inheritanceKernel.setArg<cl_uint>(2, globalSize);
+
   // build hash table for join
   BucketInfoVector schemaBucketInfos;
   Store::KeyVector schemaBuckets;
@@ -460,29 +463,34 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
   // schema bucket infos
   cl::Buffer schemaBucketInfoBuffer;
   createBuffer(schemaBucketInfoBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, schemaBucketInfos);
-  inheritanceKernel.setArg(2, schemaBucketInfoBuffer);
+  inheritanceKernel.setArg(3, schemaBucketInfoBuffer);
 
   // schema buckets
   cl::Buffer schemaBucketBuffer;
   createBuffer(schemaBucketBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, schemaBuckets);
-  inheritanceKernel.setArg(3, schemaBucketBuffer);
+  inheritanceKernel.setArg(4, schemaBucketBuffer);
 
   // size of the hash table
-  inheritanceKernel.setArg<cl_uint>(4, schemaBucketHashTableSize);
+  inheritanceKernel.setArg<cl_uint>(5, schemaBucketHashTableSize);
+
+  // determine optimal work group size for the kernel
+  // and the global enqueued size as an integer multiple of work group size
+  std::size_t workGoupSize(inheritanceKernel.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(*device_));
+  std::size_t shiftWidth(log2(workGoupSize));
+  std::size_t enqueueSize((((globalSize - 1) >> shiftWidth) + 1) << shiftWidth);
 
   // enqueue
   queue_->enqueueNDRangeKernel(inheritanceKernel,
                                cl::NullRange,
-                               cl::NDRange(globalSize),
-                               cl::NullRange,
+                               cl::NDRange(enqueueSize),
+                               cl::NDRange(workGoupSize),
                                NULL,
                                NULL);
-
   // read
   queue_->enqueueReadBuffer(outputBuffer,
                             CL_TRUE,
                             0,
-                            resultInfo.size() * sizeof(term_id),
+                            resultInfo.size() * sizeof(std::pair<cl_uint, cl_uint>),
                             resultInfo.data());
 
   deviceTime_.stop();
@@ -544,24 +552,33 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
   createBuffer(subjectBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, subjectSource);
   matKernel.setArg(5, subjectBuffer);
 
+  // actual global size
+  matKernel.setArg<cl_uint>(6, static_cast<cl_uint>(accumResultSize));
+
   // bucket info
   cl::Buffer bucketInfoBuffer;
   createBuffer(bucketInfoBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, bucketInfos);
-  matKernel.setArg(6, bucketInfoBuffer);
+  matKernel.setArg(7, bucketInfoBuffer);
 
   // buckets
   cl::Buffer bucketBuffer;
   createBuffer(bucketBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, buckets);
-  matKernel.setArg(7, bucketBuffer);
+  matKernel.setArg(8, bucketBuffer);
 
   // hash table size
-  matKernel.setArg<cl_uint>(8, static_cast<cl_uint>(size));
+  matKernel.setArg<cl_uint>(9, static_cast<cl_uint>(size));
+
+  // determine optimal work group size for the kernel
+  // and the global enqueued size as an integer multiple of work group size
+  workGoupSize = matKernel.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(*device_);
+  shiftWidth = log2(workGoupSize);
+  enqueueSize = (((accumResultSize - 1) >> shiftWidth) + 1) << shiftWidth;
 
   // enqueue
   queue_->enqueueNDRangeKernel(matKernel,
                                cl::NullRange,
-                               cl::NDRange(accumResultSize),
-                               cl::NullRange,
+                               cl::NDRange(enqueueSize),
+                               cl::NDRange(workGoupSize),
                                NULL,
                                NULL);
 
