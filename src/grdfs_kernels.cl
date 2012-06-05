@@ -15,8 +15,19 @@ __constant ulong kMul = 0x9ddfea08eb382d69UL;
 __constant ulong kLiteralMask = (1UL << 63);
 
 #define ROT(val, shift) (((val) >> shift) | ((val) << (64 - shift)))
+#define BITS sizeof(term_id) * 8
+#define WAVEFRONT_SIZE 64
+#define GROUP_SIZE 256
+#define NUM_WAVEFRONTS (GROUP_SIZE / WAVEFRONT_SIZE)
+#define SEL(cond) (uint)(cond ? 0xffffffff : 0x0)
+
 
 ulong hash_triple(ulong subject, ulong object);
+void scan(__local uint*, __local uint*, const uint);
+void max_scan(__local uint*, __local uint*, const uint);
+void sort(__local term_id*, __local term_id*, __local uint*, __local uint*, const uint, const uint, uint);
+
+////////////////////////////////////////////////////////////////////////////////
 
 __kernel
 void phase1(__global term_id* input,   /* predicates */
@@ -49,6 +60,8 @@ void phase1(__global term_id* input,   /* predicates */
 
   results[globx] = result;
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 __kernel
 void count_results_hashed(__global uint2* results,
@@ -87,6 +100,8 @@ void count_results_hashed(__global uint2* results,
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 ulong hash_triple(ulong subject, ulong object)
 {
   ulong b = ROT(object + 16, 16);
@@ -99,6 +114,8 @@ ulong hash_triple(ulong subject, ulong object)
 
   return b ^ object;
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 __kernel
 void count_results(__constant term_id* input,
@@ -137,12 +154,14 @@ void count_results(__constant term_id* input,
   results[globx] = result;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 __kernel
 void materialize_results(__global term_id* result_objects,
                          __global term_id* result_subjects,
                          __global uint2* result_info, // const, but shared with other kernel
                          __global uint2* local_result_info,
-                         __constant term_id* schema_buckets,
+                         __global term_id* schema_buckets,
                          __global term_id* subjects,
                          const uint actual_size,
                          __global bucket_info* bucket_infos,
@@ -187,5 +206,186 @@ void materialize_results(__global term_id* result_objects,
       }
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+// perform additive scan (i.e. prefix sum)
+void scan(__local uint * buffer, __local uint* accum, const uint locx)
+{
+    const uint lane = locx & (WAVEFRONT_SIZE - 1);
+
+    #pragma unroll
+    for (uint i = 1; i < WAVEFRONT_SIZE; i = i << 0x1) {
+        barrier(CLK_LOCAL_MEM_FENCE);
+        if (lane >= i) { buffer[locx] += buffer[locx - i]; }
+    }
+
+#if (NUM_WAVEFRONTS > 1)
+    const uint waveID = (locx >> 6);
+    barrier(CLK_LOCAL_MEM_FENCE);
+    if (locx < NUM_WAVEFRONTS) {
+        uint total = buffer[(locx + 1) * WAVEFRONT_SIZE - 1];
+        accum[locx] = total;
+
+        // scan over partial sums
+        for (uint j = 1; j < NUM_WAVEFRONTS; j = j << 0x1) {
+            if (lane >= j) { accum[locx] += accum[locx - j]; }
+        }
+
+        accum[locx] -= total;
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    // add previous sums to scans of wavefronts
+    buffer[locx] += accum[waveID];
+    barrier(CLK_LOCAL_MEM_FENCE);
+#endif
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+// perform max scan
+void max_scan(__local uint * buffer, __local uint* accum, const uint locx)
+{
+    const uint lane = locx & (WAVEFRONT_SIZE - 1);
+
+    #pragma unroll
+    for (uint i = 1; i < WAVEFRONT_SIZE; i = i << 0x1) {
+        barrier(CLK_LOCAL_MEM_FENCE);
+        if (lane >= i) { buffer[locx] = max(buffer[locx], buffer[locx - i]); }
+    }
+
+#if (NUM_WAVEFRONTS > 1)
+    const uint waveID = (locx >> 6);
+    barrier(CLK_LOCAL_MEM_FENCE);
+    if (locx < NUM_WAVEFRONTS) {
+        uint total = buffer[(locx + 1) * WAVEFRONT_SIZE - 1];
+        accum[locx] = total;
+
+        // scan over partial sums
+        for (uint j = 1; j < NUM_WAVEFRONTS; j = j << 0x1) {
+            if (lane >= j) { accum[locx] = max(accum[locx], accum[locx - j]); }
+        }
+
+        accum[locx] -= total;
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    // add previous sums to scans of wavefronts
+    buffer[locx] += accum[waveID];
+    barrier(CLK_LOCAL_MEM_FENCE);
+#endif
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void sort(__local term_id* buffer0, __local term_id* buffer1,
+     __local uint* scan_buffer, __local uint* accum, const uint bits,
+     const uint locx, uint component)
+{
+  // determine number of trailing non-zero bits
+  uint bit_flag, index, new_index, zero_count, zeros_before;
+  term_id value, value0, value1;
+
+  for (uint bit = 0; bit < bits; ++bit) {
+    barrier(CLK_LOCAL_MEM_FENCE);
+    value = (component == 0) ? buffer0[locx] : buffer1[locx];
+
+    value0 = buffer0[locx];
+    value1 = buffer1[locx];
+
+    // set the bit flag to 1 if the current bit is not set
+    bit_flag = scan_buffer[locx] = 1U - (uint)((value >> bit) & 0x1);
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    // perform scan over bit flags to determine new indices
+    scan(scan_buffer, accum, locx);
+
+    zeros_before = scan_buffer[locx];
+
+    // copy to index vector on those positions where current bit is not set
+    index = bit_flag ? (zeros_before - 1) : 0U;
+
+    // determined new index for where current bit is set
+    bit_flag = 1U - bit_flag;
+    zero_count = scan_buffer[GROUP_SIZE - 1];
+    new_index = (GROUP_SIZE - locx) - zero_count + zeros_before;
+
+    // copy to index vector on those positions where current bit is set
+    index = bit_flag ? (GROUP_SIZE - new_index) : index;
+
+    // scatter values to their new indices
+    buffer0[index] = value0;
+    buffer1[index] = value1;
+
+    barrier(CLK_LOCAL_MEM_FENCE);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+__kernel
+void deduplication(__global term_id* objects,
+                   __global term_id* subjects)
+{
+  const uint globx  = get_global_id(0);
+  const uint locx   = get_local_id(0);
+
+  __local term_id buffer0[GROUP_SIZE];
+  __local term_id buffer1[GROUP_SIZE];
+  __local uint scan_buffer[GROUP_SIZE];
+  __local uint accum[NUM_WAVEFRONTS];
+
+  term_id value0 = buffer0[locx] = subjects[globx];
+  term_id value1 = buffer1[locx] = objects[globx];
+
+  // determine maximum significant bits per work group
+  scan_buffer[locx] = (uint)BITS - clz(value0);
+  max_scan(scan_buffer, accum, locx);
+  __local uint significant_bits;
+  if (locx == 0) {
+    significant_bits = scan_buffer[GROUP_SIZE - 1];
+  }
+  barrier(CLK_LOCAL_MEM_FENCE);
+  // sort by second component
+  sort(buffer0, buffer1, scan_buffer, accum, significant_bits, locx, 1);
+
+  // determine maximum significant bits per work group
+  scan_buffer[locx] = (uint)BITS - clz(value1);
+  max_scan(scan_buffer, accum, locx);
+  if (locx == 0) {
+    significant_bits = scan_buffer[GROUP_SIZE - 1];
+  }
+  barrier(CLK_LOCAL_MEM_FENCE);
+  // sort by first component
+  sort(buffer0, buffer1, scan_buffer, accum, significant_bits, locx, 0);
+
+  value0 = buffer0[locx];
+  value1 = buffer1[locx];
+
+  // mark adjacent duplicates
+  uint flag = ((locx > 0) && (value0 == buffer0[locx - 1]) && (value1 == buffer1[locx - 1]));
+  scan_buffer[locx] = flag;
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  // scan over duplicate markings, yielding the number of duplicates before a given index
+  scan(scan_buffer, accum, locx);
+
+  // zero-initialize
+  buffer0[locx] = 0;
+  buffer1[locx] = 0;
+  barrier(CLK_LOCAL_MEM_FENCE);
+  
+  // shift values by amount of duplicates before to the left
+  if (flag == 0) {
+    uint displacement = scan_buffer[locx];
+    buffer0[locx - displacement] = value0;
+    buffer1[locx - displacement] = value1;
+  }
+  barrier(CLK_LOCAL_MEM_FENCE);
+
+  subjects[globx] = buffer0[locx];
+  objects[globx] = buffer1[locx];
 }
 

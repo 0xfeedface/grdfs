@@ -50,7 +50,7 @@ int main(int argc, const char* argv[])
   }
 
   Dictionary dictionary;
-  OpenCLReasoner reasoner(dictionary, CL_DEVICE_TYPE_CPU);
+  OpenCLReasoner reasoner(dictionary, CL_DEVICE_TYPE_GPU);
   // NativeReasoner reasoner(dictionary);
 
   Timer parsing, lookup, storage, closure;
@@ -119,6 +119,9 @@ int main(int argc, const char* argv[])
     std::cerr << err.message() << std::endl;
     exit(EXIT_FAILURE);
   }
+
+  // reasoner.printStatistics();
+
   closure.stop();
   std::clog << "Parsed triples: " << triplesParsed << std::endl;
   std::clog << "Inferred triples: " << reasoner.inferredTriples() << std::endl;

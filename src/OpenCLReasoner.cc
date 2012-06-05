@@ -511,94 +511,115 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
     accumResultSize += tmp;
   }
 
-  BucketVector buckets;
-  BucketInfoVector bucketInfos;
-  cl_uint size;
-  hostTime_.start();
-  buildHash(bucketInfos, buckets, indexSubjects, indexObjects, size);
-  hostTime_.stop();
+  if (accumResultSize) {
+    BucketVector buckets;
+    BucketInfoVector bucketInfos;
+    cl_uint size;
+    hostTime_.start();
+    buildHash(bucketInfos, buckets, indexSubjects, indexObjects, size);
+    hostTime_.stop();
 
-  deviceTime_.start();
+    deviceTime_.start();
 
-  cl::Kernel matKernel(*program(), "materialize_results");
+    cl::Kernel matKernel(*program(), "materialize_results");
 
-  // output with entailed objects
-  cl::Buffer objectOutputBuffer;
-  entailedObjects.resize(accumResultSize, 0);
-  createBuffer(objectOutputBuffer, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, entailedObjects);
-  matKernel.setArg(0, objectOutputBuffer);
+    // output with entailed objects
+    cl::Buffer objectOutputBuffer;
+    entailedObjects.resize(accumResultSize, 0);
+    createBuffer(objectOutputBuffer, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, entailedObjects);
+    matKernel.setArg(0, objectOutputBuffer);
 
-  // output with subjects for entailed triples
-  cl::Buffer subjectOutputBuffer;
-  entailedSubjects.resize(accumResultSize, 0);
-  createBuffer(subjectOutputBuffer, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, entailedSubjects);
-  matKernel.setArg(1, subjectOutputBuffer);
+    // output with subjects for entailed triples
+    cl::Buffer subjectOutputBuffer;
+    entailedSubjects.resize(accumResultSize, 0);
+    createBuffer(subjectOutputBuffer, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, entailedSubjects);
+    matKernel.setArg(1, subjectOutputBuffer);
 
-  // result from above
-  cl::Buffer previousResultsBuffer;
-  createBuffer(previousResultsBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, resultInfo);
-  matKernel.setArg(2, previousResultsBuffer);
+    // result from above
+    cl::Buffer previousResultsBuffer;
+    createBuffer(previousResultsBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, resultInfo);
+    matKernel.setArg(2, previousResultsBuffer);
 
-  // local result info
-  cl::Buffer localResultInfoBuffer;
-  createBuffer(localResultInfoBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, localResultInfo);
-  matKernel.setArg(3, localResultInfoBuffer);
+    // local result info
+    cl::Buffer localResultInfoBuffer;
+    createBuffer(localResultInfoBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, localResultInfo);
+    matKernel.setArg(3, localResultInfoBuffer);
 
-  // schema buckets, same as above
-  matKernel.setArg(4, schemaBucketBuffer);
+    // schema buckets, same as above
+    matKernel.setArg(4, schemaBucketBuffer);
 
-  // input subjects
-  cl::Buffer subjectBuffer;
-  createBuffer(subjectBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, subjectSource);
-  matKernel.setArg(5, subjectBuffer);
+    // input subjects
+    cl::Buffer subjectBuffer;
+    createBuffer(subjectBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, subjectSource);
+    matKernel.setArg(5, subjectBuffer);
 
-  // actual global size
-  matKernel.setArg<cl_uint>(6, static_cast<cl_uint>(accumResultSize));
+    // actual global size
+    matKernel.setArg<cl_uint>(6, static_cast<cl_uint>(accumResultSize));
 
-  // bucket info
-  cl::Buffer bucketInfoBuffer;
-  createBuffer(bucketInfoBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, bucketInfos);
-  matKernel.setArg(7, bucketInfoBuffer);
+    // bucket info
+    cl::Buffer bucketInfoBuffer;
+    createBuffer(bucketInfoBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, bucketInfos);
+    matKernel.setArg(7, bucketInfoBuffer);
 
-  // buckets
-  cl::Buffer bucketBuffer;
-  createBuffer(bucketBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, buckets);
-  matKernel.setArg(8, bucketBuffer);
+    // buckets
+    cl::Buffer bucketBuffer;
+    createBuffer(bucketBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, buckets);
+    matKernel.setArg(8, bucketBuffer);
 
-  // hash table size
-  matKernel.setArg<cl_uint>(9, static_cast<cl_uint>(size));
+    // hash table size
+    matKernel.setArg<cl_uint>(9, static_cast<cl_uint>(size));
 
-  // determine optimal work group size for the kernel
-  // and the global enqueued size as an integer multiple of work group size
-  workGoupSize = matKernel.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(*device_);
-  shiftWidth = log2(workGoupSize);
-  enqueueSize = (((accumResultSize - 1) >> shiftWidth) + 1) << shiftWidth;
+    // determine optimal work group size for the kernel
+    // and the global enqueued size as an integer multiple of work group size
+    workGoupSize = matKernel.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(*device_);
+    shiftWidth = log2(workGoupSize);
+    enqueueSize = (((accumResultSize - 1) >> shiftWidth) + 1) << shiftWidth;
 
-  // enqueue
-  queue_->enqueueNDRangeKernel(matKernel,
-                               cl::NullRange,
-                               cl::NDRange(enqueueSize),
-                               cl::NDRange(workGoupSize),
-                               NULL,
-                               NULL);
+    // enqueue
+    queue_->enqueueNDRangeKernel(matKernel,
+                                 cl::NullRange,
+                                 cl::NDRange(enqueueSize),
+                                 cl::NDRange(workGoupSize),
+                                 NULL,
+                                 NULL);
 
-  // read objects
-  queue_->enqueueReadBuffer(objectOutputBuffer,
-                            CL_FALSE,
-                            0,
-                            accumResultSize * sizeof(Dictionary::KeyType),
-                            entailedObjects.data());
-  // read subjects
-  queue_->enqueueReadBuffer(subjectOutputBuffer,
-                            CL_TRUE,
-                            0,
-                            accumResultSize * sizeof(Dictionary::KeyType),
-                            entailedSubjects.data());
+    // local deduplication
+    cl::Kernel dedupKernel(*program(), "deduplication");
 
-  // block until done
-  queue_->finish();
+    workGoupSize = 256;
+    shiftWidth = log2(workGoupSize);
+    enqueueSize = (accumResultSize >> shiftWidth) << shiftWidth;
 
-  deviceTime_.stop();
+    if (enqueueSize) {
+      dedupKernel.setArg(0, objectOutputBuffer);
+      dedupKernel.setArg(1, subjectOutputBuffer);
+
+      queue_->enqueueNDRangeKernel(dedupKernel,
+                                   cl::NullRange,
+                                   cl::NDRange(enqueueSize),
+                                   cl::NDRange(workGoupSize),
+                                   NULL,
+                                   NULL);
+    }
+
+    // read objects
+    queue_->enqueueReadBuffer(objectOutputBuffer,
+                              CL_FALSE,
+                              0,
+                              accumResultSize * sizeof(Dictionary::KeyType),
+                              entailedObjects.data());
+    // read subjects
+    queue_->enqueueReadBuffer(subjectOutputBuffer,
+                              CL_TRUE,
+                              0,
+                              accumResultSize * sizeof(Dictionary::KeyType),
+                              entailedSubjects.data());
+
+    // block until done
+    queue_->finish();
+
+    deviceTime_.stop();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -716,6 +737,7 @@ void OpenCLReasoner::computeTransitiveClosure(TermMap& successorMap,
               storeTimer_.addTimer(t);
             } else {
               uniqueingTimer_.addTimer(t);
+              // std::cout << currentNode << " " << *grandchildren_it << std::endl;
             }
             hostTime_.start();
           }
