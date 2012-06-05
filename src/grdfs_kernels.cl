@@ -161,7 +161,7 @@ void materialize_results(__global term_id* result_objects,
                          __global term_id* result_subjects,
                          __global uint2* result_info, // const, but shared with other kernel
                          __global uint2* local_result_info,
-                         __constant term_id* schema_buckets,
+                         __global term_id* schema_buckets,
                          __global term_id* subjects,
                          const uint actual_size,
                          __global bucket_info* bucket_infos,
@@ -235,11 +235,11 @@ void scan(__local uint * buffer, __local uint* accum, const uint locx)
 
         accum[locx] -= total;
     }
-
     barrier(CLK_LOCAL_MEM_FENCE);
 
     // add previous sums to scans of wavefronts
     buffer[locx] += accum[waveID];
+    barrier(CLK_LOCAL_MEM_FENCE);
 #endif
 }
 
@@ -270,11 +270,11 @@ void max_scan(__local uint * buffer, __local uint* accum, const uint locx)
 
         accum[locx] -= total;
     }
-
     barrier(CLK_LOCAL_MEM_FENCE);
 
     // add previous sums to scans of wavefronts
     buffer[locx] += accum[waveID];
+    barrier(CLK_LOCAL_MEM_FENCE);
 #endif
 }
 
@@ -301,7 +301,6 @@ void sort(__local term_id* buffer0, __local term_id* buffer1,
 
     // perform scan over bit flags to determine new indices
     scan(scan_buffer, accum, locx);
-    barrier(CLK_LOCAL_MEM_FENCE);
 
     zeros_before = scan_buffer[locx];
 
@@ -340,7 +339,6 @@ void deduplication(__global term_id* objects,
 
   term_id value0 = buffer0[locx] = subjects[globx];
   term_id value1 = buffer1[locx] = objects[globx];
-  barrier(CLK_LOCAL_MEM_FENCE);
 
   // determine maximum significant bits per work group
   scan_buffer[locx] = (uint)BITS - clz(value0);
@@ -351,9 +349,7 @@ void deduplication(__global term_id* objects,
   }
   barrier(CLK_LOCAL_MEM_FENCE);
   // sort by second component
-  /* sort(buffer0, buffer1, scan_buffer, accum, BITS, locx, 1); */
   sort(buffer0, buffer1, scan_buffer, accum, significant_bits, locx, 1);
-  barrier(CLK_LOCAL_MEM_FENCE);
 
   // determine maximum significant bits per work group
   scan_buffer[locx] = (uint)BITS - clz(value1);
@@ -364,7 +360,6 @@ void deduplication(__global term_id* objects,
   barrier(CLK_LOCAL_MEM_FENCE);
   // sort by first component
   sort(buffer0, buffer1, scan_buffer, accum, significant_bits, locx, 0);
-  barrier(CLK_LOCAL_MEM_FENCE);
 
   value0 = buffer0[locx];
   value1 = buffer1[locx];
@@ -374,14 +369,13 @@ void deduplication(__global term_id* objects,
   scan_buffer[locx] = flag;
   barrier(CLK_LOCAL_MEM_FENCE);
 
-  // scan over duplicate markings, yielding the number of duplicates
-  // before a given index
+  // scan over duplicate markings, yielding the number of duplicates before a given index
   scan(scan_buffer, accum, locx);
-  barrier(CLK_LOCAL_MEM_FENCE);
 
   // zero-initialize
   buffer0[locx] = 0;
   buffer1[locx] = 0;
+  barrier(CLK_LOCAL_MEM_FENCE);
   
   // shift values by amount of duplicates before to the left
   if (flag == 0) {
@@ -389,7 +383,6 @@ void deduplication(__global term_id* objects,
     buffer0[locx - displacement] = value0;
     buffer1[locx - displacement] = value1;
   }
-  
   barrier(CLK_LOCAL_MEM_FENCE);
 
   subjects[globx] = buffer0[locx];
