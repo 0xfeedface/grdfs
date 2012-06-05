@@ -525,13 +525,13 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
   // output with entailed objects
   cl::Buffer objectOutputBuffer;
   entailedObjects.resize(accumResultSize, 0);
-  createBuffer(objectOutputBuffer, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, entailedObjects);
+  createBuffer(objectOutputBuffer, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, entailedObjects);
   matKernel.setArg(0, objectOutputBuffer);
 
   // output with subjects for entailed triples
   cl::Buffer subjectOutputBuffer;
   entailedSubjects.resize(accumResultSize, 0);
-  createBuffer(subjectOutputBuffer, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, entailedSubjects);
+  createBuffer(subjectOutputBuffer, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, entailedSubjects);
   matKernel.setArg(1, subjectOutputBuffer);
 
   // result from above
@@ -581,6 +581,25 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
                                cl::NDRange(workGoupSize),
                                NULL,
                                NULL);
+
+  // local deduplication
+  cl::Kernel dedupKernel(*program(), "deduplication");
+
+  workGoupSize = 256;
+  shiftWidth = log2(workGoupSize);
+  enqueueSize = (accumResultSize >> shiftWidth) << shiftWidth;
+
+  if (enqueueSize) {
+    dedupKernel.setArg(0, objectOutputBuffer);
+    dedupKernel.setArg(1, subjectOutputBuffer);
+
+    queue_->enqueueNDRangeKernel(dedupKernel,
+                                 cl::NullRange,
+                                 cl::NDRange(enqueueSize),
+                                 cl::NDRange(workGoupSize),
+                                 NULL,
+                                 NULL);
+  }
 
   // read objects
   queue_->enqueueReadBuffer(objectOutputBuffer,
