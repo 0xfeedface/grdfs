@@ -590,7 +590,7 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
     shiftWidth = log2(workGoupSize);
     enqueueSize = (accumResultSize >> shiftWidth) << shiftWidth;
 
-    if (false && enqueueSize) {
+    if (enqueueSize) {
       dedupKernel.setArg(0, objectOutputBuffer);
       dedupKernel.setArg(1, subjectOutputBuffer);
 
@@ -617,9 +617,9 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
 
     // block until done
     queue_->finish();
-  }
 
-  deviceTime_.stop();
+    deviceTime_.stop();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -737,6 +737,7 @@ void OpenCLReasoner::computeTransitiveClosure(TermMap& successorMap,
               storeTimer_.addTimer(t);
             } else {
               uniqueingTimer_.addTimer(t);
+              // std::cout << currentNode << " " << *grandchildren_it << std::endl;
             }
             hostTime_.start();
           }
