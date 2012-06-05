@@ -288,8 +288,8 @@ void sort(__local term_id* buffer0, __local term_id* buffer1,
   uint bit_flag, index, new_index, zero_count, zeros_before;
   term_id value, value0, value1;
 
+  barrier(CLK_LOCAL_MEM_FENCE);
   for (uint bit = 0; bit < bits; ++bit) {
-    barrier(CLK_LOCAL_MEM_FENCE);
     value = (component == 0) ? buffer0[locx] : buffer1[locx];
 
     value0 = buffer0[locx];
