@@ -130,6 +130,7 @@ void OpenCLReasoner::computeClosureInternal()
         schemaSubjects.push_back(subject);
       }
       computeJoin(results, predicates, schemaSubjects);
+
       spanTriplesByPredicate(triples_.subjects(), triples_.predicates(),
                              triples_.objects(), results, spSuccessors_);
     }
@@ -142,10 +143,10 @@ void OpenCLReasoner::computeClosureInternal()
     const Store::KeyVector& predicates(triples_.predicates());
     const Store::KeyVector& subjects(triples_.subjects());
     Store::KeyVector objectResults;
-    ResultInfoVector resultInfos;
-    computeJoinRule(objectResults, resultInfos, predicates, subjects, domTriples_,
+    Store::KeyVector subjectResults;
+    computeJoinRule(objectResults, subjectResults, predicates, subjects, domTriples_,
                     typeTriples_.subjects(), typeTriples_.objects());
-    materializeWithProperty(resultInfos, subjects, objectResults, type_);
+    materializeWithProperty(subjectResults, objectResults, type_);
   }
 
   if (rngTriples_.size() && triples_.size()) {
@@ -155,10 +156,10 @@ void OpenCLReasoner::computeClosureInternal()
     const Store::KeyVector& predicates(triples_.predicates());
     const Store::KeyVector& objects(triples_.objects());
     Store::KeyVector objectResults;
-    ResultInfoVector resultInfos;
-    computeJoinRule(objectResults, resultInfos, predicates, objects, rngTriples_,
+    Store::KeyVector subjectResults;
+    computeJoinRule(objectResults, subjectResults, predicates, objects, rngTriples_,
                     typeTriples_.subjects(), typeTriples_.objects());
-    materializeWithProperty(resultInfos, objects, objectResults, type_);
+    materializeWithProperty(subjectResults, objectResults, type_);
   }
 
   if (scTerms_.size()) {
@@ -171,10 +172,10 @@ void OpenCLReasoner::computeClosureInternal()
       const Store::KeyVector& objects(typeTriples_.objects());
       const Store::KeyVector& subjects(typeTriples_.subjects());
       Store::KeyVector objectResults;
-      ResultInfoVector resultInfos;
-      computeJoinRule(objectResults, resultInfos, objects, subjects, scSuccessors_,
+      Store::KeyVector subjectResults;
+      computeJoinRule(objectResults, subjectResults, objects, subjects, scSuccessors_,
                       subjects, objects);
-      materializeWithProperty(resultInfos, subjects, objectResults, type_);
+      materializeWithProperty(subjectResults, objectResults, type_);
     }
   }
 }
@@ -193,36 +194,27 @@ Reasoner::TimingMap OpenCLReasoner::timings()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void OpenCLReasoner::materializeWithProperty(const ResultInfoVector& resultInfos,
-                                             const Store::KeyVector& subjects,
-                                             const Store::KeyVector& objects,
-                                             const KeyType property)
+void OpenCLReasoner::materializeWithProperty(const Store::KeyVector& subjects,
+    const Store::KeyVector& objects,
+    const KeyType property)
 {
-  for (std::size_t i(0), max(resultInfos.size()); i != max; ++i) {
-    std::size_t size(0);
-    if ((i + 1) < max) {
-      size = resultInfos[i + 1].second - resultInfos[i].second;
-    } else {
-      size = objects.size() - resultInfos[i].second;
-    }
+  for (std::size_t i(0), end(subjects.size()); i != end; ++i) {
     auto subject(subjects[i]);
-    for (std::size_t j(0); j != size; ++j) {
-      auto object(objects[resultInfos[i].second + j]);
-      if (object) {
-        // std::cout << subject << " " << object << std::endl;
-        // std::cout << dict_.Find(subject) << " " << dict_.Find(object) << std::endl;
-        Timer t;
-        t.start();
-        Store::Triple triple(subject, property, object);
-        bool stored = addTriple(triple, Store::kFlagsEntailed);
-        t.stop();
-        if (stored) {
-          storeTimer_.addTimer(t);
-        } else {
-          uniqueingTimer_.addTimer(t);
-          // print rejected s, p
-          // std::cout << triple.subject << " " << triple.object << std::endl;
-        }
+    auto object(objects[i]);
+    if (subject) {
+      // std::cout << subject << " " << object << std::endl;
+      // std::cout << dict_.Find(subject) << " " << dict_.Find(object) << std::endl;
+      Timer t;
+      t.start();
+      Store::Triple triple(subject, property, object);
+      bool stored = addTriple(triple, Store::kFlagsEntailed);
+      t.stop();
+      if (stored) {
+        storeTimer_.addTimer(t);
+      } else {
+        uniqueingTimer_.addTimer(t);
+        // print rejected s, p
+        // std::cout << triple.subject << " " << triple.object << std::endl;
       }
     }
   }
@@ -436,7 +428,7 @@ void OpenCLReasoner::buildHash(BucketInfoVector& bucketInfos,
 ////////////////////////////////////////////////////////////////////////////////
 
 void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
-                                     ResultInfoVector& resultInfo,
+                                     Store::KeyVector& entailedSubjects,
                                      const Store::KeyVector& objectSource,
                                      const Store::KeyVector& subjectSource,
                                      const TermMap& schemaSuccessorMap,
@@ -449,7 +441,7 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
   std::size_t globalSize = subjectSource.size();
 
   // output with pair of matched element or CL_UINT_MAX, successor size
-  resultInfo.resize(globalSize);
+  std::vector<std::pair<cl_uint, cl_uint>> resultInfo(globalSize);
   cl::Buffer outputBuffer;
   createBuffer(outputBuffer, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, resultInfo);
   inheritanceKernel.setArg(0, outputBuffer);
@@ -536,39 +528,45 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
   createBuffer(objectOutputBuffer, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, entailedObjects);
   matKernel.setArg(0, objectOutputBuffer);
 
+  // output with subjects for entailed triples
+  cl::Buffer subjectOutputBuffer;
+  entailedSubjects.resize(accumResultSize, 0);
+  createBuffer(subjectOutputBuffer, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, entailedSubjects);
+  matKernel.setArg(1, subjectOutputBuffer);
+
   // result from above
   cl::Buffer previousResultsBuffer;
   createBuffer(previousResultsBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, resultInfo);
-  matKernel.setArg(1, previousResultsBuffer);
+  matKernel.setArg(2, previousResultsBuffer);
 
   // local result info
   cl::Buffer localResultInfoBuffer;
   createBuffer(localResultInfoBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, localResultInfo);
-  matKernel.setArg(2, localResultInfoBuffer);
+  matKernel.setArg(3, localResultInfoBuffer);
 
   // schema buckets, same as above
-  matKernel.setArg(3, schemaBucketBuffer);
+  matKernel.setArg(4, schemaBucketBuffer);
 
   // input subjects
   cl::Buffer subjectBuffer;
   createBuffer(subjectBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, subjectSource);
-  matKernel.setArg(4, subjectBuffer);
+  matKernel.setArg(5, subjectBuffer);
 
   // actual global size
-  matKernel.setArg<cl_uint>(5, static_cast<cl_uint>(accumResultSize));
+  matKernel.setArg<cl_uint>(6, static_cast<cl_uint>(accumResultSize));
 
   // bucket info
   cl::Buffer bucketInfoBuffer;
   createBuffer(bucketInfoBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, bucketInfos);
-  matKernel.setArg(6, bucketInfoBuffer);
+  matKernel.setArg(7, bucketInfoBuffer);
 
   // buckets
   cl::Buffer bucketBuffer;
   createBuffer(bucketBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, buckets);
-  matKernel.setArg(7, bucketBuffer);
+  matKernel.setArg(8, bucketBuffer);
 
   // hash table size
-  matKernel.setArg<cl_uint>(8, static_cast<cl_uint>(size));
+  matKernel.setArg<cl_uint>(9, static_cast<cl_uint>(size));
 
   // determine optimal work group size for the kernel
   // and the global enqueued size as an integer multiple of work group size
@@ -590,6 +588,12 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
                             0,
                             accumResultSize * sizeof(Dictionary::KeyType),
                             entailedObjects.data());
+  // read subjects
+  queue_->enqueueReadBuffer(subjectOutputBuffer,
+                            CL_TRUE,
+                            0,
+                            accumResultSize * sizeof(Dictionary::KeyType),
+                            entailedSubjects.data());
 
   // block until done
   queue_->finish();

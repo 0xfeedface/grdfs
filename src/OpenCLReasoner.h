@@ -78,8 +78,6 @@ private:
   Timer storeTimer_;
   Timer uniqueingTimer_;
 
-  typedef std::vector<std::pair<cl_uint, cl_uint>> ResultInfoVector;
-
   cl::Context* context(cl_device_type type);
   cl::CommandQueue* commandQueue(bool enableProfiling = false);
   cl::Program* program();
@@ -97,8 +95,8 @@ private:
   // Join source against match and store the result in target.
   void computeJoin(Store::KeyVector& target, const Store::KeyVector& source, Store::KeyVector& match);
 
-  void computeJoinRule(Store::KeyVector& objectResults,
-                       ResultInfoVector& resultInfo,
+  void computeJoinRule(Store::KeyVector& objectTarget,
+                       Store::KeyVector& subjectTarget,
                        const Store::KeyVector& objectSource,
                        const Store::KeyVector& subjectSource,
                        const TermMap& schemaSuccessorMap,
@@ -119,9 +117,8 @@ private:
                        const TermMap& successorMap,
                        cl_uint& size);
 
-  void materializeWithProperty(const ResultInfoVector& resultInfo,
-                               const Store::KeyVector& subjects,
-                               const Store::KeyVector& objectResults,
+  void materializeWithProperty(const Store::KeyVector& subjects,
+                               const Store::KeyVector& objects,
                                const KeyType property);
 
   void spanTriplesByPredicate(const Store::KeyVector& subjects,
