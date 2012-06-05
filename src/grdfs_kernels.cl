@@ -218,9 +218,7 @@ void scan(__local uint * buffer, __local uint* accum, const uint locx)
     #pragma unroll
     for (uint i = 1; i < WAVEFRONT_SIZE; i = i << 0x1) {
         barrier(CLK_LOCAL_MEM_FENCE);
-        buffer[locx] = select(buffer[locx],
-                              buffer[locx] + buffer[locx - i],
-                              SEL(lane >= i));
+        if (lane >= i) { buffer[locx] += buffer[locx - i]; }
     }
 
 #if (NUM_WAVEFRONTS > 1)
@@ -232,9 +230,7 @@ void scan(__local uint * buffer, __local uint* accum, const uint locx)
 
         // scan over partial sums
         for (uint j = 1; j < NUM_WAVEFRONTS; j = j << 0x1) {
-            accum[locx] = select(accum[locx],
-                                 accum[locx] + accum[locx - j],
-                                 SEL(lane >= j));
+            if (lane >= j) { accum[locx] += accum[locx - j]; }
         }
 
         accum[locx] -= total;
@@ -257,9 +253,7 @@ void max_scan(__local uint * buffer, __local uint* accum, const uint locx)
     #pragma unroll
     for (uint i = 1; i < WAVEFRONT_SIZE; i = i << 0x1) {
         barrier(CLK_LOCAL_MEM_FENCE);
-        buffer[locx] = select(buffer[locx],
-                              max(buffer[locx], buffer[locx - i]),
-                              SEL(lane >= i));
+        if (lane >= i) { buffer[locx] = max(buffer[locx], buffer[locx - i]); }
     }
 
 #if (NUM_WAVEFRONTS > 1)
@@ -271,9 +265,7 @@ void max_scan(__local uint * buffer, __local uint* accum, const uint locx)
 
         // scan over partial sums
         for (uint j = 1; j < NUM_WAVEFRONTS; j = j << 0x1) {
-            accum[locx] = select(accum[locx],
-                                 max(accum[locx], accum[locx - j]),
-                                 SEL(lane >= j));
+            if (lane >= j) { accum[locx] = max(accum[locx], accum[locx - j]); }
         }
 
         accum[locx] -= total;
@@ -323,11 +315,12 @@ void sort(__local term_id* buffer0, __local term_id* buffer1,
 
     // copy to index vector on those positions where current bit is set
     index = bit_flag ? (GROUP_SIZE - new_index) : index;
-    barrier(CLK_LOCAL_MEM_FENCE);
 
     // scatter values to their new indices
     buffer0[index] = value0;
     buffer1[index] = value1;
+
+    barrier(CLK_LOCAL_MEM_FENCE);
   }
 }
 
@@ -350,23 +343,27 @@ void deduplication(__global term_id* objects,
   barrier(CLK_LOCAL_MEM_FENCE);
 
   // determine maximum significant bits per work group
-  /*
-   * scan_buffer[locx] = (uint)BITS - clz(value0);
-   * max_scan(scan_buffer, locx);
-   * __local uint significant_bits;
-   * if (locx == 0) {
-   *   significant_bits = scan_buffer[GROUP_SIZE - 1];
-   * }
-   * barrier(CLK_LOCAL_MEM_FENCE);
-   */
-  
+  scan_buffer[locx] = (uint)BITS - clz(value0);
+  max_scan(scan_buffer, accum, locx);
+  __local uint significant_bits;
+  if (locx == 0) {
+    significant_bits = scan_buffer[GROUP_SIZE - 1];
+  }
+  barrier(CLK_LOCAL_MEM_FENCE);
   // sort by second component
-  sort(buffer0, buffer1, scan_buffer, accum, BITS, locx, 1);
-  // sort(buffer0, buffer1, scan_buffer, significant_bits, locx, 1);
+  /* sort(buffer0, buffer1, scan_buffer, accum, BITS, locx, 1); */
+  sort(buffer0, buffer1, scan_buffer, accum, significant_bits, locx, 1);
   barrier(CLK_LOCAL_MEM_FENCE);
 
+  // determine maximum significant bits per work group
+  scan_buffer[locx] = (uint)BITS - clz(value1);
+  max_scan(scan_buffer, accum, locx);
+  if (locx == 0) {
+    significant_bits = scan_buffer[GROUP_SIZE - 1];
+  }
+  barrier(CLK_LOCAL_MEM_FENCE);
   // sort by first component
-  sort(buffer0, buffer1, scan_buffer, accum, BITS, locx, 0);
+  sort(buffer0, buffer1, scan_buffer, accum, significant_bits, locx, 0);
   barrier(CLK_LOCAL_MEM_FENCE);
 
   value0 = buffer0[locx];
