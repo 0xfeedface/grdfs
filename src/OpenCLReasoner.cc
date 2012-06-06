@@ -549,10 +549,10 @@ void OpenCLReasoner::buildHash(BucketInfoVector& bucketInfos,
 std::size_t OpenCLReasoner::batchSize(std::size_t globalSize)
 {
   // cl_ulong maxMemSize(device_->getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>());
-  cl_ulong maxAllocSize(device_->getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>());
+  cl_ulong maxAllocSize(device_->getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>() * 0.8f);
   
   unsigned batchFactor = std::ceil(static_cast<float>(globalSize * sizeof(BucketEntry)) / maxAllocSize);
-  return (std::ceil(globalSize / (batchFactor * 2)));
+  return (std::ceil(static_cast<float>(globalSize) / batchFactor));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
