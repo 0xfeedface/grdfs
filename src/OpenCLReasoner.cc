@@ -90,6 +90,42 @@ void OpenCLReasoner::createBuffer(cl::Buffer& buffer, cl_mem_flags flags,
 
 ////////////////////////////////////////////////////////////////////////////////
 
+template <typename T>
+void OpenCLReasoner::createBuffer(cl::Buffer& buffer, cl_mem_flags flags,
+                                  typename std::vector<T>::const_iterator begin,
+                                  typename std::vector<T>::const_iterator end)
+{
+  typename std::vector<T>::size_type length(end - begin);
+  try {
+    buffer = cl::Buffer(*context_,
+                        flags,
+                        length * sizeof(T),
+                        // FIXME:
+                        // OpenCL C++ bindings do not provide a Buffer constructor
+                        // with a const argument, even if the memory is CL_MEM_READ_ONLY,
+                        // so we have to cast away the const. :(
+                        const_cast<T*>(&(*begin)));
+  } catch (cl::Error& err) {
+    std::stringstream str;
+    switch (err.err()) {
+    case CL_INVALID_BUFFER_SIZE:
+    case CL_MEM_OBJECT_ALLOCATION_FAILURE:
+      str << "Insufficient device memory (tried to allocate "
+          << length * sizeof(T)
+          << " bytes).";
+      break;
+    case CL_OUT_OF_HOST_MEMORY:
+      str << "Insufficient host memory.";
+      break;
+    default:
+      throw;
+    }
+    throw Error(str.str());
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void OpenCLReasoner::computeClosure()
 {
   try {
@@ -130,7 +166,6 @@ void OpenCLReasoner::computeClosureInternal()
         schemaSubjects.push_back(subject);
       }
       computeJoin(results, predicates, schemaSubjects);
-
       spanTriplesByPredicate(triples_.subjects(), triples_.predicates(),
                              triples_.objects(), results, spSuccessors_);
     }
@@ -140,26 +175,72 @@ void OpenCLReasoner::computeClosureInternal()
     // 3) compute rule 2 (domain expansion)
     // We use plain non-type, non-schema triples only.
     // Otherwise it would be non-authorative.
-    const Store::KeyVector& predicates(triples_.predicates());
     const Store::KeyVector& subjects(triples_.subjects());
+    const Store::KeyVector& predicates(triples_.predicates());
+    const Store::KeyVector& objects(triples_.objects());
     Store::KeyVector objectResults;
     Store::KeyVector subjectResults;
-    computeJoinRule(objectResults, subjectResults, predicates, subjects, domTriples_,
-                    typeTriples_.subjects(), typeTriples_.objects());
-    materializeWithProperty(subjectResults, objectResults, type_);
+
+    std::size_t globalSize(subjects.size());
+    std::size_t size(batchSize(globalSize));
+
+    for (std::size_t i(0); (i + 1) * size <= globalSize; ++i) {
+      auto subjectsBegin(subjects.begin() + i * size);
+      auto subjectsEnd(MIN(subjectsBegin + (i + 1) * size, subjects.end()));
+      auto predicatesBegin(predicates.begin() + i * size);
+      auto predicatesEnd(MIN(predicatesBegin + (i + 1) * size, predicates.end()));
+      auto objectsBegin(objects.begin() + i * size);
+      auto objectsEnd(MIN(objectsBegin + (i + 1) * size, objects.end()));
+      auto joinBegin(predicates.begin() + i * size);
+      auto joinEnd(MIN(predicatesBegin + (i + 1) * size, predicates.end()));
+
+      objectResults.clear();
+      subjectResults.clear();
+
+      computeJoinRule(objectResults, subjectResults,
+                      subjectsBegin, subjectsEnd,
+                      predicatesBegin, predicatesEnd,
+                      objectsBegin, objectsEnd,
+                      joinBegin, joinEnd,
+                      domTriples_);
+      materializeWithProperty(subjectResults, objectResults, type_);
+    }
   }
 
   if (rngTriples_.size() && triples_.size()) {
     // 4) compute rule 3 (range expansion)
     // We use plain non-type, non-schema triples only.
     // Otherwise it would be non-authorative.
+    const Store::KeyVector& subjects(triples_.subjects());
     const Store::KeyVector& predicates(triples_.predicates());
     const Store::KeyVector& objects(triples_.objects());
     Store::KeyVector objectResults;
     Store::KeyVector subjectResults;
-    computeJoinRule(objectResults, subjectResults, predicates, objects, rngTriples_,
-                    typeTriples_.subjects(), typeTriples_.objects());
-    materializeWithProperty(subjectResults, objectResults, type_);
+    std::size_t globalSize(subjects.size());
+    std::size_t size(batchSize(globalSize));
+
+    for (std::size_t i(0); (i + 1) * size <= globalSize; ++i) {
+      auto subjectsBegin(subjects.begin() + i * size);
+      auto subjectsEnd(MIN(subjectsBegin + (i + 1) * size, subjects.end()));
+      auto predicatesBegin(predicates.begin() + i * size);
+      auto predicatesEnd(MIN(predicatesBegin + (i + 1) * size, predicates.end()));
+      auto objectsBegin(objects.begin() + i * size);
+      auto objectsEnd(MIN(objectsBegin + (i + 1) * size, objects.end()));
+      auto joinBegin(predicates.begin() + i * size);
+      auto joinEnd(MIN(predicatesBegin + (i + 1) * size, predicates.end()));
+
+      objectResults.clear();
+      subjectResults.clear();
+
+      computeJoinRule(objectResults, subjectResults,
+                      objectsBegin, objectsEnd,
+                      predicatesBegin, predicatesEnd,
+                      subjectsBegin, subjectsEnd,
+                      joinBegin, joinEnd,
+                      rngTriples_,
+                      false);
+      materializeWithProperty(subjectResults, objectResults, type_);
+    }
   }
 
   if (scTerms_.size()) {
@@ -169,13 +250,35 @@ void OpenCLReasoner::computeClosureInternal()
     // compute rule 9 (subClassOf inheritance)
     if (typeTriples_.size()) {
       // According to rule 9, we use rdf:type triples only
-      const Store::KeyVector& objects(typeTriples_.objects());
       const Store::KeyVector& subjects(typeTriples_.subjects());
+      const Store::KeyVector& predicates(typeTriples_.predicates());
+      const Store::KeyVector& objects(typeTriples_.objects());
       Store::KeyVector objectResults;
       Store::KeyVector subjectResults;
-      computeJoinRule(objectResults, subjectResults, objects, subjects, scSuccessors_,
-                      subjects, objects);
-      materializeWithProperty(subjectResults, objectResults, type_);
+      std::size_t globalSize(subjects.size());
+      std::size_t size(batchSize(globalSize));
+
+      for (std::size_t i(0); (i + 1) * size <= globalSize; ++i) {
+        auto subjectsBegin(subjects.begin() + i * size);
+        auto subjectsEnd(MIN(subjectsBegin + (i + 1) * size, subjects.end()));
+        auto predicatesBegin(predicates.begin() + i * size);
+        auto predicatesEnd(MIN(predicatesBegin + (i + 1) * size, predicates.end()));
+        auto objectsBegin(objects.begin() + i * size);
+        auto objectsEnd(MIN(objectsBegin + (i + 1) * size, objects.end()));
+        auto joinBegin(objects.begin() + i * size);
+        auto joinEnd(MIN(joinBegin + (i + 1) * size, objects.end()));
+
+        objectResults.clear();
+        subjectResults.clear();
+
+        computeJoinRule(objectResults, subjectResults,
+                        subjectsBegin, subjectsEnd,
+                        predicatesBegin, predicatesEnd,
+                        objectsBegin, objectsEnd,
+                        joinBegin, joinEnd,
+                        scSuccessors_);
+        materializeWithProperty(subjectResults, objectResults, type_);
+      }
     }
   }
 }
@@ -357,47 +460,56 @@ void OpenCLReasoner::buildSchemaHash(BucketInfoVector& bucketInfos,
 
 void OpenCLReasoner::buildHash(BucketInfoVector& bucketInfos,
                                BucketVector& buckets,
-                               const Store::KeyVector& subjects,
-                               const Store::KeyVector& objects,
+                               Store::KeyVector::const_iterator subjectsBegin,
+                               Store::KeyVector::const_iterator subjectsEnd,
+                               Store::KeyVector::const_iterator predicatesBegin,
+                               Store::KeyVector::const_iterator predicatesEnd,
+                               Store::KeyVector::const_iterator objectsBegin,
+                               Store::KeyVector::const_iterator objectsEnd,
                                cl_uint& size)
 {
-  std::size_t logSize(ceil(log2(subjects.size())));
+  std::size_t logSize(ceil(log2(subjectsEnd - subjectsBegin)));
   size = (1 << logSize);
 
   // count number of entries for each bucket
   std::vector<cl_ushort> bucketSizes(size, 0);
-  for (std::size_t i(0), end(subjects.size()); i != end; ++i) {
-    KeyType s(subjects[i]), o(objects[i]);
-    std::size_t index(hashPair(s, o) & (size - 1));
-    ++bucketSizes[index];
+  auto sit(subjectsBegin), pit(predicatesBegin), oit(objectsBegin);
+  for (; sit != subjectsEnd && pit != predicatesEnd && oit != objectsEnd; ++sit, ++pit, ++oit) {
+    if (*pit == type_) {
+      std::size_t index(hashPair(*sit, *oit) & (size - 1));
+      ++bucketSizes[index];
+    }
   }
 
   // Timer t1;
 
   // determine index for each bucket
   bucketInfos.resize(size, BucketInfo());
-  // t1.start();
-  for (std::size_t i(0), end(subjects.size()); i != end; ++i) {
-    KeyType s(subjects[i]), o(objects[i]);
-    std::size_t hash(hashPair(s, o) & (size - 1));
-    cl_ushort bucketSize(bucketSizes[hash]);
-    if (bucketSize == 1) {
-      // overflow-free bucket
-      BucketInfo info(buckets.size(), 1, 1);
-      bucketInfos[hash] = info;
-      buckets.emplace_back(s, o);
-    } else if (bucketSize > 1) {
-      // bucket with overflows entry
-      BucketInfo& info(bucketInfos[hash]);
-      if (!info.size) {
-        info.start = buckets.size();
-        info.size = bucketSize;
-        buckets.resize(buckets.size() + bucketSize);
-        buckets[info.start] = BucketEntry(s, o);
-      } else {
-        buckets[info.start + info.free] = BucketEntry(s, o);
+  sit = subjectsBegin;
+  pit = predicatesBegin;
+  oit = objectsBegin;
+  for (; sit != subjectsEnd && pit != predicatesEnd && oit != objectsEnd; ++sit, ++pit, ++oit) {
+    if (*pit == type_) {
+      std::size_t hash(hashPair(*sit, *oit) & (size - 1));
+      cl_ushort bucketSize(bucketSizes[hash]);
+      if (bucketSize == 1) {
+        // overflow-free bucket
+        BucketInfo info(buckets.size(), 1, 1);
+        bucketInfos[hash] = info;
+        buckets.emplace_back(*sit, *oit);
+      } else if (bucketSize > 1) {
+        // bucket with overflows entry
+        BucketInfo& info(bucketInfos[hash]);
+        if (!info.size) {
+          info.start = buckets.size();
+          info.size = bucketSize;
+          buckets.resize(buckets.size() + bucketSize);
+          buckets[info.start] = BucketEntry(*sit, *oit);
+        } else {
+          buckets[info.start + info.free] = BucketEntry(*sit, *oit);
+        }
+        ++info.free;
       }
-      ++info.free;
     }
   }
   // t1.stop();
@@ -408,51 +520,74 @@ void OpenCLReasoner::buildHash(BucketInfoVector& bucketInfos,
 
   /*
    * // debug check
-   * for (std::size_t i(0), end(subjects.size()); i != end; ++i) {
-   *   KeyType s(subjects[i]), o(objects[i]);
-   *   std::size_t hash(hashPair(s, o) & (size - 1));
-   *   BucketInfo info(bucketInfos[hash]);
-   *   // make sure buckets are full
-   *   assert(info.size == info.free);
-   *   bool found(false);
-   *   for (cl_uint i(info.start), end(info.start + info.size); i != end; ++i) {
-   *     if (buckets[i].subject == s && buckets[i].object == o) {
-   *       found = true;
+   * sit = subjectsBegin;
+   * pit = predicatesBegin;
+   * oit = objectsBegin;
+   * std::size_t i(0);
+   * for (; sit != subjectsEnd && pit != predicatesEnd && oit != objectsEnd; ++sit, ++pit, ++oit) {
+   *   if (*pit == type_) {
+   *     KeyType s(*sit), o(*oit);
+   *     std::size_t hash(hashPair(s, o) & (size - 1));
+   *     BucketInfo info(bucketInfos[hash]);
+   *     // make sure buckets are full
+   *     assert(info.size == info.free);
+   *     bool found(false);
+   *     for (cl_uint i(info.start), end(info.start + info.size); i != end; ++i) {
+   *       if (buckets[i].subject == s && buckets[i].object == o) {
+   *         found = true;
+   *       }
    *     }
+   *     assert(found == true);
+   *     ++i;
    *   }
-   *   assert(found == true);
    * }
    */
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
+std::size_t OpenCLReasoner::batchSize(std::size_t globalSize)
+{
+  // cl_ulong maxMemSize(device_->getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>());
+  cl_ulong maxAllocSize(device_->getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>());
+  
+  unsigned batchFactor = std::ceil(static_cast<float>(globalSize * sizeof(BucketEntry)) / maxAllocSize);
+  return (std::ceil(globalSize / (batchFactor * 2)));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
                                      Store::KeyVector& entailedSubjects,
-                                     const Store::KeyVector& objectSource,
-                                     const Store::KeyVector& subjectSource,
+                                     Store::KeyVector::const_iterator subjectsBegin,
+                                     Store::KeyVector::const_iterator subjectsEnd,
+                                     Store::KeyVector::const_iterator predicatesBegin,
+                                     Store::KeyVector::const_iterator predicatesEnd,
+                                     Store::KeyVector::const_iterator objectsBegin,
+                                     Store::KeyVector::const_iterator objectsEnd,
+                                     Store::KeyVector::const_iterator joinBegin,
+                                     Store::KeyVector::const_iterator joinEnd,
                                      const TermMap& schemaSuccessorMap,
-                                     const Store::KeyVector& indexSubjects,
-                                     const Store::KeyVector& indexObjects)
+                                     bool useIndex)
 {
   deviceTime_.start();
 
+  std::size_t batchSize(joinEnd - joinBegin);
   cl::Kernel inheritanceKernel(*program(), "count_results_hashed");
-  std::size_t globalSize = subjectSource.size();
 
   // output with pair of matched element or CL_UINT_MAX, successor size
-  std::vector<std::pair<cl_uint, cl_uint>> resultInfo(globalSize);
+  std::vector<std::pair<cl_uint, cl_uint>> resultInfo(batchSize);
   cl::Buffer outputBuffer;
   createBuffer(outputBuffer, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, resultInfo);
   inheritanceKernel.setArg(0, outputBuffer);
 
   // input elements to join
   cl::Buffer inputBuffer;
-  createBuffer(inputBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, objectSource);
+  createBuffer<Dictionary::KeyType>(inputBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, joinBegin, joinEnd);
   inheritanceKernel.setArg(1, inputBuffer);
 
   // actual number of elements
-  inheritanceKernel.setArg<cl_uint>(2, globalSize);
+  inheritanceKernel.setArg<cl_uint>(2, batchSize);
 
   // build hash table for join
   BucketInfoVector schemaBucketInfos;
@@ -477,7 +612,7 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
   // and the global enqueued size as an integer multiple of work group size
   std::size_t workGoupSize(inheritanceKernel.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(*device_));
   std::size_t shiftWidth(log2(workGoupSize));
-  std::size_t enqueueSize((((globalSize - 1) >> shiftWidth) + 1) << shiftWidth);
+  std::size_t enqueueSize((((batchSize - 1) >> shiftWidth) + 1) << shiftWidth);
 
   // enqueue
   queue_->enqueueNDRangeKernel(inheritanceKernel,
@@ -516,7 +651,17 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
     BucketInfoVector bucketInfos;
     cl_uint size;
     hostTime_.start();
-    buildHash(bucketInfos, buckets, indexSubjects, indexObjects, size);
+    if (useIndex) {
+      buildHash(bucketInfos, buckets,
+                subjectsBegin, subjectsEnd,
+                predicatesBegin, predicatesEnd,
+                objectsBegin, objectsEnd,
+                size);
+    } else {
+      bucketInfos.emplace_back(BucketInfo(CL_UINT_MAX, 0));
+      buckets.emplace_back(BucketEntry(0, 0));
+      size = 1;
+    }
     hostTime_.stop();
 
     deviceTime_.start();
@@ -550,7 +695,7 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
 
     // input subjects
     cl::Buffer subjectBuffer;
-    createBuffer(subjectBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, subjectSource);
+    createBuffer<Dictionary::KeyType>(subjectBuffer, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, subjectsBegin, subjectsEnd);
     matKernel.setArg(5, subjectBuffer);
 
     // actual global size
@@ -586,6 +731,7 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
     // local deduplication
     cl::Kernel dedupKernel(*program(), "deduplication");
 
+    // this kernel requires a fixed work group size
     workGoupSize = 256;
     shiftWidth = log2(workGoupSize);
     enqueueSize = (accumResultSize >> shiftWidth) << shiftWidth;

@@ -48,6 +48,8 @@ bool Reasoner::addTriple(const Store::Triple& t, Store::TripleFlags flags)
   if (t.predicate == type_) {
     // index for rdf:type triples
     result = typeTriples_.addTriple(t, flags);
+    // test:
+    triples_.addTriple(t, flags);
   } else {
     // everything else
     result = triples_.addTriple(t, flags);

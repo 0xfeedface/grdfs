@@ -83,10 +83,17 @@ private:
   cl::Program* program();
   std::string loadSource(const std::string& filename);
 
+  std::size_t batchSize(std::size_t globalSize);
+
   void computeClosureInternal();
 
   template <typename T>
   void createBuffer(cl::Buffer& buffer, cl_mem_flags, const std::vector<T>& data);
+
+  template <typename T>
+  void createBuffer(cl::Buffer&, cl_mem_flags,
+                    typename std::vector<T>::const_iterator,
+                    typename std::vector<T>::const_iterator);
 
   void computeTransitiveClosure(TermMap& successorMap,
                                 const TermMap& predecessorMap,
@@ -97,19 +104,28 @@ private:
 
   void computeJoinRule(Store::KeyVector& objectTarget,
                        Store::KeyVector& subjectTarget,
-                       const Store::KeyVector& objectSource,
-                       const Store::KeyVector& subjectSource,
-                       const TermMap& schemaSuccessorMap,
-                       const Store::KeyVector& indexSubjects,
-                       const Store::KeyVector& indexObjects);
+                       Store::KeyVector::const_iterator subjectsBegin,
+                       Store::KeyVector::const_iterator subjectsEnd,
+                       Store::KeyVector::const_iterator predicatesBegin,
+                       Store::KeyVector::const_iterator predicatesEnd,
+                       Store::KeyVector::const_iterator objectsBegin,
+                       Store::KeyVector::const_iterator objectsEnd,
+                       Store::KeyVector::const_iterator joinBegin,
+                       Store::KeyVector::const_iterator joinEnd,
+                       const TermMap&,
+                       bool useIndex = true);
 
   std::size_t hashTerm(uint64_t first);
   std::size_t hashPair(uint64_t first, uint64_t second);
 
   void buildHash(BucketInfoVector& bucketInfos,
                  BucketVector& buckets,
-                 const Store::KeyVector& subjects,
-                 const Store::KeyVector& objects,
+                 Store::KeyVector::const_iterator subjectsBegin,
+                 Store::KeyVector::const_iterator subjectsEnd,
+                 Store::KeyVector::const_iterator predicatesBegin,
+                 Store::KeyVector::const_iterator predicatesEnd,
+                 Store::KeyVector::const_iterator objectsBegin,
+                 Store::KeyVector::const_iterator objectsEnd,
                  cl_uint& size);
 
   void buildSchemaHash(BucketInfoVector& bucketInfos,
