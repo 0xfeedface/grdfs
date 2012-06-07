@@ -142,8 +142,8 @@ void OpenCLReasoner::computeClosureInternal()
     // Otherwise it would be non-authorative.
     const Store::KeyVector& predicates(triples_.predicates());
     const Store::KeyVector& subjects(triples_.subjects());
-    Store::KeyVector objectResults;
-    Store::KeyVector subjectResults;
+    GPUVector objectResults;
+    GPUVector subjectResults;
     computeJoinRule(objectResults, subjectResults, predicates, subjects, domTriples_,
                     typeTriples_.subjects(), typeTriples_.objects());
     materializeWithProperty(subjectResults, objectResults, type_);
@@ -155,8 +155,8 @@ void OpenCLReasoner::computeClosureInternal()
     // Otherwise it would be non-authorative.
     const Store::KeyVector& predicates(triples_.predicates());
     const Store::KeyVector& objects(triples_.objects());
-    Store::KeyVector objectResults;
-    Store::KeyVector subjectResults;
+    GPUVector objectResults;
+    GPUVector subjectResults;
     computeJoinRule(objectResults, subjectResults, predicates, objects, rngTriples_,
                     typeTriples_.subjects(), typeTriples_.objects());
     materializeWithProperty(subjectResults, objectResults, type_);
@@ -171,8 +171,8 @@ void OpenCLReasoner::computeClosureInternal()
       // According to rule 9, we use rdf:type triples only
       const Store::KeyVector& objects(typeTriples_.objects());
       const Store::KeyVector& subjects(typeTriples_.subjects());
-      Store::KeyVector objectResults;
-      Store::KeyVector subjectResults;
+      GPUVector objectResults;
+      GPUVector subjectResults;
       computeJoinRule(objectResults, subjectResults, objects, subjects, scSuccessors_,
                       subjects, objects);
       materializeWithProperty(subjectResults, objectResults, type_);
@@ -194,13 +194,13 @@ Reasoner::TimingMap OpenCLReasoner::timings()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void OpenCLReasoner::materializeWithProperty(const Store::KeyVector& subjects,
-    const Store::KeyVector& objects,
-    const KeyType property)
+void OpenCLReasoner::materializeWithProperty(const GPUVector& subjects,
+                                             const GPUVector& objects,
+                                             const KeyType property)
 {
   for (std::size_t i(0), end(subjects.size()); i != end; ++i) {
-    auto subject(subjects[i]);
-    auto object(objects[i]);
+    Dictionary::KeyType subject(subjects[i]);
+    Dictionary::KeyType object(objects[i]);
     if (subject) {
       // std::cout << subject << " " << object << std::endl;
       // std::cout << dict_.Find(subject) << " " << dict_.Find(object) << std::endl;
@@ -427,8 +427,8 @@ void OpenCLReasoner::buildHash(BucketInfoVector& bucketInfos,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
-                                     Store::KeyVector& entailedSubjects,
+void OpenCLReasoner::computeJoinRule(GPUVector& entailedObjects,
+                                     GPUVector& entailedSubjects,
                                      const Store::KeyVector& objectSource,
                                      const Store::KeyVector& subjectSource,
                                      const TermMap& schemaSuccessorMap,
@@ -590,7 +590,7 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
     shiftWidth = log2(workGoupSize);
     enqueueSize = (accumResultSize >> shiftWidth) << shiftWidth;
 
-    if (enqueueSize) {
+    if (false && enqueueSize) {
       dedupKernel.setArg(0, objectOutputBuffer);
       dedupKernel.setArg(1, subjectOutputBuffer);
 
@@ -606,13 +606,13 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
     queue_->enqueueReadBuffer(objectOutputBuffer,
                               CL_FALSE,
                               0,
-                              accumResultSize * sizeof(Dictionary::KeyType),
+                              accumResultSize * sizeof(GPUVector::value_type),
                               entailedObjects.data());
     // read subjects
     queue_->enqueueReadBuffer(subjectOutputBuffer,
                               CL_TRUE,
                               0,
-                              accumResultSize * sizeof(Dictionary::KeyType),
+                              accumResultSize * sizeof(GPUVector::value_type),
                               entailedSubjects.data());
 
     // block until done

@@ -50,7 +50,7 @@ int main(int argc, const char* argv[])
   }
 
   Dictionary dictionary;
-  OpenCLReasoner reasoner(dictionary, CL_DEVICE_TYPE_GPU);
+  OpenCLReasoner reasoner(dictionary, CL_DEVICE_TYPE_CPU);
   // NativeReasoner reasoner(dictionary);
 
   Timer parsing, lookup, storage, closure;

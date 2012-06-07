@@ -157,8 +157,8 @@ void count_results(__constant term_id* input,
 ////////////////////////////////////////////////////////////////////////////////
 
 __kernel
-void materialize_results(__global term_id* result_objects,
-                         __global term_id* result_subjects,
+void materialize_results(__global uint* result_objects,
+                         __global uint* result_subjects,
                          __global uint2* result_info, // const, but shared with other kernel
                          __global uint2* local_result_info,
                          __global term_id* schema_buckets,
@@ -200,8 +200,8 @@ void materialize_results(__global term_id* result_objects,
         }
 
         if (entail) {
-          result_objects[globx] = object;
-          result_subjects[globx] = subject;
+          result_objects[globx] = (uint)(object & 0x00000000ffffffff);
+          result_subjects[globx] = (uint)(subject & 0x00000000ffffffff);
         }
       }
     }
@@ -326,8 +326,8 @@ void sort(__local term_id* buffer0, __local term_id* buffer1,
 ////////////////////////////////////////////////////////////////////////////////
 
 __kernel
-void deduplication(__global term_id* objects,
-                   __global term_id* subjects)
+void deduplication(__global uint* objects,
+                   __global uint* subjects)
 {
   const uint globx  = get_global_id(0);
   const uint locx   = get_local_id(0);
@@ -385,7 +385,7 @@ void deduplication(__global term_id* objects,
   }
   barrier(CLK_LOCAL_MEM_FENCE);
 
-  subjects[globx] = buffer0[locx];
-  objects[globx] = buffer1[locx];
+  subjects[globx] = buffer0[locx] & 0x00000000ffffffff;
+  objects[globx] = buffer1[locx] & 0x00000000ffffffff;
 }
 
