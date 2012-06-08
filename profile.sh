@@ -15,4 +15,7 @@ FILE=`basename $1`
 
 mkdir -p profiling
 cd profiling
-$PROFILER -o ./$FILE.atp -t -T -w ../ ../build/grdfs $1
+for i in 1 2 3 4 5
+do
+    $PROFILER -o ./$FILE${i}.atp -t -T -w ../ ../build/grdfs $1
+done
