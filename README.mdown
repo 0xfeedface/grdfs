@@ -1,11 +1,20 @@
 grdfs &ndash; parallel RDFS reasoning for CPU and GPU
 ================================================
+
+grdfs is an RDFS reasoner that uses OpenCL for fine-grained parallelism.
+It can thus exploit massively parallel hardware such as modern GPUs but also
+runs well on CPUs.
+Currently it supports the following features:
+
 * OpenCL implementation of RDFS entailment rules.
-* In-memory storage of triples.
-* on-device removal of global and local duplicates.
+* In-memory storage of entailed triples.
+* Writing all or only entailed triples to stdout.
+* On-device removal of global and local duplicates 
+  (local duplicate removal currently only works on GPU devices).
 
 Usage
 -----
+* grdfs uses the turtle parser from RDF3-X, it thus is used as follows:
 * `grdfs <turtle_file>`
 * By default, `grdfs` will use the GPU and will print all entailed statements 
 to `stdout`.
