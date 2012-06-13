@@ -1,6 +1,8 @@
 grdfs &ndash; parallel RDFS reasoning for CPU and GPU
 ================================================
-* OpenCL implementation of RDFS entailment rules
+* OpenCL implementation of RDFS entailment rules.
+* In-memory storage of triples.
+* on-device removal of global and local duplicates.
 
 Usage
 -----
@@ -11,8 +13,8 @@ to `stdout`.
 Requirements
 ------------
 * For building grdfs a C++11 compiler is needed. We recommend one the following:
-    * LLVM 3.0 or higher on Mac OS X
-    * GCC 4.6 or higher on Linux
+    * Clang 3.1 or higher on Mac OS X
+    * GCC 4.7 or higher on Linux
 * On Linux, the AMD APP SDK must be installed
 
 Bulding
