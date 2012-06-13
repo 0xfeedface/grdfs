@@ -3,6 +3,7 @@ build/*
 profiling
 data/dbpedia.ttl
 data/yago2core.ttl
+data/wnfull.ttl
 *.pbxuser
 !default.pbxuser
 *.mode1v3
