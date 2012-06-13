@@ -28,7 +28,7 @@ typedef std::queue<term_id> TermQueue;
 ////////////////////////////////////////////////////////////////////////////////
 
 OpenCLReasoner::OpenCLReasoner(Dictionary& dict, cl_device_type deviceType)
-  : Reasoner(dict)
+  : Reasoner(dict), deviceType_(deviceType)
 {
   context_ = context(deviceType);
   // query devices
@@ -590,7 +590,7 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
     shiftWidth = log2(workGoupSize);
     enqueueSize = (accumResultSize >> shiftWidth) << shiftWidth;
 
-    if (enqueueSize) {
+    if (enqueueSize && !(deviceType_ & CL_DEVICE_TYPE_CPU)) {
       dedupKernel.setArg(0, objectOutputBuffer);
       dedupKernel.setArg(1, subjectOutputBuffer);
 

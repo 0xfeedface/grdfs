@@ -78,6 +78,8 @@ private:
   Timer storeTimer_;
   Timer uniqueingTimer_;
 
+  cl_device_type deviceType_;
+
   cl::Context* context(cl_device_type type);
   cl::CommandQueue* commandQueue(bool enableProfiling = false);
   cl::Program* program();
