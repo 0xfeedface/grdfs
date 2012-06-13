@@ -16,17 +16,22 @@ Usage
 -----
 * grdfs uses the turtle parser from RDF3-X, it thus is used as follows:
 * `grdfs <turtle_file>`
-* By default, `grdfs` will use the GPU and will print all entailed statements 
-to `stdout`.
+* By default, `grdfs` will use the GPU and print all entailed statements to `stdout`.
 
 Requirements
 ------------
-* For building grdfs a C++11 compiler is needed. We recommend one the following:
-    * Clang 3.1 or higher on Mac OS X
-    * GCC 4.7 or higher on Linux
+* For building grdfs a C++11 compiler is needed. We recommend one of the following:
+    * Clang 3.1
+    * GCC 4.7
 * On Linux, the AMD APP SDK must be installed
 
 Bulding
 -------
 * _Mac OS X_: use the provided Xcode 4 project or type `make`.
 * _Linux_: type `make`.
+
+
+Open Issues
+-----------
+* Using multiple OpenCL devices
+
