@@ -20,6 +20,7 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-parameter"
 #pragma clang diagnostic ignored "-Wignored-qualifiers"
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #endif
 #include "cl.hpp"
 #ifdef __clang__
