@@ -680,7 +680,6 @@ void OpenCLReasoner::computeTransitiveClosure(TermMap& successorMap,
   hostTime_.start();
 
   TermQueue nodes;
-  std::unordered_map<term_id, bool> finishedNodes;
 
   // initialize the queue with the leaf nodes
   auto it(std::begin(predecessorMap));
@@ -707,10 +706,7 @@ void OpenCLReasoner::computeTransitiveClosure(TermMap& successorMap,
       auto parent_it(std::begin(pit->second));
       auto parent_end(std::end(pit->second));
       for (; parent_it != parent_end; ++parent_it) {
-        if (!finishedNodes[*parent_it]) {
-          nodes.push(*parent_it);
-          finishedNodes[*parent_it] = true;
-        }
+        nodes.push(*parent_it);
       }
     }
 
