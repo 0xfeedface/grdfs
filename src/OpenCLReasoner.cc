@@ -723,22 +723,32 @@ void OpenCLReasoner::computeTransitiveClosure(TermMap& successorMap,
           auto grandchildren_it(std::begin(gcit->second));
           auto grandchildren_end(std::end(gcit->second));
           for (; grandchildren_it != grandchildren_end; ++grandchildren_it) {
-            hostTime_.stop();
-            Timer t;
-            t.start();
-            bool stored = addTriple(Store::Triple(currentNode, property, *grandchildren_it),
-                                    Store::kFlagsEntailed);
-            t.stop();
-            if (stored) {
-              storeTimer_.addTimer(t);
-            } else {
-              uniqueingTimer_.addTimer(t);
-              // std::cout << currentNode << " " << *grandchildren_it << std::endl;
-            }
-            hostTime_.start();
+            successorMap[currentNode].insert(*grandchildren_it);
           }
         }
       }
+    }
+  }
+
+  // materialize closure
+  auto ait(std::begin(successorMap));
+  auto aend(std::end(successorMap));
+  for (; ait != aend; ++ait) {
+    auto sit(std::begin(ait->second));
+    auto send(std::end(ait->second));
+    for (; sit != send; ++sit) {
+      hostTime_.stop();
+      Timer t;
+      t.start();
+      bool stored = addTriple(Store::Triple(ait->first, property, *sit),
+                              Store::kFlagsEntailed);
+      t.stop();
+      if (stored) {
+        storeTimer_.addTimer(t);
+      } else {
+        uniqueingTimer_.addTimer(t);
+      }
+      hostTime_.start();
     }
   }
 
