@@ -115,25 +115,29 @@ void OpenCLReasoner::computeClosure()
 void OpenCLReasoner::computeClosureInternal()
 {
   if (spTerms_.size()) {
-    // 1) compute rule 5 (subPropertyOf transitivity)
-    computeTransitiveClosure(spSuccessors_, spPredecessors_, subPropertyOf_);
+    std::size_t fixpoint(0);
 
-    // 2) compute rule 7 (subPropertyOf inheritance)
-    if (triples_.size()) {
-      // We use plain non-type, non-schema triples only.
-      // Otherwise it would be non-authorative.
-      const Store::KeyVector& predicates(triples_.predicates());
-      Store::KeyVector results(predicates.size(), 0);
-      Store::KeyVector schemaSubjects;
-      for (auto spSubject : spSuccessors_) {
-        term_id subject(spSubject.first);
-        schemaSubjects.push_back(subject);
+    do {
+      // 1) compute rule 5 (subPropertyOf transitivity)
+      computeTransitiveClosure(spSuccessors_, spPredecessors_, subPropertyOf_);
+
+      // 2) compute rule 7 (subPropertyOf inheritance)
+      if (triples_.size()) {
+        // We use plain non-type, non-schema triples only.
+        // Otherwise it would be non-authorative.
+        const Store::KeyVector& predicates(triples_.predicates());
+        Store::KeyVector results(predicates.size(), 0);
+        Store::KeyVector schemaSubjects;
+        for (auto spSubject : spSuccessors_) {
+          term_id subject(spSubject.first);
+          schemaSubjects.push_back(subject);
+        }
+        computeJoin(results, predicates, schemaSubjects);
+
+        fixpoint = spanTriplesByPredicate(triples_.subjects(), triples_.predicates(),
+                                          triples_.objects(), results, spSuccessors_);
       }
-      computeJoin(results, predicates, schemaSubjects);
-
-      spanTriplesByPredicate(triples_.subjects(), triples_.predicates(),
-                             triples_.objects(), results, spSuccessors_);
-    }
+    } while (fixpoint > 0);
   }
 
   if (domTriples_.size() && triples_.size()) {
@@ -227,12 +231,15 @@ void OpenCLReasoner::materializeWithProperty(const Store::KeyVector& subjects,
  * and a vector of indexes into the map for each triple, comstructs
  * the triples (s, p1, o), (s, p2, o), (s, p3, o), ...
  */
-void OpenCLReasoner::spanTriplesByPredicate(const Store::KeyVector& subjects,
+std::size_t OpenCLReasoner::spanTriplesByPredicate(const Store::KeyVector& subjects,
     const Store::KeyVector& predicates,
     const Store::KeyVector& objects,
     const Store::KeyVector& predicateMapIndexes,
     const TermMap& predicateMap)
 {
+  // stores the number of newly entailed non-duplicate triples
+  std::size_t entailedTriples(0);
+
   // We iterate over subjects but all vectors should have the same size
   for (std::size_t i(0), size(subjects.size()); i != size; ++i) {
     KeyType subject(subjects[i]);
@@ -255,11 +262,14 @@ void OpenCLReasoner::spanTriplesByPredicate(const Store::KeyVector& subjects,
       }
       if (stored) {
         storeTimer_.addTimer(t);
+        entailedTriples++;
       } else {
         uniqueingTimer_.addTimer(t);
       }
     }
   }
+
+  return entailedTriples;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

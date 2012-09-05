@@ -124,11 +124,11 @@ private:
                                const Store::KeyVector& objects,
                                const KeyType property);
 
-  void spanTriplesByPredicate(const Store::KeyVector& subjects,
-                              const Store::KeyVector& predicates,
-                              const Store::KeyVector& objects,
-                              const Store::KeyVector& predicateMapIndexes,
-                              const TermMap& predicateMap);
+  std::size_t spanTriplesByPredicate(const Store::KeyVector& subjects,
+                                     const Store::KeyVector& predicates,
+                                     const Store::KeyVector& objects,
+                                     const Store::KeyVector& predicateMapIndexes,
+                                     const TermMap& predicateMap);
 };
 
 #endif
