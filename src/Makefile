@@ -15,7 +15,7 @@ ifeq ($(SYS), Darwin)
 CXX=clang++
 CXXFLAGS+=-std=c++11 $(if $(findstring clang,$(CXX)),-stdlib=libc++,)
 else
-CXX=/opt/llvm-3.1/bin/clang++
+CXX=g++-4.7
 CXXFLAGS+=-std=c++11
 LDFLAGS+=-lrt
 endif
