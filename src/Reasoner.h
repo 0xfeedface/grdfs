@@ -38,6 +38,7 @@ public:
 
   Reasoner(Dictionary& dict);
   virtual ~Reasoner() {}
+  void addAxiomaticTriples();
   virtual bool addTriple(const Store::Triple&, const Store::TripleFlags f = Store::kFlagsNone);
   virtual void computeClosure() = 0;
   virtual void printStatistics();

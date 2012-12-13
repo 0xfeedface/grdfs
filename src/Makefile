@@ -8,6 +8,7 @@ CXXFLAGS=-g -Wall -O3
 CXXSOURCES=$(filter-out $(MAIN),$(wildcard *.cc))
 CXXOBJECTS=$(CXXSOURCES:.cc=.o)
 CXXHEADERS=$(wildcard *.h)
+LDFLAGS=-lboost_program_options-mt
 
 # compiler
 ifeq ($(SYS), Darwin)

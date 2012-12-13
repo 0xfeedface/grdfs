@@ -27,8 +27,8 @@ typedef std::queue<term_id> TermQueue;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-OpenCLReasoner::OpenCLReasoner(Dictionary& dict, cl_device_type deviceType)
-  : Reasoner(dict), deviceType_(deviceType)
+OpenCLReasoner::OpenCLReasoner(Dictionary& dict, cl_device_type deviceType, bool localDedup, bool globalDedup)
+    : Reasoner(dict), deviceType_(deviceType), localDeduplication_(localDedup), globalDeduplication_(globalDedup)
 {
   context_ = context(deviceType);
   // query devices
@@ -525,9 +525,15 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
     BucketVector buckets;
     BucketInfoVector bucketInfos;
     cl_uint size;
-    hostTime_.start();
-    buildHash(bucketInfos, buckets, indexSubjects, indexObjects, size);
-    hostTime_.stop();
+    if (globalDeduplication_) {
+      hostTime_.start();
+      buildHash(bucketInfos, buckets, indexSubjects, indexObjects, size);
+      hostTime_.stop();
+    } else {
+      buckets.push_back(BucketEntry());
+      bucketInfos.push_back(BucketInfo());
+      size = 0;
+    }
 
     deviceTime_.start();
 
@@ -600,7 +606,7 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
     shiftWidth = log2(workGoupSize);
     enqueueSize = (accumResultSize >> shiftWidth) << shiftWidth;
 
-    if (enqueueSize && !(deviceType_ & CL_DEVICE_TYPE_CPU)) {
+    if (localDeduplication_ && enqueueSize && !(deviceType_ & CL_DEVICE_TYPE_CPU)) {
       dedupKernel.setArg(0, objectOutputBuffer);
       dedupKernel.setArg(1, subjectOutputBuffer);
 

@@ -64,7 +64,7 @@ typedef std::vector<BucketEntry> BucketVector;
 class OpenCLReasoner : public Reasoner
 {
 public:
-  OpenCLReasoner(Dictionary& dict, cl_device_type deviceType = CL_DEVICE_TYPE_GPU);
+  OpenCLReasoner(Dictionary& dict, cl_device_type deviceType, bool localDedup, bool globalDedup);
   ~OpenCLReasoner();
   void computeClosure();
   Reasoner::TimingMap timings();
@@ -85,6 +85,9 @@ private:
   cl::CommandQueue* commandQueue(bool enableProfiling = false);
   cl::Program* program();
   std::string loadSource(const std::string& filename);
+
+  bool localDeduplication_;
+  bool globalDeduplication_;
 
   void computeClosureInternal();
 
