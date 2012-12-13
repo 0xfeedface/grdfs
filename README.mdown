@@ -26,6 +26,7 @@ Options
 * `-l` or `--no-local-dedup` -- disable local deduplication
 * `-g` or `--no-global-dedup` -- disable global deduplication
 * `-a` or `--axioms` -- include RDFS axiomatic triples
+* `-t` or `--time` -- print profiling information
 * `-p` or `--print-triples` -- write triples to `stdout` (in NTriples format)
 
 Requirements
