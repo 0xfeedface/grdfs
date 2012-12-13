@@ -6,17 +6,27 @@ It can thus exploit massively parallel hardware such as modern GPUs but also
 runs well on CPUs.
 Currently it supports the following features:
 
-* OpenCL implementation of RDFS entailment rules.
+* OpenCL implementation of most used RDFS entailment rules.
 * In-memory storage of entailed triples.
 * Writing all or only entailed triples to stdout.
+* Including RDFS axiomatic triples
 * On-device removal of global and local duplicates 
   (local duplicate removal currently only works on GPU devices).
 
 Usage
 -----
 * grdfs uses the turtle parser from RDF3-X, it thus is used as follows:
-* `grdfs <turtle_file>`
-* By default, `grdfs` will use the GPU and print all entailed statements to `stdout`.
+* `grdfs -i <turtle_file>`
+* By default, `grdfs` will use the GPU and print some info to `stdout`.
+
+Options
+-------
+* `-i` or `--input-file` `<file.ttl>` -- source turtle file (required)
+* `--device` `gpu|cpu` -- OpenCL device to use (gpu, cpu)
+* `-l` or `--no-local-dedup` -- disable local deduplication
+* `-g` or `--no-global-dedup` -- disable global deduplication
+* `-a` or `--axioms` -- include RDFS axiomatic triples
+* `-p` or `--print-triples` -- write triples to `stdout` (in NTriples format)
 
 Requirements
 ------------
@@ -24,14 +34,16 @@ Requirements
     * Clang 3.1
     * GCC 4.7
 * On Linux, the AMD APP SDK must be installed
+* Boost program options
 
 Bulding
 -------
-* _Mac OS X_: use the provided Xcode 4 project or type `make`.
+* _Mac OS X_: type `make`.
 * _Linux_: type `make`.
 
 
 Open Issues
 -----------
 * Using multiple OpenCL devices
+* Partitioning large graphs to fit in device memory
 
