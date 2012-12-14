@@ -94,10 +94,20 @@ int main(int argc, const char* argv[])
   }
 
   Dictionary dictionary;
-  OpenCLReasoner reasoner(dictionary, deviceType, !noLocalDeduplication, !noGlobalDeduplication);
+  std::shared_ptr<OpenCLReasoner> reasoner;
+
+  try {
+    reasoner = std::make_shared<OpenCLReasoner>(dictionary,
+                                                deviceType,
+                                                !noLocalDeduplication,
+                                                !noGlobalDeduplication);
+  } catch (std::exception& e) {
+    std::cout << "Could not instantiate reasoner: " << e.what() << std::endl;
+    return EXIT_FAILURE;
+  }
 
   if (useAxioms) {
-    reasoner.addAxiomaticTriples();
+    reasoner->addAxiomaticTriples();
   }
 
   Timer parsing, lookup, storage, closure;
@@ -132,35 +142,38 @@ int main(int argc, const char* argv[])
     lookup.stop();
 
     storage.start();
-    reasoner.addTriple(Store::Triple(subjectID, predicateID, objectID));
+    reasoner->addTriple(Store::Triple(subjectID, predicateID, objectID));
     storage.stop();
   }
 
   closure.start();
   try {
-    reasoner.computeClosure();
+    reasoner->computeClosure();
 
     if (printTriples) {
-      for (auto it(reasoner.triples_.ebegin()); it != reasoner.triples_.eend(); it++) {
+      for (auto it(reasoner->triples_.ebegin()); it != reasoner->triples_.eend(); it++) {
         PrintTriple(*it, dictionary);;
       }
-      for (auto it(reasoner.typeTriples_.ebegin()); it != reasoner.typeTriples_.eend(); it++) {
+      for (auto it(reasoner->typeTriples_.ebegin()); it != reasoner->typeTriples_.eend(); it++) {
         PrintTriple(*it, dictionary);
       }
-      for (auto it(reasoner.schemaTriples_.ebegin()); it != reasoner.schemaTriples_.eend(); it++) {
+      for (auto it(reasoner->schemaTriples_.ebegin()); it != reasoner->schemaTriples_.eend(); it++) {
         PrintTriple(*it, dictionary);
       }
       std::cout << std::endl;
     }
   } catch (Reasoner::Error& err) {
-    std::cerr << err.message() << std::endl;
+    std::cerr << "Reasoner error: " << err.message() << std::endl;
     exit(EXIT_FAILURE);
+  } catch (std::exception& e) {
+    std::cout << "Unknownd error: " << e.what() << std::endl;
+    return EXIT_FAILURE;
   }
 
   closure.stop();
   std::clog << "Parsed triples: " << triplesParsed << std::endl;
-  std::clog << "Inferred triples: " << reasoner.inferredTriples() << std::endl;
-  std::clog << "Inferred duplicates: " << reasoner.inferredDuplicates() << std::endl;
+  std::clog << "Inferred triples: " << reasoner->inferredTriples() << std::endl;
+  std::clog << "Inferred duplicates: " << reasoner->inferredDuplicates() << std::endl;
 
   if (timeExecution) {
     std::clog.setf(std::ios::fixed, std::ios::floatfield);
@@ -170,7 +183,7 @@ int main(int argc, const char* argv[])
     std::clog << "Storage: " << storage.elapsed() << " ms" << std::endl;;
     std::clog << "Closure calculation: " << closure.elapsed() << " ms" << std::endl;
     std::clog << "Detailed reasoner timings" << std::endl;;
-    for (auto value : reasoner.timings()) {
+    for (auto value : reasoner->timings()) {
       std::clog << "    " << value.first << ": " << value.second << " ms" << std::endl;;
     }
   }

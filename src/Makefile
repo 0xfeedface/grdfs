@@ -12,7 +12,7 @@ LDFLAGS=-lboost_program_options-mt
 
 # compiler
 ifeq ($(SYS), Darwin)
-CXX?=clang++
+CXX=clang++
 CXXFLAGS+=-std=c++11 $(if $(findstring clang,$(CXX)),-stdlib=libc++,)
 else
 CXX?=g++-4.7

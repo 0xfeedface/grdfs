@@ -784,7 +784,28 @@ cl::Context* OpenCLReasoner::context(cl_device_type type)
     (cl_context_properties)(platforms[0])(),
     0
   };
-  cl::Context* context = new cl::Context(type, contextProperties);
+  cl::Context* context;
+  try {
+    context = new cl::Context(type, contextProperties);
+  } catch (cl::Error& err) {
+    std::stringstream errstr;
+    switch (err.err()) {
+      case CL_DEVICE_NOT_FOUND:
+        errstr << "no suitable device found.";
+        break;
+      case CL_DEVICE_NOT_AVAILABLE:
+        errstr << "device not available.";
+        break;
+      case CL_INVALID_PLATFORM:
+        errstr << "no valid OpenCL platform found.";
+        break;
+      default:
+        errstr << "unknown error.";
+        break;
+    }
+    throw std::runtime_error(errstr.str());
+  }
+  
   return context;
 }
 
