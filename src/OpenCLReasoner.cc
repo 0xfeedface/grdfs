@@ -324,10 +324,10 @@ void OpenCLReasoner::buildSchemaHash(BucketInfoVector& bucketInfos,
   for (std::size_t i(0); i != size; ++i) {
     cl_uint bucketSize(bucketSizes[i]);
     if (bucketSize) {
-      bucketInfos.emplace_back(BucketInfo(accumBucketSize, bucketSize));
+      bucketInfos.emplace_back(accumBucketSize, bucketSize);
       accumBucketSize += bucketSize;
     } else {
-      bucketInfos.emplace_back(BucketInfo(CL_UINT_MAX, 0));
+      bucketInfos.emplace_back(CL_UINT_MAX, 0);
     }
   }
 
@@ -393,14 +393,14 @@ void OpenCLReasoner::buildHash(BucketInfoVector& bucketInfos,
     cl_ushort bucketSize(bucketSizes[hash]);
     if (bucketSize == 1) {
       // overflow-free bucket
-      BucketInfo info(buckets.size(), 1, 1);
+      BucketInfo info(static_cast<cl_uint>(buckets.size()), 1, 1);
       bucketInfos[hash] = info;
       buckets.emplace_back(s, o);
     } else if (bucketSize > 1) {
       // bucket with overflows entry
       BucketInfo& info(bucketInfos[hash]);
       if (!info.size) {
-        info.start = buckets.size();
+        info.start = static_cast<cl_uint>(buckets.size());
         info.size = bucketSize;
         buckets.resize(buckets.size() + bucketSize);
         buckets[info.start] = BucketEntry(s, o);
@@ -462,7 +462,7 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
   inheritanceKernel.setArg(1, inputBuffer);
 
   // actual number of elements
-  inheritanceKernel.setArg<cl_uint>(2, globalSize);
+  inheritanceKernel.setArg<cl_uint>(2, static_cast<int>(globalSize));
 
   // build hash table for join
   BucketInfoVector schemaBucketInfos;
@@ -511,7 +511,7 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
   for (std::size_t i(0), end(resultInfo.size()); i != end; ++i) {
     auto& value(resultInfo[i]);
     cl_uint tmp = value.second;
-    value.second = accumResultSize;
+    value.second = static_cast<int>(accumResultSize);
     // create local mapping
     // each thread can determine which successor of a given
     // subject it operates on
