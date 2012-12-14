@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		941B379D1540C31F00C8E27E /* Timer.cc in Sources */ = {isa = PBXBuildFile; fileRef = 941B379B1540C31F00C8E27E /* Timer.cc */; };
+		9458C9DD167B650500BAE74E /* libboost_program_options-mt.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9458C9DC167B650500BAE74E /* libboost_program_options-mt.dylib */; };
 		946CD91A1495616200E98860 /* Dictionary.cc in Sources */ = {isa = PBXBuildFile; fileRef = 946CD9121495616200E98860 /* Dictionary.cc */; };
 		946CD91B1495616200E98860 /* Reasoner.cc in Sources */ = {isa = PBXBuildFile; fileRef = 946CD9141495616200E98860 /* Reasoner.cc */; };
 		946CD91C1495616200E98860 /* Store.cc in Sources */ = {isa = PBXBuildFile; fileRef = 946CD9161495616200E98860 /* Store.cc */; };
@@ -16,7 +17,6 @@
 		946CD925149561F400E98860 /* NativeReasoner.cc in Sources */ = {isa = PBXBuildFile; fileRef = 946CD923149561F400E98860 /* NativeReasoner.cc */; };
 		948AB10F152B5B5E00F0382D /* TurtleParser.cc in Sources */ = {isa = PBXBuildFile; fileRef = 948AB10E152B5B5E00F0382D /* TurtleParser.cc */; };
 		949560C7149627DE00E0E9C3 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 949560C6149627DE00E0E9C3 /* OpenCL.framework */; };
-		949560D2149635A600E0E9C3 /* libraptor2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 949560D1149635A600E0E9C3 /* libraptor2.dylib */; };
 		94C8915E14BF14D8009527AC /* grdfs_kernels.cl in Sources */ = {isa = PBXBuildFile; fileRef = 94C8915D14BF14D8009527AC /* grdfs_kernels.cl */; };
 /* End PBXBuildFile section */
 
@@ -35,6 +35,7 @@
 /* Begin PBXFileReference section */
 		941B379B1540C31F00C8E27E /* Timer.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Timer.cc; sourceTree = "<group>"; };
 		941B379C1540C31F00C8E27E /* Timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Timer.h; sourceTree = "<group>"; };
+		9458C9DC167B650500BAE74E /* libboost_program_options-mt.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libboost_program_options-mt.dylib"; path = "/usr/local/Cellar/boost/1.52.0/lib/libboost_program_options-mt.dylib"; sourceTree = "<absolute>"; };
 		9458D17914D3F8810051AE13 /* README.mdown */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.mdown; sourceTree = "<group>"; };
 		946CD9121495616200E98860 /* Dictionary.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Dictionary.cc; sourceTree = "<group>"; };
 		946CD9131495616200E98860 /* Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Dictionary.h; sourceTree = "<group>"; };
@@ -51,7 +52,6 @@
 		948AB10E152B5B5E00F0382D /* TurtleParser.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TurtleParser.cc; sourceTree = "<group>"; };
 		949560C6149627DE00E0E9C3 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
 		949560CE14962FD700E0E9C3 /* cl.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = cl.hpp; path = include/cl.hpp; sourceTree = "<group>"; };
-		949560D1149635A600E0E9C3 /* libraptor2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libraptor2.dylib; path = usr/local/lib/libraptor2.dylib; sourceTree = SDKROOT; };
 		94AA95E2149387E600C5932B /* grdfs */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = grdfs; sourceTree = BUILT_PRODUCTS_DIR; };
 		94C8915D14BF14D8009527AC /* grdfs_kernels.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; path = grdfs_kernels.cl; sourceTree = "<group>"; tabWidth = 4; };
 /* End PBXFileReference section */
@@ -61,7 +61,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				949560D2149635A600E0E9C3 /* libraptor2.dylib in Frameworks */,
+				9458C9DD167B650500BAE74E /* libboost_program_options-mt.dylib in Frameworks */,
 				949560C7149627DE00E0E9C3 /* OpenCL.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -144,8 +144,8 @@
 		949560C914962F9F00E0E9C3 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
-				949560D1149635A600E0E9C3 /* libraptor2.dylib */,
 				949560C6149627DE00E0E9C3 /* OpenCL.framework */,
+				9458C9DC167B650500BAE74E /* libboost_program_options-mt.dylib */,
 			);
 			name = Libraries;
 			sourceTree = "<group>";
@@ -205,7 +205,7 @@
 		94AA95D9149387E500C5932B /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0430;
+				LastUpgradeCheck = 0450;
 				ORGANIZATIONNAME = "Norman Heino";
 			};
 			buildConfigurationList = 94AA95DC149387E500C5932B /* Build configuration list for PBXProject "grdfs" */;
@@ -248,7 +248,7 @@
 		94AA95EA149387E600C5932B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -273,13 +273,14 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				SYMROOT = "$(PROJECT_DIR)/build";
+				USER_HEADER_SEARCH_PATHS = /usr/local/include;
 			};
 			name = Debug;
 		};
 		94AA95EB149387E600C5932B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -298,6 +299,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				SDKROOT = macosx;
 				SYMROOT = "$(PROJECT_DIR)/build";
+				USER_HEADER_SEARCH_PATHS = /usr/local/include;
 			};
 			name = Release;
 		};
@@ -305,8 +307,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = YES;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/usr/local/Cellar/boost/1.52.0/lib,
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				USER_HEADER_SEARCH_PATHS = /usr/local/include/raptor2;
+				USER_HEADER_SEARCH_PATHS = /usr/local/include;
 			};
 			name = Debug;
 		};
@@ -314,8 +320,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = YES;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/usr/local/Cellar/boost/1.52.0/lib,
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				USER_HEADER_SEARCH_PATHS = /usr/local/include/raptor2;
+				USER_HEADER_SEARCH_PATHS = /usr/local/include;
 			};
 			name = Release;
 		};
