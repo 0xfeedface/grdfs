@@ -35,16 +35,19 @@ Requirements
     * Clang 3.1
     * GCC 4.7
 * On Linux, the AMD APP SDK must be installed
-* Boost program options
+* Boost `program_options`
+    * _Mac OS X_: `brew install boost`
+    * _Ubuntu_: `sudo apt-get install libboost-dev libboost-program-options-dev`
 
 Bulding
 -------
-* _Mac OS X_: type `make`.
+* _Mac OS X_: use provided Xcode project or type `make`.
 * _Linux_: type `make`.
 
 
 Open Issues
 -----------
+* Complete rule implementation
 * Using multiple OpenCL devices
 * Partitioning large graphs to fit in device memory
 
