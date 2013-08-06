@@ -123,7 +123,6 @@ int main(int argc, const char* argv[])
         break;
       }
       parsing.stop();
-      ++triplesParsed;
     } catch (TurtleParser::Exception& e) {
       std::cerr << e.message << std::endl;
 
@@ -142,8 +141,12 @@ int main(int argc, const char* argv[])
     lookup.stop();
 
     storage.start();
-    reasoner->addTriple(Store::Triple(subjectID, predicateID, objectID));
+    bool stored = reasoner->addTriple(Store::Triple(subjectID, predicateID, objectID));
     storage.stop();
+
+    if (stored) {
+      ++triplesParsed;
+    }
   }
 
   closure.start();
