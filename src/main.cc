@@ -155,7 +155,7 @@ int main(int argc, const char* argv[])
 
     if (printTriples) {
       for (auto it(reasoner->triples_.ebegin()); it != reasoner->triples_.eend(); it++) {
-        PrintTriple(*it, dictionary);;
+        PrintTriple(*it, dictionary);
       }
       for (auto it(reasoner->typeTriples_.ebegin()); it != reasoner->typeTriples_.eend(); it++) {
         PrintTriple(*it, dictionary);
@@ -207,9 +207,19 @@ void PrintTriple(const Store::Triple& triple, Dictionary& dictionary)
   std::string predicate(dictionary.Find(triple.predicate));
   std::string object(dictionary.Find(triple.object));
 
-  if (triple.object & Reasoner::literalMask) {
-    std::cout << "<" << subject << "> <" << predicate << "> \"" << object << "\" .\n";
-  } else {
-    std::cout << "<" << subject << "> <" << predicate << "> <" << object << "> .\n";
+  if (subject[0] != '_') {
+    subject = "<" + subject + ">";
   }
+
+  predicate = "<" + predicate + ">";
+
+  if (triple.object & Reasoner::literalMask) {
+    object = "\"" + object + "\"";
+  } else if (object[0] == '_') {
+    // do nothing (blank node)
+  } else {
+    object = "<" + object + ">";
+  }
+
+  std::cout << subject << " " << predicate << " " << object << " ." << std::endl;
 }
