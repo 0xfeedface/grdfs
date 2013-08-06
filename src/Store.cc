@@ -43,9 +43,7 @@ std::size_t Store::Triple::hash() const
 Store::Iterator& Store::Iterator::operator++()
 {
   if (entailedOnly_) {
-    do {
-      ++currentIndex_;
-    } while (currentIndex_ < store_.size_ && !(store_.flags_[currentIndex_] & kFlagsEntailed));
+    currentIndex_ = indexOfNextEntailedTriple(currentIndex_);
   } else {
     ++currentIndex_;
   }

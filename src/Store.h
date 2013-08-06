@@ -40,7 +40,13 @@ public:
   struct Iterator {
     Iterator(Store& s, std::size_t beginIndex) : store_(s), currentIndex_(beginIndex) {};
     Iterator(Store& s, std::size_t beginIndex, bool entailedOnly) :
-      store_(s), currentIndex_(beginIndex), entailedOnly_(entailedOnly) {};
+      store_(s), currentIndex_(beginIndex), entailedOnly_(entailedOnly) {
+        if (entailedOnly) {
+          if (!(store_.flags_[currentIndex_] & kFlagsEntailed)) {
+            currentIndex_ = indexOfNextEntailedTriple(currentIndex_);
+          }
+        }
+    };
     Iterator& operator++();
     Iterator operator++(int);
     bool operator==(const Iterator& rhs) const {
@@ -58,6 +64,15 @@ public:
     Store& store_;
     std::size_t currentIndex_ = 0;
     bool entailedOnly_ = false;
+
+    std::size_t indexOfNextEntailedTriple(std::size_t index) {
+      do {
+        ++index;
+      } while (index <= store_.size_ && !(store_.flags_[index] & kFlagsEntailed));
+
+      return index;
+    }
+
   }; // Store::Iterator
 
   friend struct Iterator;
