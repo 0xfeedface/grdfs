@@ -58,7 +58,7 @@ int main(int argc, const char* argv[])
     po::store(po::parse_command_line(argc, argv, desc), vm);
   } catch (...) {
     PrintUsage();
-    std::cout << desc << std::endl;
+    std::clog << desc << std::endl;
     return EXIT_FAILURE;
   }
   po::notify(vm);
@@ -70,12 +70,12 @@ int main(int argc, const char* argv[])
 
   std::ifstream file(fileName, std::ifstream::in);
   if (file.fail()) {
-    std::cerr << "could not read file '" << fileName << "'.\n";
+    std::clog << "could not read file '" << fileName << "'.\n";
     return EXIT_FAILURE;
   }
 
   if (device.size() != 3) {
-    std::cout << "Unknown device type: " << device << std::endl;
+    std::clog << "Unknown device type: " << device << std::endl;
     PrintUsage();
     return EXIT_FAILURE;
   }
@@ -83,12 +83,12 @@ int main(int argc, const char* argv[])
   cl_device_type deviceType;
   if (std::strncmp(device.c_str(), "cpu", 3) == 0) {
     deviceType = CL_DEVICE_TYPE_CPU;
-    std::cout << "Using CPU device." << std::endl;
+    std::clog << "Using CPU device." << std::endl;
   } else if (std::strncmp(device.c_str(), "gpu", 3) == 0) {
     deviceType = CL_DEVICE_TYPE_GPU;
-    std::cout << "Using GPU device." << std::endl;
+    std::clog << "Using GPU device." << std::endl;
   } else {
-    std::cout << "Unknown device type: " << device << std::endl;
+    std::clog << "Unknown device type: " << device << std::endl;
     PrintUsage();
     return EXIT_FAILURE;
   }
@@ -102,7 +102,7 @@ int main(int argc, const char* argv[])
                                                 !noLocalDeduplication,
                                                 !noGlobalDeduplication);
   } catch (std::exception& e) {
-    std::cout << "Could not instantiate reasoner: " << e.what() << std::endl;
+    std::clog << "Could not instantiate reasoner: " << e.what() << std::endl;
     return EXIT_FAILURE;
   }
 
@@ -160,31 +160,34 @@ int main(int argc, const char* argv[])
       for (auto it(reasoner->schemaTriples_.ebegin()); it != reasoner->schemaTriples_.eend(); it++) {
         PrintTriple(*it, dictionary);
       }
-      std::cout << std::endl;
     }
   } catch (Reasoner::Error& err) {
     std::cerr << "Reasoner error: " << err.message() << std::endl;
     exit(EXIT_FAILURE);
   } catch (std::exception& e) {
-    std::cout << "Unknownd error: " << e.what() << std::endl;
+    std::cerr << "Unknownd error: " << e.what() << std::endl;
     return EXIT_FAILURE;
   }
 
   closure.stop();
-  std::clog << "Parsed triples: " << triplesParsed << std::endl;
-  std::clog << "Inferred triples: " << reasoner->inferredTriples() << std::endl;
-  std::clog << "Inferred duplicates: " << reasoner->inferredDuplicates() << std::endl;
+
+  std::clog << "Data statistics" << std::endl;
+  std::clog << "    input triples: " << triplesParsed << std::endl;
+  std::clog << "    inferred unique triples: " << reasoner->inferredTriples() << std::endl;
+  std::clog << "    inferred duplicate triples: " << reasoner->inferredDuplicates() << std::endl;
 
   if (timeExecution) {
     std::clog.setf(std::ios::fixed, std::ios::floatfield);
     std::clog.precision(2);
-    std::clog << "Parsing: " << parsing.elapsed() << " ms" << std::endl;;
-    std::clog << "Dictionary lookup: " << lookup.elapsed() << " ms" << std::endl;;
-    std::clog << "Storage: " << storage.elapsed() << " ms" << std::endl;;
-    std::clog << "Closure calculation: " << closure.elapsed() << " ms" << std::endl;
-    std::clog << "Detailed reasoner timings" << std::endl;;
+    std::clog << "Import timings" << std::endl;
+    std::clog << "    parsing: " << parsing.elapsed() << " ms" << std::endl;
+    std::clog << "    dictionary lookup: " << lookup.elapsed() << " ms" << std::endl;
+    std::clog << "    storage: " << storage.elapsed() << " ms" << std::endl;
+    std::clog << "Reasoner timings" << std::endl;
+    std::clog << "    total closure calculation: " << closure.elapsed() << " ms" << std::endl;
+    std::clog << "    detailed timings" << std::endl;
     for (auto value : reasoner->timings()) {
-      std::clog << "    " << value.first << ": " << value.second << " ms" << std::endl;;
+      std::clog << "        " << value.first << ": " << value.second << " ms" << std::endl;
     }
   }
 
@@ -192,7 +195,7 @@ int main(int argc, const char* argv[])
 }
 
 void PrintUsage() {
-  std::cout << "usage: grdfs --input-file <file.ttl> [options]" << std::endl;
+  std::clog << "usage: grdfs --input-file <file.ttl> [options]" << std::endl;
 }
 
 void PrintTriple(const Store::Triple& triple, Dictionary& dictionary)
