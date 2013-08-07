@@ -13,9 +13,9 @@
 /// Information about the type system
 class Type {
 public:
-  /// Different literal types
+  /// Different node types
   enum ID {
-    URI, Literal, CustomLanguage, CustomType,
+    URI, Blank, Literal, CustomLanguage, CustomType,
     String, Integer, Decimal, Double, Boolean
   };
   /// Does the type have a sub-type?

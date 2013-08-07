@@ -671,21 +671,24 @@ void TurtleParser::parseBlank(std::string& entry)
   }
 }
 //---------------------------------------------------------------------------
-void TurtleParser::parseSubject(Lexer::Token token, std::string& subject)
+void TurtleParser::parseSubject(Lexer::Token token, std::string& subject, Type::ID& subjectType)
 // Parse a subject
 {
   switch (token) {
   case Lexer::URI:
     // URI
     constructAbsoluteURI(subject);
+    subjectType = Type::ID::URI;
     return;
   case Lexer::A:
     subject = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
+    subjectType = Type::ID::URI;
     return;
   case Lexer::Colon:
     // Qualified name with empty prefix?
     lexer.unget(token, subject);
     parseQualifiedName("", subject);
+    subjectType = Type::ID::URI;
     return;
   case Lexer::Name:
     // Qualified name
@@ -693,6 +696,7 @@ void TurtleParser::parseSubject(Lexer::Token token, std::string& subject)
     if (subject == "_") {
       lexer.unget(token, subject);
       parseBlank(subject);
+      subjectType = Type::ID::Blank;
       return;
     }
     // No
@@ -703,6 +707,7 @@ void TurtleParser::parseSubject(Lexer::Token token, std::string& subject)
     // Opening bracket/parenthesis
     lexer.unget(token, subject);
     parseBlank(subject);
+    subjectType = Type::ID::Blank;
     return;
   default:
     parseError("invalid subject");
@@ -732,7 +737,7 @@ void TurtleParser::parseObject(std::string& object, Type::ID& objectType, std::s
     if (object == "_") {
       lexer.unget(token, object);
       parseBlank(object);
-      objectType = Type::URI;
+      objectType = Type::Blank;
       return;
     }
     // No
@@ -897,10 +902,10 @@ void TurtleParser::parsePredicateObjectList(const string& subject, string& predi
   lexer.ungetIgnored(token);
 }
 //---------------------------------------------------------------------------
-void TurtleParser::parseTriple(Lexer::Token token, std::string& subject, std::string& predicate, std::string& object, Type::ID& objectType, std::string& objectSubType)
+void TurtleParser::parseTriple(Lexer::Token token, std::string& subject, std::string& predicate, std::string& object, Type::ID& subjectType, Type::ID& objectType, std::string& objectSubType)
 // Parse a triple
 {
-  parseSubject(token, subject);
+  parseSubject(token, subject, subjectType);
   parsePredicateObjectList(subject, predicate, object, objectType, objectSubType);
   if (lexer.next() != Lexer::Dot) {
     std::cout << subject << " " << predicate << " " << object << "\n";
@@ -908,7 +913,7 @@ void TurtleParser::parseTriple(Lexer::Token token, std::string& subject, std::st
   }
 }
 //---------------------------------------------------------------------------
-bool TurtleParser::parse(std::string& subject, std::string& predicate, std::string& object, Type::ID& objectType, std::string& objectSubType)
+bool TurtleParser::parse(std::string& subject, std::string& predicate, std::string& object, Type::ID& subjectType, Type::ID& objectType, std::string& objectSubType)
 // Read the next triple
 {
   // Some triples left?
@@ -943,7 +948,7 @@ bool TurtleParser::parse(std::string& subject, std::string& predicate, std::stri
   }
 
   // No, parse a triple
-  parseTriple(token, subject, predicate, object, objectType, objectSubType);
+  parseTriple(token, subject, predicate, object, subjectType, objectType, objectSubType);
   return true;
 }
 //---------------------------------------------------------------------------

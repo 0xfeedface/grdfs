@@ -153,7 +153,7 @@ private:
   /// Parse a blank entry
   void parseBlank(std::string& entry);
   /// Parse a subject
-  void parseSubject(Lexer::Token token, std::string& subject);
+  void parseSubject(Lexer::Token token, std::string& subject, Type::ID& subjectType);
   /// Parse an object
   void parseObject(std::string& object, Type::ID& objectType, std::string& objectSubType);
   /// Parse a predicate object list
@@ -161,7 +161,7 @@ private:
   /// Parse a directive
   void parseDirective();
   /// Parse a new triple
-  void parseTriple(Lexer::Token token, std::string& subject, std::string& predicate, std::string& object, Type::ID& objectType, std::string& objectSubType);
+  void parseTriple(Lexer::Token token, std::string& subject, std::string& predicate, std::string& object, Type::ID& subjectType, Type::ID& objectType, std::string& objectSubType);
 
 public:
   /// Constructor
@@ -170,7 +170,7 @@ public:
   ~TurtleParser();
 
   /// Read the next triple
-  bool parse(std::string& subject, std::string& predicate, std::string& object, Type::ID& objectType, std::string& objectSubType);
+  bool parse(std::string& subject, std::string& predicate, std::string& object, Type::ID& subjectType, Type::ID& objectType, std::string& objectSubType);
 };
 //---------------------------------------------------------------------------
 #endif
