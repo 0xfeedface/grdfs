@@ -151,7 +151,7 @@ Dictionary::KeyType Dictionary::Lookup(const std::string& lit, const KeyModifier
 
   if (it != std::end(ids_)) {
     // we found an id for hash but it could be a collision
-    // check the catual string values
+    // check the actual string values
     literalID = it->second;
     std::ptrdiff_t parentOffset = literals_[literalID - 1];
     EntryHeader entry(0, parentOffset, 0);
