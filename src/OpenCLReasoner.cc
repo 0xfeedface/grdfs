@@ -562,7 +562,7 @@ void OpenCLReasoner::computeJoinRule(Store::KeyVector& entailedObjects,
     BucketVector buckets;
     BucketInfoVector bucketInfos;
     cl_uint size;
-    if (globalDeduplication_) {
+    if (globalDeduplication_ && indexSubjects.size()) {
       hostTime_.start();
       buildHash(bucketInfos, buckets, indexSubjects, indexObjects, size);
       hostTime_.stop();

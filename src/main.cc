@@ -210,6 +210,12 @@ void PrintTriple(const Store::Triple& triple, Dictionary& dictionary)
   std::string predicate(dictionary.Find(triple.predicate));
   std::string object(dictionary.Find(triple.object));
 
+  if (predicate[0] == '_') {
+    // non-RDF triple (blank node property)
+    std::clog << "non-standard RDF triple (not written)" << std::endl;
+    return;
+  }
+
   if (subject[0] != '_') {
     subject = "<" + subject + ">";
   }
