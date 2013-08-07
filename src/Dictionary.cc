@@ -153,7 +153,7 @@ Dictionary::KeyType Dictionary::Lookup(const std::string& lit, const KeyModifier
     // we found an id for hash but it could be a collision
     // check the actual string values
     literalID = it->second;
-    std::ptrdiff_t parentOffset = literals_[literalID - 1];
+    std::ptrdiff_t parentOffset = literals_[(literalID & KeyMask) - 1];
     EntryHeader entry(0, parentOffset, 0);
 
     // check an entry and all overflow buckets
@@ -207,7 +207,7 @@ std::string Dictionary::Find(KeyType key) const
 {
   // we should read the complete entry header here,
   // but we only need the size and the string data
-  std::ptrdiff_t offset = literals_[key - 1] + 2 * sizeof(KeyType);
+  std::ptrdiff_t offset = literals_[(key & KeyMask) - 1] + 2 * sizeof(KeyType);
   char* pos = map_ + offset;
 
   // read size

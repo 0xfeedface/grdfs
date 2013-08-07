@@ -13,6 +13,7 @@ class Dictionary
 public:
   // The type we return as keys (i.e. literal IDs).
   typedef std::size_t KeyType;
+  static const KeyType KeyMask = 0xffffffffffff;
   // Functor to give clients a chance to modify the key.
   // Only the most significant byte is allowed to be modified.
   typedef std::function<void (KeyType&)> KeyModifier;
