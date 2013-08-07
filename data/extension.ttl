@@ -1,0 +1,13 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix : <http://example.com/ExtensionTest/> .
+
+# the following example courtesy of Peter F. Patel-Schneider
+# A complete reasoner should entail:
+# :wheelOf rdfs:subPropertyOf :partOf .
+# :wheel1 :partOf :car1 .
+
+:physicalSubPropertyOf rdfs:subPropertyOf rdfs:subPropertyOf .
+:physicalPartOf :physicalSubPropertyOf :partOf .
+:wheelOf :physicalSubPropertyOf :physicalPartOf .
+:wheel1 :wheelOf :car1 .
