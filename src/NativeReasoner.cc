@@ -6,7 +6,7 @@
 //  Copyright (c) 2011 Norman Heino. All rights reserved.
 //
 
-#include "NativeReasoner.h"
+#include "NativeReasoner.hh"
 
 #include <queue>
 #include <iostream>

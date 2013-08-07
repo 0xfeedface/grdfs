@@ -14,9 +14,9 @@
 #include <map>
 
 #include "types.h"
-#include "Store.h"
-#include "Dictionary.h"
-#include "Timer.h"
+#include "Store.hh"
+#include "Dictionary.hh"
+#include "Timer.hh"
 
 // compare pairs by components
 bool operator<(const so_pair& p1, const so_pair& p2);
@@ -24,6 +24,10 @@ bool operator<(const so_pair& p1, const so_pair& p2);
 class Reasoner
 {
 public:
+  enum RuleSet {
+    kRhoDFRuleSet = 0,
+    kRDFSRuleSet  = 1 << 0
+  };
   class Error
   {
   public:
@@ -36,7 +40,7 @@ public:
     std::string message_;
   };
 
-  Reasoner(Dictionary& dict);
+  Reasoner(Dictionary& dict, RuleSet ruleSet);
   virtual ~Reasoner() {}
   void addAxiomaticTriples();
   virtual bool addTriple(const Store::Triple&, const Store::TripleFlags f = Store::kFlagsNone);
@@ -53,9 +57,9 @@ public:
   virtual TimingMap timings() = 0;
 
   // TODO: should be private
-  Store triples_;       // instance + rdf:type triples
-  Store typeTriples_;   // instance + rdf:type triples
-  Store schemaTriples_; // instance + rdf:type triples
+  Store triples_;       // instance triples
+  Store typeTriples_;   // rdf:type triples
+  Store schemaTriples_; // schema triples
 protected:
   typedef std::set<term_id> TermSet;
   typedef std::map<term_id, TermSet> TermMap;
@@ -67,6 +71,10 @@ protected:
   term_id subClassOf_, subPropertyOf_, domain_, range_, type_;  // term identifiers for schema vocabulary
   Dictionary& dict_;  // URI -> term identifier dictionary
 
+  TermSet membershipProperties_;  // container membership propertes used
+
+  RuleSet ruleSet_;
+
   TermMap scSuccessors_;      // rdfs:subClassOf successor sets
   TermMap scPredecessors_;    // rdfs:subClassOf predecessor sets
   TermMap spSuccessors_;      // rdfs:subPropertyOf successor sets
@@ -77,6 +85,10 @@ protected:
 
   TermSet scTerms_; // unique rdfs:subClassOf terms
   TermSet spTerms_; // unique rdfs:subPropertyOf terms
+
+  Timer storeTimer_;
+  Timer uniqueingTimer_;
+  Timer tempTimer_;
 
   bool isSchemaProperty(term_id property) const {
     return (property <= range_);

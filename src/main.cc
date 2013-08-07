@@ -16,11 +16,11 @@
 #include "cts/parser/TurtleParser.hpp"
 
 #include "types.h"
-#include "Dictionary.h"
-#include "Reasoner.h"
-#include "OpenCLReasoner.h"
+#include "Dictionary.hh"
+#include "Reasoner.hh"
+#include "OpenCLReasoner.hh"
 // #include "NativeReasoner.h"
-#include "Timer.h"
+#include "Timer.hh"
 
 void PrintUsage();
 void PrintTriple(const Store::Triple& t, Dictionary& d);
@@ -37,7 +37,7 @@ struct LiteralModifier {
 
 int main(int argc, const char* argv[])
 {
-  std::string device, fileName;
+  std::string device, ruleSet, fileName;
   bool printTriples, timeExecution, useAxioms, noLocalDeduplication, noGlobalDeduplication;
 
   namespace po = boost::program_options;
@@ -46,6 +46,7 @@ int main(int argc, const char* argv[])
     ("help,h", "produce this help message")
     ("input-file,i", po::value<std::string>(&fileName), "source turtle file")
     ("device", po::value<std::string>(&device)->default_value("gpu"), "OpenCL device to run on (gpu, cpu)")
+    ("rules", po::value<std::string>(&ruleSet)->default_value("rhodf"), "rule set to use (rhodf, rdfs")
     ("no-local-dedup,l", po::bool_switch(&noLocalDeduplication), "disable local deduplication (default if using CPU)")
     ("no-global-dedup,g", po::bool_switch(&noGlobalDeduplication), "disable global deduplication")
     ("axioms,a", po::bool_switch(&useAxioms), "include finite RDFS axiomatic triples")
@@ -97,17 +98,15 @@ int main(int argc, const char* argv[])
   std::shared_ptr<OpenCLReasoner> reasoner;
 
   try {
-    reasoner = std::make_shared<OpenCLReasoner>(dictionary,
-                                                deviceType,
-                                                !noLocalDeduplication,
-                                                !noGlobalDeduplication);
+    reasoner = std::make_shared<OpenCLReasoner>(
+        dictionary,
+        ruleSet == "rdfs" ? Reasoner::kRDFSRuleSet : Reasoner::kRhoDFRuleSet,
+        deviceType,
+        !noLocalDeduplication,
+        !noGlobalDeduplication);
   } catch (std::exception& e) {
     std::clog << "Could not instantiate reasoner: " << e.what() << std::endl;
     return EXIT_FAILURE;
-  }
-
-  if (useAxioms) {
-    reasoner->addAxiomaticTriples();
   }
 
   Timer parsing, lookup, storage, closure;
@@ -147,6 +146,10 @@ int main(int argc, const char* argv[])
     if (stored) {
       ++triplesParsed;
     }
+  }
+
+  if (useAxioms) {
+    reasoner->addAxiomaticTriples();
   }
 
   closure.start();

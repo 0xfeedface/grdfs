@@ -1,5 +1,6 @@
 #include "cts/parser/TurtleParser.hpp"
 #include <sstream>
+#include <iostream>
 //---------------------------------------------------------------------------
 // RDF-3X
 // (c) 2008 Thomas Neumann. Web site: http://www.mpi-inf.mpg.de/~neumann/rdf3x
@@ -902,6 +903,7 @@ void TurtleParser::parseTriple(Lexer::Token token, std::string& subject, std::st
   parseSubject(token, subject);
   parsePredicateObjectList(subject, predicate, object, objectType, objectSubType);
   if (lexer.next() != Lexer::Dot) {
+    std::cout << subject << " " << predicate << " " << object << "\n";
     parseError("'.' expected after triple");
   }
 }

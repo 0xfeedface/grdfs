@@ -1,7 +1,7 @@
 #ifndef STORE_H
 #define STORE_H
 
-#include "Dictionary.h"
+#include "Dictionary.hh"
 #include <cstddef> // size_t
 #include <vector>
 #include <unordered_map>
@@ -41,7 +41,7 @@ public:
     Iterator(Store& s, std::size_t beginIndex) : store_(s), currentIndex_(beginIndex) {};
     Iterator(Store& s, std::size_t beginIndex, bool entailedOnly) :
       store_(s), currentIndex_(beginIndex), entailedOnly_(entailedOnly) {
-        if (entailedOnly) {
+        if (entailedOnly && (currentIndex_ < store_.size_)) {
           if (!(store_.flags_[currentIndex_] & kFlagsEntailed)) {
             currentIndex_ = indexOfNextEntailedTriple(currentIndex_);
           }
@@ -68,7 +68,7 @@ public:
     std::size_t indexOfNextEntailedTriple(std::size_t index) {
       do {
         ++index;
-      } while (index <= store_.size_ && !(store_.flags_[index] & kFlagsEntailed));
+      } while (index < store_.size_ && !(store_.flags_[index] & kFlagsEntailed));
 
       return index;
     }

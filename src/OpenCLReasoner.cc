@@ -6,7 +6,7 @@
 //  Copyright (c) 2011 Norman Heino. All rights reserved.
 //
 
-#include "OpenCLReasoner.h"
+#include "OpenCLReasoner.hh"
 #include <vector>
 #include <algorithm>
 #include <map>
@@ -27,8 +27,8 @@ typedef std::queue<term_id> TermQueue;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-OpenCLReasoner::OpenCLReasoner(Dictionary& dict, cl_device_type deviceType, bool localDedup, bool globalDedup)
-    : Reasoner(dict), deviceType_(deviceType), localDeduplication_(localDedup), globalDeduplication_(globalDedup)
+OpenCLReasoner::OpenCLReasoner(Dictionary& dict, RuleSet ruleSet, cl_device_type deviceType, bool localDedup, bool globalDedup)
+    : Reasoner(dict, ruleSet), deviceType_(deviceType), localDeduplication_(localDedup), globalDeduplication_(globalDedup)
 {
   context_ = context(deviceType);
   // query devices
@@ -182,17 +182,73 @@ void OpenCLReasoner::computeClosureInternal()
       materializeWithProperty(subjectResults, objectResults, type_);
     }
   }
+
+  if (ruleSet_ == kRDFSRuleSet) {
+    if (triples_.size()) {
+      KeyType Resource = dict_.Lookup(kResourceURI);
+      KeyType Property = dict_.Lookup(kPropertyURI);
+
+      // compute RDF rule 1 and RDFS rules 4a, 4b, 6
+      for (auto it(triples_.begin()); it != triples_.end(); ++it) {
+        addTriple(Store::Triple(it->subject, type_, Resource), Store::kFlagsEntailed);
+        addTriple(Store::Triple(it->predicate, type_, Property), Store::kFlagsEntailed);
+        addTriple(Store::Triple(it->predicate, subPropertyOf_, it->predicate), Store::kFlagsEntailed);
+        if (!(it->object & Reasoner::literalMask)) {
+          addTriple(Store::Triple(it->object, type_, Resource), Store::kFlagsEntailed);
+        }
+      }
+    }
+
+    bool newSubpropertyTriples = false;
+
+    if (typeTriples_.size()) {
+      KeyType Resource                    = dict_.Lookup(kResourceURI);
+      KeyType Class                       = dict_.Lookup(kClassURI);
+      KeyType ContainerMembershipProperty = dict_.Lookup(kConMemShipPropURI);
+      KeyType Datatype                    = dict_.Lookup(kDatatypeURI);
+      KeyType member                      = dict_.Lookup(kMemberURI);
+      KeyType Literal                     = dict_.Lookup(kLiteralURI);
+
+
+      // compute rules 8, 10, 12, 13
+      for (auto it(typeTriples_.begin()); it != typeTriples_.end(); ++it) {
+        if (it->object == Class) {
+          addTriple(Store::Triple(it->subject, subClassOf_, Resource),Store::kFlagsEntailed);
+          addTriple(Store::Triple(it->subject, subClassOf_, it->subject), Store::kFlagsEntailed);
+        } else if (it->object == ContainerMembershipProperty) {
+          newSubpropertyTriples = addTriple(Store::Triple(it->subject, subPropertyOf_, member),
+                                            Store::kFlagsEntailed);
+        } else if (it->object == Datatype) {
+          addTriple(Store::Triple(it->subject, subClassOf_, Literal), Store::kFlagsEntailed);
+        }
+      }
+    }
+
+    if (newSubpropertyTriples && triples_.size()) {
+      // We use plain non-type, non-schema triples only.
+      // Otherwise it would be non-authorative.
+      const Store::KeyVector& predicates(triples_.predicates());
+      Store::KeyVector results(predicates.size(), 0);
+      Store::KeyVector schemaSubjects;
+      for (auto spSubject : spSuccessors_) {
+        term_id subject(spSubject.first);
+        schemaSubjects.push_back(subject);
+      }
+      computeJoin(results, predicates, schemaSubjects);
+
+      spanTriplesByPredicate(triples_.subjects(), triples_.predicates(),
+                            triples_.objects(), results, spSuccessors_);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 Reasoner::TimingMap OpenCLReasoner::timings()
 {
-  TimingMap result;
+  TimingMap result = Reasoner::timings();;
   result.insert(std::make_pair("host", hostTime_.elapsed()));
   result.insert(std::make_pair("device", deviceTime_.elapsed()));
-  result.insert(std::make_pair("storage", storeTimer_.elapsed()));
-  result.insert(std::make_pair("uniqueing", uniqueingTimer_.elapsed()));
   return result;
 }
 
@@ -208,18 +264,8 @@ void OpenCLReasoner::materializeWithProperty(const Store::KeyVector& subjects,
     if (subject) {
       // std::cout << subject << " " << object << std::endl;
       // std::cout << dict_.Find(subject) << " " << dict_.Find(object) << std::endl;
-      Timer t;
-      t.start();
       Store::Triple triple(subject, property, object);
-      bool stored = addTriple(triple, Store::kFlagsEntailed);
-      t.stop();
-      if (stored) {
-        storeTimer_.addTimer(t);
-      } else {
-        uniqueingTimer_.addTimer(t);
-        // print rejected s, p
-        // std::cout << triple.subject << " " << triple.object << std::endl;
-      }
+      addTriple(triple, Store::kFlagsEntailed);
     }
   }
 }
@@ -246,25 +292,16 @@ std::size_t OpenCLReasoner::spanTriplesByPredicate(const Store::KeyVector& subje
     KeyType object(objects[i]);
     KeyType predicateMapIndex(predicateMapIndexes[i]);
     if (predicateMapIndex) {
-      Timer t;
-      bool stored(false);
       try {
         for (auto predicate : predicateMap.at(predicateMapIndex)) {
-          t.start();
-          stored = addTriple(Store::Triple(subject, predicate, object), Store::kFlagsEntailed);
-          t.stop();
+          if (addTriple(Store::Triple(subject, predicate, object), Store::kFlagsEntailed)) {
+            entailedTriples++;
+          }
         }
       } catch (std::out_of_range& oor) {
-        t.stop();
         std::stringstream str(oor.what());
         str << " (" << predicateMapIndex << " not found).";
         throw Error(str.str());
-      }
-      if (stored) {
-        storeTimer_.addTimer(t);
-        entailedTriples++;
-      } else {
-        uniqueingTimer_.addTimer(t);
       }
     }
   }
@@ -754,16 +791,7 @@ void OpenCLReasoner::computeTransitiveClosure(TermMap& successorMap,
     auto send(std::end(ait->second));
     for (; sit != send; ++sit) {
       hostTime_.stop();
-      Timer t;
-      t.start();
-      bool stored = addTriple(Store::Triple(ait->first, property, *sit),
-                              Store::kFlagsEntailed);
-      t.stop();
-      if (stored) {
-        storeTimer_.addTimer(t);
-      } else {
-        uniqueingTimer_.addTimer(t);
-      }
+      addTriple(Store::Triple(ait->first, property, *sit), Store::kFlagsEntailed);
       hostTime_.start();
     }
   }

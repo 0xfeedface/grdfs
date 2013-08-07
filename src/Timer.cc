@@ -1,4 +1,4 @@
-#include "Timer.h"
+#include "Timer.hh"
 
 #ifdef __APPLE__
 #include <mach/mach_time.h>
@@ -32,6 +32,11 @@ double Timer::elapsed()
 #else
   return static_cast<double>(1e-6 * total_);
 #endif
+}
+
+void Timer::reset()
+{
+  total_ = 0;
 }
 
 // private

@@ -9,8 +9,8 @@
 #ifndef OpenCLReasoner_h
 #define OpenCLReasoner_h
 
-#include "Reasoner.h"
-#include "Store.h"
+#include "Reasoner.hh"
+#include "Store.hh"
 
 #define __CL_ENABLE_EXCEPTIONS
 #if defined(__APPLE__) || defined(__MACOSX)
@@ -64,7 +64,7 @@ typedef std::vector<BucketEntry> BucketVector;
 class OpenCLReasoner : public Reasoner
 {
 public:
-  OpenCLReasoner(Dictionary& dict, cl_device_type deviceType, bool localDedup, bool globalDedup);
+  OpenCLReasoner(Dictionary& dict, RuleSet ruleSet, cl_device_type deviceType, bool localDedup, bool globalDedup);
   ~OpenCLReasoner();
   void computeClosure();
   Reasoner::TimingMap timings();
@@ -76,8 +76,6 @@ private:
   const std::string programName_ = "src/grdfs_kernels.cl";
   Timer deviceTime_;
   Timer hostTime_;
-  Timer storeTimer_;
-  Timer uniqueingTimer_;
 
   cl_device_type deviceType_;
 

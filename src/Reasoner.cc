@@ -7,21 +7,25 @@
 //
 
 #include <iostream>
+#include <cstring> // memcmp
 
-#include "Reasoner.h"
+#include "Reasoner.hh"
 
-Reasoner::Reasoner(Dictionary& dict) : dict_(dict)
+Reasoner::Reasoner(Dictionary& dict, RuleSet ruleSet) : dict_(dict)
 {
   subClassOf_    = dict.Lookup(kSubClassOfURI);
   subPropertyOf_ = dict.Lookup(kSubPropertyOfURI);
   domain_        = dict.Lookup(kDomainURI);
   range_         = dict.Lookup(kRangeURI);
   type_          = dict.Lookup(kTypeURI);
+
+  ruleSet_       = ruleSet;
 }
 
 bool Reasoner::addTriple(const Store::Triple& t, Store::TripleFlags flags)
 {
   bool result(false);
+  tempTimer_.start();
   if (isSchemaProperty(t.predicate)) {
     if (schemaTriples_.addTriple(t, flags)) {
       // triple is new, put it in the schema indexes
@@ -53,12 +57,27 @@ bool Reasoner::addTriple(const Store::Triple& t, Store::TripleFlags flags)
     }
   }
 
+  std::string predicateURI = dict_.Find(t.predicate);
+  static const std::string rdfMemberPrefix = "http://www.w3.org/1999/02/22-rdf-syntax-ns#_";
+
+  if (predicateURI.size() > rdfMemberPrefix.size()
+      && predicateURI.compare(0, 44, rdfMemberPrefix) == 0) {
+
+    membershipProperties_.insert(t.predicate);
+  }
+
+  tempTimer_.stop();
+
+  // count entailed triples and duplicates
   if (flags & Store::kFlagsEntailed) {
     if (result) {
       ++inferredTriplesCount_;
+      storeTimer_.addTimer(tempTimer_);
     } else {
       ++inferredDuplicatesCount_;
+      uniqueingTimer_.addTimer(tempTimer_);
     }
+    tempTimer_.reset();
   }
 
   return result;
@@ -67,8 +86,8 @@ bool Reasoner::addTriple(const Store::Triple& t, Store::TripleFlags flags)
 void Reasoner::addAxiomaticTriples() {
   term_id Resource = dict_.Lookup(kResourceURI);
   term_id Property = dict_.Lookup(kPropertyURI);
-  term_id Class = dict_.Lookup(kClassURI); 
-  term_id Literal = dict_.Lookup(kLiteralURI); 
+  term_id Class = dict_.Lookup(kClassURI);
+  term_id Literal = dict_.Lookup(kLiteralURI);
   term_id Statement = dict_.Lookup(kStatementURI); 
   term_id Container = dict_.Lookup(kContainerURI);
   term_id ContainerMembershipProperty = dict_.Lookup(kConMemShipPropURI);
@@ -93,47 +112,54 @@ void Reasoner::addAxiomaticTriples() {
   term_id XMLLiteral = dict_.Lookup(kXMLLiteralURI);
   term_id Datatype = dict_.Lookup(kDatatypeURI);
 
-  addTriple(Store::Triple(type_, domain_, Resource));
-  addTriple(Store::Triple(domain_, domain_, Property));
-  addTriple(Store::Triple(range_, domain_, Property));
-  addTriple(Store::Triple(subPropertyOf_, domain_, Property));
-  addTriple(Store::Triple(subClassOf_, domain_, Property));
-  addTriple(Store::Triple(subject, domain_, Statement));
-  addTriple(Store::Triple(predicate, domain_, Statement));
-  addTriple(Store::Triple(object, domain_, Statement));
-  addTriple(Store::Triple(member, domain_, Resource));
-  addTriple(Store::Triple(first, domain_, List));
-  addTriple(Store::Triple(rest, domain_, List));
-  addTriple(Store::Triple(seeAlso, domain_, Resource));
-  addTriple(Store::Triple(isDefinedBy, domain_, Resource));
-  addTriple(Store::Triple(comment, domain_, Resource));
-  addTriple(Store::Triple(label, domain_, Resource));
-  addTriple(Store::Triple(value, domain_, Resource));
+  addTriple(Store::Triple(type_, domain_, Resource), Store::kFlagsEntailed);
+  addTriple(Store::Triple(domain_, domain_, Property), Store::kFlagsEntailed);
+  addTriple(Store::Triple(range_, domain_, Property), Store::kFlagsEntailed);
+  addTriple(Store::Triple(subPropertyOf_, domain_, Property), Store::kFlagsEntailed);
+  addTriple(Store::Triple(subClassOf_, domain_, Property), Store::kFlagsEntailed);
+  addTriple(Store::Triple(subject, domain_, Statement), Store::kFlagsEntailed);
+  addTriple(Store::Triple(predicate, domain_, Statement), Store::kFlagsEntailed);
+  addTriple(Store::Triple(object, domain_, Statement), Store::kFlagsEntailed);
+  addTriple(Store::Triple(member, domain_, Resource), Store::kFlagsEntailed);
+  addTriple(Store::Triple(first, domain_, List), Store::kFlagsEntailed);
+  addTriple(Store::Triple(rest, domain_, List), Store::kFlagsEntailed);
+  addTriple(Store::Triple(seeAlso, domain_, Resource), Store::kFlagsEntailed);
+  addTriple(Store::Triple(isDefinedBy, domain_, Resource), Store::kFlagsEntailed);
+  addTriple(Store::Triple(comment, domain_, Resource), Store::kFlagsEntailed);
+  addTriple(Store::Triple(label, domain_, Resource), Store::kFlagsEntailed);
+  addTriple(Store::Triple(value, domain_, Resource), Store::kFlagsEntailed);
 
-  addTriple(Store::Triple(type_, range_, Class));
-  addTriple(Store::Triple(domain_, range_, Class));
-  addTriple(Store::Triple(range_, range_, Class));
-  addTriple(Store::Triple(subPropertyOf_, range_, Property));
-  addTriple(Store::Triple(subClassOf_, range_, Class));
-  addTriple(Store::Triple(subject, range_, Resource));
-  addTriple(Store::Triple(predicate, range_, Resource));
-  addTriple(Store::Triple(object, range_, Resource));
-  addTriple(Store::Triple(member, range_, Resource));
-  addTriple(Store::Triple(rest, range_, Resource));
-  addTriple(Store::Triple(seeAlso, range_, Resource));
-  addTriple(Store::Triple(isDefinedBy, range_, Resource));
-  addTriple(Store::Triple(comment, range_, Literal));
-  addTriple(Store::Triple(label, range_, Literal));
-  addTriple(Store::Triple(value, range_, Resource));
+  addTriple(Store::Triple(type_, range_, Class), Store::kFlagsEntailed);
+  addTriple(Store::Triple(domain_, range_, Class), Store::kFlagsEntailed);
+  addTriple(Store::Triple(range_, range_, Class), Store::kFlagsEntailed);
+  addTriple(Store::Triple(subPropertyOf_, range_, Property), Store::kFlagsEntailed);
+  addTriple(Store::Triple(subClassOf_, range_, Class), Store::kFlagsEntailed);
+  addTriple(Store::Triple(subject, range_, Resource), Store::kFlagsEntailed);
+  addTriple(Store::Triple(predicate, range_, Resource), Store::kFlagsEntailed);
+  addTriple(Store::Triple(object, range_, Resource), Store::kFlagsEntailed);
+  addTriple(Store::Triple(member, range_, Resource), Store::kFlagsEntailed);
+  addTriple(Store::Triple(rest, range_, Resource), Store::kFlagsEntailed);
+  addTriple(Store::Triple(seeAlso, range_, Resource), Store::kFlagsEntailed);
+  addTriple(Store::Triple(isDefinedBy, range_, Resource), Store::kFlagsEntailed);
+  addTriple(Store::Triple(comment, range_, Literal), Store::kFlagsEntailed);
+  addTriple(Store::Triple(label, range_, Literal), Store::kFlagsEntailed);
+  addTriple(Store::Triple(value, range_, Resource), Store::kFlagsEntailed);
 
-  addTriple(Store::Triple(Alt, subClassOf_, Container));
-  addTriple(Store::Triple(Bag, subClassOf_, Container));
-  addTriple(Store::Triple(Seq, subClassOf_, Container));
-  addTriple(Store::Triple(ContainerMembershipProperty, subClassOf_, Property));
+  addTriple(Store::Triple(Alt, subClassOf_, Container), Store::kFlagsEntailed);
+  addTriple(Store::Triple(Bag, subClassOf_, Container), Store::kFlagsEntailed);
+  addTriple(Store::Triple(Seq, subClassOf_, Container), Store::kFlagsEntailed);
+  addTriple(Store::Triple(ContainerMembershipProperty, subClassOf_, Property), Store::kFlagsEntailed);
 
-  addTriple(Store::Triple(XMLLiteral, type_, Datatype));
-  addTriple(Store::Triple(XMLLiteral, subClassOf_, Literal));
-  addTriple(Store::Triple(Datatype, subClassOf_, Class));
+  addTriple(Store::Triple(XMLLiteral, type_, Datatype), Store::kFlagsEntailed);
+  addTriple(Store::Triple(XMLLiteral, subClassOf_, Literal), Store::kFlagsEntailed);
+  addTriple(Store::Triple(Datatype, subClassOf_, Class), Store::kFlagsEntailed);
+
+  // add finite axiomatic triples for container membership properties
+  for (term_id membershipProperty : membershipProperties_) {
+    addTriple(Store::Triple(membershipProperty, type_, ContainerMembershipProperty), Store::kFlagsEntailed);
+    addTriple(Store::Triple(membershipProperty, domain_, Resource), Store::kFlagsEntailed);
+    addTriple(Store::Triple(membershipProperty, range_, Resource), Store::kFlagsEntailed);
+  }
 }
 
 void Reasoner::printStatistics()
@@ -144,6 +170,14 @@ void Reasoner::printStatistics()
   std::cout << "range triples: " << rngTriples_.size() << std::endl;
   std::cout << "dictionary size: " << dict_.Size() << std::endl;
   std::cout << std::endl;
+}
+
+Reasoner::TimingMap Reasoner::timings()
+{
+  TimingMap result;
+  result.insert(std::make_pair("storage", storeTimer_.elapsed()));
+  result.insert(std::make_pair("uniqueing", uniqueingTimer_.elapsed()));
+  return result;
 }
 
 bool operator<(const so_pair& p1, const so_pair& p2)

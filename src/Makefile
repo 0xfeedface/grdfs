@@ -4,7 +4,7 @@ RM=rm -rf
 
 MAIN=main.cc
 
-CXXFLAGS=-g -Wall -O3
+CXXFLAGS=-g -Wall -O4
 CXXSOURCES=$(filter-out $(MAIN),$(wildcard *.cc))
 CXXOBJECTS=$(CXXSOURCES:.cc=.o)
 CXXHEADERS=$(wildcard *.h)
@@ -37,6 +37,7 @@ $(BUILD)/grdfs: $(CXXOBJECTS) $(CXXHEADERS) $(MAIN)
 	mkdir -p $(BUILD) && $(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $(MAIN) $(CXXOBJECTS)
 
 Reasoner.o: Store.o
+
 
 .PHONY: clean
 clean:

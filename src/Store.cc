@@ -1,4 +1,4 @@
-#include "Store.h"
+#include "Store.hh"
 #include <iostream>
 #include <cassert>
 
