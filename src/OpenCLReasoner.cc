@@ -351,8 +351,8 @@ void OpenCLReasoner::buildSchemaHash(BucketInfoVector& bucketInfos,
     if (v.second.size()) {
       std::size_t hash(hashTerm(v.first) % size);
       // one new bucket entry
-      bucketSizes[hash] += 1 + v.second.size();
-      entries += 1 + v.second.size();
+      bucketSizes[hash] += 2 + v.second.size();
+      entries += 2 + v.second.size();
     }
   }
 
@@ -374,13 +374,14 @@ void OpenCLReasoner::buildSchemaHash(BucketInfoVector& bucketInfos,
     if (v.second.size()) {
       std::size_t hash(hashTerm(v.first) % size);
       BucketInfo& info(bucketInfos[hash]);
-      cl_uint bucketIndex = info.start + info.free;
-      values[bucketIndex] = v.first | (v.second.size() << 48);
-      unsigned i(0);
+      cl_uint bucketIndex     = info.start + info.free;
+      values[bucketIndex]     = v.first;
+      values[bucketIndex + 1] = v.second.size();
+      unsigned i(2);
       for (auto & w : v.second) {
-        values[bucketIndex + ++i] = w;
+        values[bucketIndex + i++] = w;
       }
-      info.free += 1 + v.second.size();
+      info.free += i;
     }
   }
 

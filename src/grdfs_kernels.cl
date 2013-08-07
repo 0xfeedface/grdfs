@@ -82,9 +82,8 @@ void count_results_hashed(__global uint2* results,
     if (info.start < UINT_MAX) {
       uint i = 0;
       while (i < info.size) {
-        term_id t = schema_buckets[info.start + i];
-        uint size = (t & 0xffff000000000000) >> 48;
-        ulong value = t & 0x0000ffffffffffff;
+        ulong value = schema_buckets[info.start + i];
+        ulong size  = schema_buckets[info.start + i + 1];
         if (size) {
           if (p == value) {
             result.s0 = info.start + i;
@@ -93,7 +92,7 @@ void count_results_hashed(__global uint2* results,
           }
         }
         // jump over successors to next entry
-        i += size + 1;
+        i += size + 2;
       }
     }
     results[globx] = result;
@@ -184,7 +183,7 @@ void materialize_results(__global term_id* result_objects,
       if (result.s0 < UINT_MAX) {
         // construct entailed object (i.e successors)
         bool entail = true;
-        ulong object = schema_buckets[result.s0 + linfo.s1 + 1];
+        ulong object = schema_buckets[result.s0 + linfo.s1 + 2];
         ulong hash = hash_triple(subject, object) & (tableSize - 1);
         uint index = bucket_infos[hash].start;
 

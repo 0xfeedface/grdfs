@@ -121,21 +121,17 @@ int main(int argc, const char* argv[])
     }
 
     lookup.start();
-    Dictionary::KeyType subjectID = dictionary.Lookup(subject);
-    /*
-     * Dictionary::KeyType subjectID = dictionary.Lookup(subject, [subjectType](Dictionary::KeyType& key) {
-     *   if (subjectType == Type::ID::Blank) {
-     *     key |= Reasoner::blankMask;
-     *   }
-     * });
-     */
+    // Dictionary::KeyType subjectID = dictionary.Lookup(subject);
+    Dictionary::KeyType subjectID = dictionary.Lookup(subject, [subjectType](Dictionary::KeyType& key) {
+      if (subjectType == Type::ID::Blank) {
+        key |= Reasoner::blankMask;
+      }
+    });
     Dictionary::KeyType predicateID = dictionary.Lookup(predicate);
 
     Dictionary::KeyType objectID = dictionary.Lookup(object, [objectType](Dictionary::KeyType& key) {
       if (objectType == Type::ID::Blank) {
-        /*
-         * key |= Reasoner::blankMask;
-         */
+        key |= Reasoner::blankMask;
       } else if (objectType != Type::ID::URI) {
         key |= Reasoner::literalMask;
       }
@@ -216,8 +212,8 @@ void PrintTriple(const Store::Triple& triple, Dictionary& dictionary)
   std::string predicate(dictionary.Find(triple.predicate));
   std::string object(dictionary.Find(triple.object));
 
-  // if (triple.predicate & Reasoner::blankMask) {
-  if (predicate[0] == '_') {
+  if (triple.predicate & Reasoner::blankMask) {
+  // if (predicate[0] == '_') {
     // non-RDF triple (blank node property)
     std::clog << "non-standard RDF triple (not written)" << std::endl;
     return;
@@ -225,15 +221,15 @@ void PrintTriple(const Store::Triple& triple, Dictionary& dictionary)
     predicate = "<" + predicate + ">";
   }
 
-  // if (!(triple.subject & Reasoner::blankMask)) {
-  if (subject[0] != '_') {
+  if (!(triple.subject & Reasoner::blankMask)) {
+  // if (subject[0] != '_') {
     subject = "<" + subject + ">";
   }
 
   if (triple.object & Reasoner::literalMask) {
     object = "\"" + object + "\"";
-  // } else if (triple.object & Reasoner::blankMask) {
-  } else if (object[0] == '_') {
+  } else if (triple.object & Reasoner::blankMask) {
+  // } else if (object[0] == '_') {
     // do nothing (blank node)
   } else {
     object = "<" + object + ">";
