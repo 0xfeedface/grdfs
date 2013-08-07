@@ -4,7 +4,7 @@ RM=rm -rf
 
 MAIN=main.cc
 
-CXXFLAGS=-g -Wall -O4
+CXXFLAGS=-g -Wall -O3
 CXXSOURCES=$(filter-out $(MAIN),$(wildcard *.cc))
 CXXOBJECTS=$(CXXSOURCES:.cc=.o)
 CXXHEADERS=$(wildcard *.h)
