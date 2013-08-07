@@ -38,7 +38,7 @@ public:
     }
   private:
     std::string message_;
-  };
+  }; // Reasoner::Error
 
   Reasoner(Dictionary& dict, RuleSet ruleSet);
   virtual ~Reasoner() {}
@@ -53,6 +53,7 @@ public:
     return inferredDuplicatesCount_;
   }
   static const Dictionary::KeyType literalMask = (1UL << (sizeof(Dictionary::KeyType) * 8 - 1));
+  static const Dictionary::KeyType blankMask   = (1UL << (sizeof(Dictionary::KeyType) * 8 - 2));
   typedef std::map<std::string, double> TimingMap;
   virtual TimingMap timings() = 0;
 
