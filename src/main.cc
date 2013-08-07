@@ -25,16 +25,6 @@
 void PrintUsage();
 void PrintTriple(const Store::Triple& t, Dictionary& d);
 
-// TODO: replace with lambda once clang 3.1 is out
-struct LiteralModifier {
-  bool isLiteral = false;
-  void operator()(Dictionary::KeyType& key) {
-    if (isLiteral) {
-      key |= Reasoner::literalMask;
-    }
-  }
-};
-
 int main(int argc, const char* argv[])
 {
   std::string device, ruleSet, fileName;
@@ -111,14 +101,13 @@ int main(int argc, const char* argv[])
 
   Timer parsing, lookup, storage, closure;
   TurtleParser parser(file);
-  LiteralModifier modifier;
   std::size_t triplesParsed(0);
   std::string subject, predicate, object, subType;
-  Type::ID type;
+  Type::ID subjectType, objectType;
   while (true) {
     try {
       parsing.start();
-      if (!parser.parse(subject, predicate, object, type, subType)) {
+      if (!parser.parse(subject, predicate, object, subjectType, objectType, subType)) {
         break;
       }
       parsing.stop();
@@ -132,11 +121,25 @@ int main(int argc, const char* argv[])
     }
 
     lookup.start();
-    Dictionary::KeyType subjectID   = dictionary.Lookup(subject);
+    Dictionary::KeyType subjectID = dictionary.Lookup(subject);
+    /*
+     * Dictionary::KeyType subjectID = dictionary.Lookup(subject, [subjectType](Dictionary::KeyType& key) {
+     *   if (subjectType == Type::ID::Blank) {
+     *     key |= Reasoner::blankMask;
+     *   }
+     * });
+     */
     Dictionary::KeyType predicateID = dictionary.Lookup(predicate);
 
-    modifier.isLiteral = (type != Type::ID::URI);
-    Dictionary::KeyType objectID = dictionary.Lookup(object, modifier);
+    Dictionary::KeyType objectID = dictionary.Lookup(object, [objectType](Dictionary::KeyType& key) {
+      if (objectType == Type::ID::Blank) {
+        /*
+         * key |= Reasoner::blankMask;
+         */
+      } else if (objectType != Type::ID::URI) {
+        key |= Reasoner::literalMask;
+      }
+    });
     lookup.stop();
 
     storage.start();
@@ -145,6 +148,9 @@ int main(int argc, const char* argv[])
 
     if (stored) {
       ++triplesParsed;
+      /*
+       * std::cout << subjectID << " " << predicateID << " " << objectID << std::endl;
+       */
     }
   }
 
@@ -210,20 +216,23 @@ void PrintTriple(const Store::Triple& triple, Dictionary& dictionary)
   std::string predicate(dictionary.Find(triple.predicate));
   std::string object(dictionary.Find(triple.object));
 
+  // if (triple.predicate & Reasoner::blankMask) {
   if (predicate[0] == '_') {
     // non-RDF triple (blank node property)
     std::clog << "non-standard RDF triple (not written)" << std::endl;
     return;
+  } else {
+    predicate = "<" + predicate + ">";
   }
 
+  // if (!(triple.subject & Reasoner::blankMask)) {
   if (subject[0] != '_') {
     subject = "<" + subject + ">";
   }
 
-  predicate = "<" + predicate + ">";
-
   if (triple.object & Reasoner::literalMask) {
     object = "\"" + object + "\"";
+  // } else if (triple.object & Reasoner::blankMask) {
   } else if (object[0] == '_') {
     // do nothing (blank node)
   } else {
